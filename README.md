@@ -6702,6 +6702,2469 @@ sino:
 └───────────────────────────────────────────────────────┘
 ```
 
+## 224. Página Web Local Autónoma — Sin Servidor Central
+
+SEMA deberá incorporar una **interfaz web completa alojada directamente en el ESP32**, de forma que una estación meteorológica pueda funcionar de manera completamente autónoma.
+
+El servidor central será **opcional**, nunca obligatorio para consultar los datos de una estación.
+
+La estación deberá poder proporcionar:
+
+```text
+ESP32
+ │
+ ├── Sensores
+ ├── Motor de medición
+ ├── Almacenamiento local
+ ├── API REST
+ ├── WebSocket
+ └── Servidor Web
+        │
+        ├── PC
+        ├── Notebook
+        ├── Tablet
+        └── Smartphone
+```
+
+La interfaz deberá funcionar incluso cuando:
+
+* no exista servidor central;
+* no exista Internet;
+* no exista servicio cloud;
+* la estación esté aislada de otras estaciones;
+* solamente esté disponible la red Wi-Fi local;
+* el ESP32 esté funcionando como Access Point.
+
+ESP-IDF proporciona un servidor HTTP ligero para ESP32 y permite implementar REST, conexiones persistentes y WebSocket.
+
+---
+
+## 225. Página de Datos en Tiempo Real
+
+La página principal deberá mostrar los datos actuales de la estación sin necesidad de recargar manualmente.
+
+Ejemplo:
+
+```text
+┌──────────────────────────────────────────────┐
+│ SEMA-001 — Estación Meteorológica            │
+│ Estado: ● ONLINE       Última lectura: 11:42 │
+├──────────────────────────────────────────────┤
+│                                              │
+│ 🌡 Temperatura       23.7 °C                 │
+│ 💧 Humedad           68.4 %                  │
+│ 📊 Presión           1014.8 hPa              │
+│ 🌬 Viento            14.2 km/h               │
+│ 🧭 Dirección         247° SO                 │
+│ ☔ Lluvia            1.2 mm/h                 │
+│ ☀ Radiación         643 W/m²                 │
+│ UV                  3.4                      │
+│ CO₂                 428 ppm                  │
+│                                              │
+├──────────────────────────────────────────────┤
+│ Batería             12.7 V                   │
+│ Panel solar         18.4 V                   │
+│ Señal Wi-Fi         -61 dBm                  │
+└──────────────────────────────────────────────┘
+```
+
+La actualización deberá realizarse preferentemente mediante:
+
+1. WebSocket;
+2. SSE cuando corresponda;
+3. polling REST como fallback.
+
+No se deberá depender exclusivamente de polling rápido porque aumenta innecesariamente el tráfico y consumo.
+
+---
+
+## 226. WebSocket en Tiempo Real
+
+SEMA deberá implementar un canal WebSocket opcional:
+
+```text
+/ws
+```
+
+El servidor deberá enviar eventos cuando cambien los datos.
+
+Ejemplo:
+
+```json
+{
+  "type": "measurement",
+  "timestamp": "2026-09-30T14:42:18Z",
+  "channel": "temperature_outdoor",
+  "value": 23.7,
+  "unit": "°C",
+  "quality": "VALID"
+}
+```
+
+También podrá transmitir:
+
+```text
+measurement
+sensor_status
+rain_event
+lightning_event
+alarm
+network_status
+power_status
+configuration_changed
+system_event
+```
+
+La implementación deberá permitir autenticar la conexión WebSocket. ESP-IDF contempla callbacks de autenticación previos al handshake WebSocket.
+
+---
+
+## 227. Funcionamiento Offline de la Interfaz
+
+La interfaz web local deberá continuar funcionando aunque:
+
+* Internet esté desconectado;
+* el servidor central esté apagado;
+* los servicios cloud estén fuera de servicio;
+* MQTT esté desconectado.
+
+El principio será:
+
+> **La estación es autónoma; las conexiones externas son complementarias.**
+
+Por lo tanto:
+
+```text
+                 ┌── Internet
+                 │
+SEMA ─── Wi-Fi ──┼── Servidor central
+                 │
+                 ├── MQTT
+                 ├── ThingSpeak
+                 ├── Weathercloud
+                 └── Windy
+
+SEMA ─── navegador local
+```
+
+La interfaz local no dependerá de ninguno de los servicios externos.
+
+---
+
+## 228. Access Point de Emergencia
+
+SEMA deberá poder crear una red Wi-Fi propia:
+
+```text
+SEMA-XXXX
+```
+
+permitiendo conectarse directamente desde un teléfono o notebook.
+
+Ejemplo:
+
+```text
+Teléfono
+    │
+    │ Wi-Fi
+    ▼
+SEMA AP
+    │
+    └── 192.168.4.1
+          │
+          └── Página web SEMA
+```
+
+Esto será especialmente importante durante:
+
+* instalación;
+* configuración inicial;
+* pérdida de red;
+* recuperación;
+* mantenimiento;
+* cambio de router;
+* recuperación de credenciales.
+
+---
+
+## 229. mDNS
+
+SEMA deberá soportar nombres locales configurables:
+
+```text
+http://sema-001.local
+```
+
+o:
+
+```text
+http://estacion-norte.local
+```
+
+mDNS está pensado precisamente para descubrimiento de dispositivos y servicios dentro de una red local.
+
+La configuración deberá permitir:
+
+```text
+Hostname:
+sema-001
+
+Nombre visible:
+SEMA Estación Norte
+
+Dominio:
+.local
+```
+
+---
+
+# 230. Arquitectura de Visualización Multinivel
+
+SEMA deberá soportar tres niveles:
+
+### Nivel 1 — Estación autónoma
+
+```text
+Sensores
+   ↓
+ESP32
+   ↓
+Web local
+```
+
+No necesita servidor.
+
+### Nivel 2 — Estación + servicios externos
+
+```text
+Sensores
+   ↓
+ESP32
+   ├── Web local
+   ├── MQTT
+   ├── ThingSpeak
+   ├── Weathercloud
+   ├── Windy
+   └── PWSWeather
+```
+
+### Nivel 3 — Sistema centralizado
+
+```text
+                 ┌── SEMA 001
+                 ├── SEMA 002
+                 ├── SEMA 003
+                 └── SEMA N
+                       │
+                       ▼
+                SERVIDOR CENTRAL
+                       │
+            ┌──────────┼──────────┐
+            ▼          ▼          ▼
+         Dashboard   API       Base de datos
+```
+
+Los tres niveles deberán poder coexistir.
+
+---
+
+# 231. Servidor Central SEMA
+
+Se deberá diseñar un **Servidor Central SEMA** como componente independiente.
+
+Su función será administrar múltiples estaciones sin quitar autonomía a cada nodo.
+
+El servidor central NO deberá ser necesario para que una estación funcione.
+
+---
+
+## 232. Funciones del Servidor Central
+
+El servidor central deberá permitir:
+
+* registrar estaciones;
+* descubrir estaciones;
+* autenticar estaciones;
+* visualizar múltiples estaciones;
+* visualizar mapas;
+* consultar históricos;
+* comparar estaciones;
+* administrar configuraciones;
+* recibir alarmas;
+* administrar usuarios;
+* administrar permisos;
+* administrar OTA;
+* administrar actualizaciones;
+* almacenar datos;
+* exportar datos;
+* generar estadísticas;
+* consultar diagnósticos;
+* administrar sensores;
+* administrar módulos;
+* administrar integraciones;
+* administrar reglas;
+* administrar eventos.
+
+---
+
+# 233. Arquitectura del Servidor Central
+
+Se recomienda una arquitectura:
+
+```text
+                    ┌────────────────────────┐
+                    │       SEMA Server      │
+                    │                        │
+                    │ API Gateway            │
+                    │ Authentication        │
+                    │ Station Manager        │
+                    │ Device Registry        │
+                    │ Measurement Engine     │
+                    │ Event Engine           │
+                    │ Rule Engine            │
+                    │ Alert Manager          │
+                    │ OTA Manager             │
+                    │ Integration Manager    │
+                    │ User/RBAC Manager      │
+                    │ WebSocket Manager      │
+                    └───────────┬────────────┘
+                                │
+              ┌─────────────────┼─────────────────┐
+              ▼                 ▼                 ▼
+        Time-Series DB     Relational DB      File Storage
+```
+
+---
+
+# 234. Servidor Central como Aplicación Portable
+
+El servidor central deberá diseñarse para funcionar preferentemente en:
+
+* Linux;
+* Windows;
+* Raspberry Pi;
+* mini PC;
+* NAS;
+* Docker;
+* servidor local;
+* VPS;
+* máquina virtual.
+
+Idealmente:
+
+```text
+SEMA Server
+    ↓
+Docker
+    ↓
+Linux / Windows / NAS / Raspberry Pi
+```
+
+De esta manera no se deberá atar SEMA a un hardware específico.
+
+---
+
+# 235. Modo Servidor Central Local
+
+También deberá existir un modo:
+
+```text
+SEMA Central Local
+```
+
+para instalaciones sin Internet.
+
+Ejemplo:
+
+```text
+                    LAN
+                     │
+       ┌─────────────┼─────────────┐
+       │             │             │
+     SEMA-01       SEMA-02       SEMA-03
+       │             │             │
+       └─────────────┼─────────────┘
+                     │
+                Raspberry Pi
+                     │
+                SEMA Server
+```
+
+Toda la información puede permanecer dentro de la instalación.
+
+---
+
+# 236. Modo Servidor Central + Internet
+
+Opcionalmente:
+
+```text
+SEMA Nodes
+     ↓
+SEMA Server
+     ↓
+Internet
+     ↓
+Remote access
+```
+
+Esto permitirá acceder desde fuera de la red local mediante un mecanismo seguro.
+
+No se deberá exponer directamente cada ESP32 a Internet.
+
+El acceso remoto deberá preferentemente terminar en el servidor central.
+
+---
+
+# 237. Registro de Estaciones
+
+Cada SEMA deberá tener:
+
+```text
+station_id
+device_id
+hardware_id
+firmware_version
+board_type
+chip_family
+mac_address
+installation_name
+location
+capabilities
+```
+
+Ejemplo:
+
+```json
+{
+  "station_id": "SEMA-001",
+  "device_id": "A7F31C92",
+  "board": "ESP32-S3",
+  "firmware": "1.0.0",
+  "capabilities": {
+    "wifi": true,
+    "bluetooth_le": true,
+    "ethernet": false,
+    "can": true,
+    "adc": true,
+    "deep_sleep": true
+  }
+}
+```
+
+---
+
+# 238. Provisionamiento de Estaciones
+
+El servidor central deberá poder generar un proceso de incorporación:
+
+```text
+Nueva estación detectada
+        ↓
+Solicitar autorización
+        ↓
+Registrar dispositivo
+        ↓
+Asignar station_id
+        ↓
+Asignar grupo
+        ↓
+Aplicar configuración
+        ↓
+Confirmar comunicación
+```
+
+Deberá existir un mecanismo de aprobación para impedir que un ESP32 desconocido se registre automáticamente.
+
+---
+
+# 239. Descubrimiento Automático
+
+La red local podrá utilizar:
+
+* mDNS;
+* UDP discovery;
+* MQTT discovery;
+* servidor DHCP;
+* API local;
+* descubrimiento manual.
+
+Ejemplo:
+
+```text
+Buscar estaciones
+
+● SEMA-001
+  192.168.1.101
+  Online
+
+● SEMA-002
+  192.168.1.102
+  Online
+
+● SEMA-003
+  192.168.1.103
+  Offline
+```
+
+---
+
+# 240. Sincronización Estación ↔ Servidor
+
+La comunicación deberá ser bidireccional.
+
+```text
+SEMA → Server
+    mediciones
+    eventos
+    estado
+    diagnósticos
+
+Server → SEMA
+    configuración
+    comandos
+    actualización
+    reglas
+    horarios
+```
+
+Pero la estación deberá conservar siempre una copia local de la configuración necesaria para funcionar autónomamente.
+
+---
+
+# 241. Store & Forward
+
+Si el servidor central está desconectado:
+
+```text
+SEMA
+ ↓
+Medición
+ ↓
+Almacenamiento local
+ ↓
+Servidor desconectado
+ ↓
+Esperar
+ ↓
+Servidor vuelve
+ ↓
+Sincronizar histórico
+```
+
+No deberán perderse datos simplemente porque el servidor central no esté disponible.
+
+---
+
+# 242. Sincronización Incremental
+
+La estación y servidor deberán intercambiar:
+
+```text
+last_sequence
+last_timestamp
+data_hash
+configuration_version
+firmware_version
+```
+
+para determinar qué datos faltan.
+
+No se deberá retransmitir todo el histórico en cada conexión.
+
+---
+
+# 243. Identificador de Secuencia
+
+Cada medición almacenada deberá poder tener:
+
+```text
+sequence_id
+timestamp
+station_id
+channel_id
+value
+quality
+```
+
+Esto permite detectar huecos:
+
+```text
+1001
+1002
+1003
+1005
+```
+
+El servidor detectaría:
+
+```text
+Falta sequence_id = 1004
+```
+
+y solicitaría únicamente ese dato.
+
+---
+
+# 244. Dashboard Central
+
+El servidor deberá ofrecer:
+
+### Vista general
+
+```text
+┌──────────────────────────────────────────┐
+│ SEMA Central                             │
+├──────────────────────────────────────────┤
+│ Estaciones: 12                           │
+│ Online: 10                               │
+│ Offline: 2                               │
+│ Alertas: 3                               │
+├──────────────────────────────────────────┤
+│ Mapa                                     │
+│                                          │
+│      ● SEMA-01                           │
+│                 ● SEMA-02                │
+│                            ● SEMA-03      │
+└──────────────────────────────────────────┘
+```
+
+---
+
+# 245. Dashboard por Estación
+
+Cada estación deberá disponer de una vista equivalente a la interfaz local.
+
+Esto permitirá:
+
+```text
+Servidor Central
+       ↓
+SEMA-001
+       ↓
+Dashboard
+```
+
+pero también:
+
+```text
+Usuario
+ ↓
+SEMA-001.local
+ ↓
+Dashboard local
+```
+
+La experiencia deberá ser coherente en ambos casos.
+
+---
+
+# 246. Dashboard Histórico
+
+Deberá permitir:
+
+* temperatura;
+* humedad;
+* presión;
+* viento;
+* dirección;
+* lluvia;
+* radiación;
+* UV;
+* CO₂;
+* calidad del aire;
+* batería;
+* tensión solar.
+
+Con:
+
+* 1 h;
+* 6 h;
+* 24 h;
+* 7 días;
+* 30 días;
+* 1 año;
+* rango personalizado.
+
+---
+
+# 247. Comparación de Estaciones
+
+El servidor central deberá poder comparar:
+
+```text
+SEMA-001
+SEMA-002
+SEMA-003
+```
+
+en el mismo gráfico.
+
+Ejemplo:
+
+```text
+Temperatura exterior
+
+SEMA-001 ─────────
+SEMA-002 ────────
+SEMA-003 ──────────
+```
+
+---
+
+# 248. Mapa Meteorológico
+
+Cuando exista ubicación configurada, el servidor podrá mostrar:
+
+* estaciones;
+* temperatura;
+* lluvia;
+* viento;
+* presión;
+* radiación;
+* estado;
+* alertas.
+
+La ubicación exacta podrá mantenerse privada.
+
+Deberá existir:
+
+```text
+Ubicación pública:
+±0.01°
+```
+
+o:
+
+```text
+Ubicación privada:
+coordenadas exactas
+```
+
+---
+
+# 249. Arquitectura de API del Servidor Central
+
+La API central deberá mantener compatibilidad con la API de cada estación.
+
+Ejemplo:
+
+```text
+/api/v1/stations
+/api/v1/stations/{station_id}
+/api/v1/stations/{station_id}/measurements
+/api/v1/stations/{station_id}/history
+/api/v1/stations/{station_id}/events
+/api/v1/stations/{station_id}/health
+/api/v1/stations/{station_id}/config
+/api/v1/stations/{station_id}/commands
+/api/v1/stations/{station_id}/ota
+```
+
+---
+
+# 250. API Local y API Central Compatibles
+
+Deberá existir una filosofía de API común:
+
+```text
+SEMA Local API
+       │
+       ├── /api/v1/measurements
+       ├── /api/v1/events
+       └── /api/v1/health
+
+SEMA Central API
+       │
+       ├── /api/v1/stations/{id}/measurements
+       ├── /api/v1/stations/{id}/events
+       └── /api/v1/stations/{id}/health
+```
+
+Esto simplifica el desarrollo de aplicaciones externas.
+
+---
+
+# 251. Endpoint de Capacidades
+
+Agregar:
+
+```text
+GET /api/v1/capabilities
+```
+
+Debe devolver qué puede hacer realmente el hardware.
+
+Ejemplo:
+
+```json
+{
+  "wifi": true,
+  "bluetooth": true,
+  "ethernet": false,
+  "can": true,
+  "rs485": true,
+  "adc": true,
+  "deep_sleep": true,
+  "rtc_gpio_wakeup": true,
+  "psram": true,
+  "zigbee": false
+}
+```
+
+La interfaz web deberá ocultar automáticamente funciones no disponibles.
+
+---
+
+# 252. Compatibilidad Multigeneración ESP32
+
+SEMA deberá diseñarse para soportar diferentes familias mediante una arquitectura:
+
+```text
+SEMA Core
+    │
+    ▼
+HAL
+    │
+    ├── ESP32
+    ├── ESP32-S2
+    ├── ESP32-S3
+    ├── ESP32-C2
+    ├── ESP32-C3
+    ├── ESP32-C5
+    ├── ESP32-C6
+    ├── ESP32-H2
+    └── ESP32-P4
+```
+
+No deberá asumirse que un GPIO, periférico o capacidad disponible en un modelo existe en otro.
+
+---
+
+# 253. Perfil de Hardware
+
+Cada placa deberá tener un perfil:
+
+```text
+Board Profile
+├── chip
+├── revision
+├── flash
+├── psram
+├── gpio
+├── adc
+├── rtc_gpio
+├── i2c
+├── spi
+├── uart
+├── pwm
+├── pcnt
+├── twai/can
+├── usb
+├── ethernet
+├── wifi
+├── bluetooth
+└── 802.15.4
+```
+
+---
+
+# 254. Matriz de Capacidades de GPIO
+
+La configuración web deberá mostrar:
+
+```text
+GPIO 4
+
+✓ Digital Input
+✓ Digital Output
+✓ ADC
+✓ Interrupt
+✗ RTC Wake
+✗ DAC
+```
+
+en vez de simplemente:
+
+```text
+GPIO 4
+```
+
+Esto evitará configuraciones imposibles.
+
+---
+
+# 255. Verificador de Conflictos de Hardware
+
+Antes de guardar una configuración, SEMA deberá analizar:
+
+* GPIO duplicado;
+* GPIO reservado;
+* GPIO de boot/strapping;
+* ADC incompatible;
+* UART duplicada;
+* I2C duplicado;
+* dirección I2C repetida;
+* SPI conflictivo;
+* interrupción incompatible;
+* memoria insuficiente;
+* PSRAM requerida pero ausente;
+* periférico inexistente;
+* función no disponible en ese chip.
+
+Ejemplo:
+
+```text
+⚠ Configuración inválida
+
+GPIO 4:
+ ├── Sensor de lluvia
+ └── UART RX
+
+No se puede utilizar simultáneamente.
+```
+
+---
+
+# 256. Compatibilidad ESP32-WROOM-32E / 32UE
+
+Los módulos ESP32-WROOM-32E y WROOM-32UE están basados en ESP32 clásico, con CPU Xtensa LX6 dual-core hasta 240 MHz, 520 KB SRAM, Wi-Fi 2.4 GHz, Bluetooth y un conjunto amplio de periféricos. El WROOM-32E utiliza antena PCB y el WROOM-32UE permite antena externa.
+
+SEMA deberá soportarlos como una plataforma de recursos más limitada que las variantes modernas.
+
+Debe existir un perfil específico:
+
+```text
+ESP32-WROOM-32E
+ESP32-WROOM-32UE
+```
+
+---
+
+# 257. Compatibilidad ESP32-S3
+
+ESP32-S3 deberá considerarse una plataforma de alto rendimiento para SEMA.
+
+Dispone de CPU Xtensa LX7 dual-core hasta 240 MHz, 512 KB SRAM, Wi-Fi 2.4 GHz, Bluetooth LE y soporte de PSRAM en determinadas configuraciones.
+
+Será especialmente apropiado para:
+
+* interfaz web avanzada;
+* WebSocket;
+* almacenamiento;
+* múltiples sensores;
+* procesamiento de datos;
+* gráficos;
+* múltiples comunicaciones;
+* aplicaciones con PSRAM.
+
+---
+
+# 258. Compatibilidad ESP32-C6
+
+ESP32-C6 deberá soportarse como plataforma de bajo consumo y conectividad moderna.
+
+Integra:
+
+* Wi-Fi 6 2.4 GHz;
+* Bluetooth LE;
+* Zigbee;
+* Thread;
+* 802.15.4;
+* RISC-V;
+* ADC;
+* SPI;
+* I2C;
+* UART;
+* PCNT;
+* TWAI;
+* PWM;
+* watchdog;
+* deep-sleep/funciones de bajo consumo.
+
+Espressif documenta 512 KB de SRAM HP y hasta 160 MHz en el procesador principal.
+
+Por ello será especialmente interesante para:
+
+```text
+SEMA Low Power
++
+Zigbee
++
+Wi-Fi
++
+Deep Sleep
+```
+
+---
+
+# 259. Compatibilidad ESP32-C5
+
+ESP32-C5 deberá soportarse como plataforma moderna con:
+
+* Wi-Fi 6;
+* 2.4 GHz;
+* 5 GHz;
+* Bluetooth LE;
+* Zigbee;
+* Thread;
+* RISC-V;
+* CAN FD;
+* ADC;
+* SPI;
+* I2C;
+* UART;
+* PCNT;
+* watchdog.
+
+El C5 dispone de 384 KB de SRAM HP y puede incorporar PSRAM externa según la configuración.
+
+Esto lo hace especialmente interesante para instalaciones donde se quiera utilizar Wi-Fi de 5 GHz.
+
+---
+
+# 260. Compatibilidad ESP32-P4
+
+Aquí debe existir una excepción arquitectónica importante.
+
+El ESP32-P4 **no incorpora Wi-Fi ni Bluetooth de forma nativa**. Espressif documenta específicamente la utilización de un ESP32-C5/C6 u otro SoC compatible como expansión inalámbrica.
+
+Por lo tanto:
+
+```text
+ESP32-P4
+    │
+    ├── sensores
+    ├── procesamiento
+    ├── almacenamiento
+    ├── Ethernet
+    │
+    └── ESP32-C5/C6
+           │
+           └── Wi-Fi / Wireless
+```
+
+SEMA deberá soportar esta arquitectura.
+
+No se deberá declarar:
+
+```text
+ESP32-P4 = Wi-Fi
+```
+
+sino:
+
+```text
+ESP32-P4
+Wireless Capability:
+External / Expansion
+```
+
+---
+
+# 261. Regla de Compatibilidad
+
+SEMA deberá diferenciar:
+
+### Compatible directamente
+
+```text
+ESP32
+ESP32-S3
+ESP32-C3
+ESP32-C5
+ESP32-C6
+```
+
+cuando la función requerida exista.
+
+### Compatible mediante expansión
+
+```text
+ESP32-P4 + ESP32-C5/C6
+```
+
+para conectividad inalámbrica.
+
+### No disponible
+
+Si un hardware no dispone de una determinada capacidad:
+
+```text
+Wi-Fi:
+NO DISPONIBLE
+```
+
+la aplicación deberá:
+
+* ocultar la configuración;
+* mostrar alternativa;
+* permitir módulo externo;
+* no compilar código innecesario.
+
+---
+
+# 262. Arquitectura "Capability Driven"
+
+Toda SEMA deberá funcionar según capacidades reales:
+
+```text
+Hardware
+   ↓
+Capability Manager
+   ↓
+Module Manager
+   ↓
+Configuration
+   ↓
+UI/API
+```
+
+La interfaz no deberá estar diseñada según "qué modelo de ESP32 usamos", sino según:
+
+```text
+¿Qué capacidades tiene este dispositivo?
+```
+
+---
+
+# 263. Firmware Único Multiplataforma
+
+Cuando sea viable, se deberá mantener:
+
+```text
+SEMA Core
+```
+
+común entre plataformas.
+
+Solamente deberán variar:
+
+```text
+HAL
+Board Profile
+Chip Profile
+Drivers específicos
+```
+
+Ejemplo:
+
+```text
+SEMA Core
+   │
+   ├── ESP32 HAL
+   ├── S3 HAL
+   ├── C5 HAL
+   ├── C6 HAL
+   └── P4 HAL
+```
+
+Esto reduce la duplicación de código.
+
+---
+
+# 264. Compilación por Capabilities
+
+El sistema deberá poder compilar módulos condicionalmente:
+
+```text
+CONFIG_SEMA_WIFI
+CONFIG_SEMA_BLE
+CONFIG_SEMA_ZIGBEE
+CONFIG_SEMA_CAN
+CONFIG_SEMA_ETHERNET
+CONFIG_SEMA_PSRAM
+CONFIG_SEMA_USB
+```
+
+Pero la configuración final también deberá comprobar capacidades en runtime.
+
+No deberá bastar únicamente con `#ifdef`.
+
+---
+
+# 265. Gestión de Memoria
+
+SEMA deberá adaptar automáticamente su funcionamiento según memoria disponible.
+
+Por ejemplo:
+
+### ESP32 clásico
+
+```text
+Dashboard básico
+Histórico limitado
+WebSocket limitado
+```
+
+### ESP32-S3 + PSRAM
+
+```text
+Dashboard completo
+Histórico mayor
+Más sensores
+Más WebSocket
+Procesamiento avanzado
+```
+
+Esto permitirá utilizar la misma arquitectura en hardware económico y hardware profesional.
+
+---
+
+# 266. Perfil de UI según Hardware
+
+La interfaz podrá seleccionar automáticamente:
+
+```text
+UI Lite
+UI Normal
+UI Advanced
+```
+
+según:
+
+* RAM;
+* PSRAM;
+* CPU;
+* almacenamiento;
+* cantidad de sensores;
+* número de clientes WebSocket.
+
+La función principal siempre deberá mantenerse.
+
+---
+
+# 267. Límite de Clientes Web
+
+SEMA deberá tener una configuración:
+
+```text
+Maximum Web Clients
+```
+
+y administrar conexiones de forma segura.
+
+Ejemplo:
+
+```text
+ESP32 clásico:
+2–4 clientes
+
+ESP32-S3:
+mayor capacidad según memoria disponible
+```
+
+Los valores finales deberán determinarse mediante pruebas de carga, no fijarse solamente por teoría.
+
+---
+
+# 268. Modo Web "Low Memory"
+
+Si la memoria libre cae por debajo de un umbral:
+
+```text
+Memory Pressure
+```
+
+SEMA deberá:
+
+1. reducir frecuencia de actualización;
+2. limitar clientes;
+3. desactivar gráficos pesados;
+4. utilizar JSON compacto;
+5. liberar buffers temporales;
+6. registrar evento;
+7. proteger las tareas críticas.
+
+Nunca deberá detener el motor de adquisición de sensores simplemente porque la interfaz web está sobrecargada.
+
+---
+
+# 269. Prioridad de Tareas
+
+La prioridad arquitectónica deberá ser:
+
+```text
+1. Seguridad
+2. Watchdog
+3. Adquisición de datos
+4. Almacenamiento
+5. Control energético
+6. Eventos críticos
+7. Comunicación
+8. API
+9. WebSocket
+10. Interfaz gráfica
+```
+
+La interfaz web jamás deberá bloquear la adquisición meteorológica.
+
+---
+
+# 270. Arquitectura Offline-First
+
+El sistema deberá seguir:
+
+```text
+Sensor
+ ↓
+Measurement
+ ↓
+Validation
+ ↓
+Local Storage
+ ↓
+Event Bus
+ ├── Local Web
+ ├── API
+ ├── MQTT
+ ├── Server
+ └── Cloud
+```
+
+Nunca:
+
+```text
+Sensor
+ ↓
+Internet
+ ↓
+Servidor
+ ↓
+Datos
+```
+
+como dependencia obligatoria.
+
+---
+
+# 271. Servidor Central como "Agregador", no como Dependencia
+
+La filosofía será:
+
+> **Cada SEMA es una estación autónoma. El servidor central solamente agrega, administra y amplía sus capacidades.**
+
+Esto permite:
+
+```text
+1 estación
+```
+
+sin servidor.
+
+También:
+
+```text
+100 estaciones
+```
+
+con servidor central.
+
+---
+
+# 272. Redundancia del Servidor Central
+
+Para instalaciones profesionales deberá contemplarse:
+
+```text
+SEMA Server Principal
+       │
+       └── Backup Server
+```
+
+o:
+
+```text
+Docker
+ +
+Backup DB
+ +
+Backup configuration
+```
+
+Las estaciones deberán poder continuar funcionando aunque ambos servidores estén desconectados.
+
+---
+
+# 273. Heartbeat
+
+Cada estación podrá enviar:
+
+```text
+heartbeat
+```
+
+periódicamente.
+
+Ejemplo:
+
+```json
+{
+  "station_id": "SEMA-001",
+  "uptime": 839201,
+  "firmware": "1.4.0",
+  "battery": 12.7,
+  "last_measurement": 1727700000,
+  "free_heap": 181232
+}
+```
+
+El servidor podrá detectar:
+
+```text
+ONLINE
+DEGRADED
+OFFLINE
+UNKNOWN
+```
+
+---
+
+# 274. Health Score Técnico
+
+En lugar de un simple ONLINE/OFFLINE, se deberá utilizar un estado compuesto:
+
+```text
+HEALTHY
+DEGRADED
+WARNING
+CRITICAL
+OFFLINE
+```
+
+Basado en:
+
+* sensores;
+* memoria;
+* almacenamiento;
+* alimentación;
+* comunicaciones;
+* errores;
+* watchdog;
+* temperatura interna;
+* sincronización horaria.
+
+No deberá convertirse en una puntuación subjetiva; deberá basarse en estados y umbrales documentados.
+
+---
+
+# 275. Diagnóstico Remoto
+
+Desde el servidor central deberá poder consultarse:
+
+```text
+CPU
+RAM
+PSRAM
+Flash
+Uptime
+Reset reason
+Watchdog
+Wi-Fi RSSI
+IP
+MAC
+NTP
+RTC
+Storage
+Sensors
+Buses
+Battery
+Solar
+Errors
+Events
+```
+
+---
+
+# 276. Configuración Remota Segura
+
+El servidor central podrá enviar configuración, pero:
+
+```text
+Server
+ ↓
+Validate configuration
+ ↓
+Station
+ ↓
+Validate hardware compatibility
+ ↓
+Apply
+ ↓
+Test
+ ↓
+Commit
+```
+
+Si falla:
+
+```text
+Rollback
+```
+
+No se deberá aplicar una configuración potencialmente incompatible directamente.
+
+---
+
+# 277. Configuración Transaccional
+
+La configuración deberá funcionar mediante:
+
+```text
+Current Config
+     ↓
+New Config
+     ↓
+Validation
+     ↓
+Test
+     ↓
+Commit
+```
+
+y nunca:
+
+```text
+POST
+ ↓
+guardar inmediatamente
+```
+
+Esto es especialmente importante para GPIO, buses y módulos.
+
+---
+
+# 278. Backup de Configuración
+
+Cada cambio importante deberá poder generar:
+
+```text
+config_version
+timestamp
+user
+source
+hash
+```
+
+Ejemplo:
+
+```text
+Configuration 17
+Configuration 18
+Configuration 19
+```
+
+permitiendo regresar a una versión anterior.
+
+---
+
+# 279. OTA Centralizado
+
+El servidor central deberá poder administrar firmware:
+
+```text
+Firmware Repository
+        ↓
+Compatibility Check
+        ↓
+Target Stations
+        ↓
+OTA
+        ↓
+Self Test
+        ↓
+Confirm
+```
+
+ESP-IDF proporciona OTA con slots alternativos y rollback cuando una nueva aplicación no funciona correctamente.
+
+Por lo tanto SEMA deberá incorporar:
+
+* versionado;
+* compatibilidad por chip;
+* compatibilidad por placa;
+* firma de firmware;
+* checksum;
+* rollback;
+* anti-rollback opcional;
+* actualización escalonada;
+* registro del resultado.
+
+---
+
+# 280. Firmware por Familia
+
+No se deberá asumir que un binario sirve para todos los ESP32.
+
+El repositorio de firmware deberá poder contener:
+
+```text
+ESP32
+ESP32-S3
+ESP32-C3
+ESP32-C5
+ESP32-C6
+ESP32-P4
+```
+
+y, cuando sea necesario:
+
+```text
+board_variant
+flash_size
+psram
+partition_layout
+```
+
+---
+
+# 281. Verificación de Compatibilidad OTA
+
+Antes de actualizar:
+
+```text
+Firmware Target:
+ESP32-C6
+
+Device:
+ESP32-S3
+
+Resultado:
+RECHAZADO
+```
+
+Debe comprobar:
+
+* chip;
+* revisión;
+* arquitectura;
+* tamaño de flash;
+* PSRAM requerida;
+* particiones;
+* versión mínima;
+* versión de seguridad.
+
+ESP-IDF valida, entre otras cosas, el chip ID y revisión durante la validación de imágenes OTA.
+
+---
+
+# 282. Actualización Escalonada
+
+Para muchas estaciones:
+
+```text
+100 estaciones
+```
+
+no actualizar simultáneamente.
+
+Utilizar:
+
+```text
+1 estación
+ ↓
+5 estaciones
+ ↓
+20 estaciones
+ ↓
+100 estaciones
+```
+
+con validación automática entre etapas.
+
+---
+
+# 283. Gestión de Fallos OTA
+
+Si una estación:
+
+```text
+descarga
+ ↓
+actualiza
+ ↓
+reinicia
+ ↓
+falla
+```
+
+deberá regresar automáticamente al firmware anterior cuando la plataforma lo permita.
+
+Esto deberá quedar registrado en el servidor.
+
+---
+
+# 284. Compatibilidad de Almacenamiento
+
+SEMA deberá abstraer:
+
+```text
+Internal Flash
+LittleFS
+SPIFFS si fuese requerido por compatibilidad
+SD Card
+External Flash
+```
+
+La aplicación no deberá depender de un único medio.
+
+---
+
+# 285. Tier de Almacenamiento
+
+Se recomienda:
+
+```text
+Tier 0
+RAM
+datos instantáneos
+
+Tier 1
+Flash
+últimas mediciones
+
+Tier 2
+SD/Flash externa
+histórico largo
+
+Tier 3
+Servidor central
+histórico completo
+
+Tier 4
+Cloud
+backup/integración
+```
+
+---
+
+# 286. Modo Estación Móvil
+
+La estación deberá poder cambiar de red sin perder configuración meteorológica.
+
+La configuración deberá separar:
+
+```text
+Station Configuration
+```
+
+de:
+
+```text
+Network Configuration
+```
+
+Por ejemplo:
+
+```text
+Cambiar Wi-Fi
+```
+
+no debe borrar:
+
+* sensores;
+* calibraciones;
+* históricos;
+* ubicación;
+* reglas.
+
+---
+
+# 287. Provisionamiento Inicial
+
+El asistente inicial deberá permitir:
+
+```text
+1. Seleccionar idioma
+2. Seleccionar país
+3. Configurar red
+4. Configurar nombre
+5. Configurar ubicación
+6. Detectar hardware
+7. Detectar buses
+8. Configurar sensores
+9. Configurar almacenamiento
+10. Configurar energía
+11. Configurar publicación
+12. Finalizar
+```
+
+---
+
+# 288. Modo Instalador
+
+Agregar:
+
+```text
+Installation Mode
+```
+
+con herramientas para:
+
+* identificar GPIO;
+* probar relés;
+* probar sensores;
+* probar entradas;
+* contar pulsos;
+* verificar I2C;
+* escanear RS485;
+* probar CAN;
+* comprobar ADC;
+* comprobar interrupciones;
+* comprobar almacenamiento;
+* comprobar red.
+
+---
+
+# 289. Modo Mantenimiento
+
+Después de instalar la estación:
+
+```text
+Maintenance Mode
+```
+
+permitirá consultar:
+
+* horas de funcionamiento;
+* cantidad de mediciones;
+* errores;
+* resets;
+* watchdog;
+* sensor failures;
+* ciclos de batería;
+* temperatura interna;
+* calibraciones;
+* fecha de mantenimiento.
+
+---
+
+# 290. Reglas Locales y Centrales
+
+SEMA deberá disponer de un motor de reglas.
+
+Ejemplo:
+
+```text
+IF rain_detected
+THEN
+    wake
+    measure
+    store
+    notify
+```
+
+Otro:
+
+```text
+IF battery < 11.8V
+THEN
+    low_power_mode
+```
+
+Y:
+
+```text
+IF lightning_distance < configured_limit
+THEN
+    generate_alert
+```
+
+Las reglas podrán ejecutarse localmente y, opcionalmente, ser administradas desde el servidor central.
+
+---
+
+# 291. Alarmas Locales
+
+La estación deberá poder generar alarmas incluso sin servidor.
+
+Ejemplos:
+
+```text
+RAIN
+LIGHTNING
+HIGH_WIND
+LOW_BATTERY
+SENSOR_FAILURE
+OVERHEAT
+COMMUNICATION_FAILURE
+STORAGE_FULL
+```
+
+---
+
+# 292. Alarmas con Escalamiento
+
+Una alarma podrá seguir:
+
+```text
+Local event
+ ↓
+Local log
+ ↓
+Local notification
+ ↓
+MQTT
+ ↓
+Server
+ ↓
+External notification
+```
+
+Si una etapa falla, las anteriores no deberán perderse.
+
+---
+
+# 293. Sensor Redundante
+
+Para variables críticas deberá ser posible configurar:
+
+```text
+Temperature Sensor A
+Temperature Sensor B
+```
+
+y comparar:
+
+```text
+A = 23.7 °C
+B = 23.9 °C
+Difference = 0.2 °C
+```
+
+Si la diferencia supera el límite:
+
+```text
+REDUNDANCY_WARNING
+```
+
+---
+
+# 294. Failover de Sensor
+
+Un canal lógico podrá tener:
+
+```text
+Primary Sensor
+Secondary Sensor
+```
+
+Ejemplo:
+
+```text
+temperature_outdoor
+ ├── Primary: SHT40
+ └── Backup: DS18B20
+```
+
+Si el principal falla, SEMA podrá utilizar el secundario según la política configurada.
+
+---
+
+# 295. Calidad Meteorológica de Datos
+
+Además de:
+
+```text
+VALID
+INVALID
+ERROR
+```
+
+se deberán implementar controles:
+
+```text
+PLAUSIBLE
+SUSPECT
+OUT_OF_RANGE
+STALE
+SPIKE
+FLATLINE
+MISSING
+ESTIMATED
+CALIBRATION_REQUIRED
+```
+
+Esto es especialmente importante para una estación meteorológica profesional.
+
+---
+
+# 296. Detección de Sensor Congelado
+
+SEMA deberá detectar:
+
+```text
+Temperatura:
+23.4
+23.4
+23.4
+23.4
+23.4
+23.4
+23.4
+```
+
+durante un período improbable.
+
+Esto puede indicar:
+
+* sensor congelado;
+* comunicación bloqueada;
+* lectura repetida;
+* error de driver.
+
+---
+
+# 297. Detección de Saltos Imposibles
+
+Ejemplo:
+
+```text
+23.5 °C
+23.6 °C
+23.7 °C
+91.4 °C
+23.8 °C
+```
+
+El valor deberá marcarse:
+
+```text
+SPIKE
+```
+
+y no necesariamente utilizarse para cálculos derivados.
+
+---
+
+# 298. Autodiagnóstico al Arranque
+
+SEMA deberá ejecutar:
+
+```text
+Boot
+ ↓
+Memory test
+ ↓
+Storage test
+ ↓
+Bus test
+ ↓
+Sensor test
+ ↓
+RTC
+ ↓
+Network
+ ↓
+Power
+ ↓
+Ready
+```
+
+Los sensores defectuosos no deberán impedir el funcionamiento del resto de la estación.
+
+---
+
+# 299. Arquitectura Final Recomendada
+
+La arquitectura completa deberá quedar:
+
+```text
+                           ┌──────────────────────┐
+                           │    SEMA SERVER       │
+                           │                      │
+                           │ Dashboard            │
+                           │ API                  │
+                           │ DB                   │
+                           │ Users/RBAC           │
+                           │ OTA                  │
+                           │ Alerts               │
+                           │ Integrations         │
+                           └──────────┬───────────┘
+                                      │
+                         LAN / MQTT / HTTPS
+                                      │
+              ┌───────────────────────┼──────────────────────┐
+              │                       │                      │
+              ▼                       ▼                      ▼
+        ┌───────────┐           ┌───────────┐          ┌───────────┐
+        │  SEMA 001 │           │  SEMA 002 │          │  SEMA 003 │
+        └─────┬─────┘           └─────┬─────┘          └─────┬─────┘
+              │                       │                      │
+       ┌──────┴───────┐        ┌──────┴───────┐       ┌─────┴───────┐
+       │ Sensor Layer │        │ Sensor Layer │       │ Sensor Layer│
+       ├──────────────┤        ├──────────────┤       ├─────────────┤
+       │ Measurement  │        │ Measurement  │       │ Measurement │
+       │ Engine       │        │ Engine       │       │ Engine      │
+       ├──────────────┤        ├──────────────┤       ├─────────────┤
+       │ Local Store  │        │ Local Store  │       │ Local Store │
+       ├──────────────┤        ├──────────────┤       ├─────────────┤
+       │ Event Bus    │        │ Event Bus    │       │ Event Bus   │
+       ├──────────────┤        ├──────────────┤       ├─────────────┤
+       │ REST API     │        │ REST API     │       │ REST API    │
+       │ WebSocket    │        │ WebSocket    │       │ WebSocket   │
+       │ Web UI       │        │ Web UI       │       │ Web UI      │
+       └──────────────┘        └──────────────┘       └─────────────┘
+```
+
+---
+
+# 300. Principio Fundamental de SEMA
+
+La arquitectura deberá respetar esta regla:
+
+> **SEMA debe funcionar completamente como estación meteorológica autónoma. El servidor central, Internet, MQTT y los servicios externos son extensiones de la estación, no dependencias fundamentales.**
+
+Por lo tanto:
+
+```text
+                    SEMA
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+      AUTÓNOMO               ESCALABLE
+          │                     │
+      Web local             Central Server
+      REST API              MQTT
+      Storage               Cloud
+      Events                Integrations
+      Sensors               Multi-station
+      Power                 Remote Management
+```
+
+---
+
+# 301. Objetivo de Compatibilidad
+
+El objetivo del proyecto será:
+
+```text
+                    ┌─────────────────────┐
+                    │      SEMA Core      │
+                    └──────────┬──────────┘
+                               │
+                     Hardware Abstraction
+                               │
+        ┌──────────────┬───────┼──────────────┬──────────────┐
+        ▼              ▼       ▼              ▼              ▼
+     ESP32          ESP32-S3 ESP32-C5       ESP32-C6       ESP32-P4
+     WROOM          WROOM                    WROOM          + wireless
+        │              │       │              │              │
+        └──────────────┴───────┴──────────────┴──────────────┘
+                               │
+                         SEMA Functions
+```
+
+La compatibilidad deberá significar:
+
+> **La misma arquitectura y API, adaptándose automáticamente a las capacidades reales del hardware.**
+
+No significa que todas las placas tengan físicamente las mismas funciones.
+
+---
+
+# 302. Matriz de Compatibilidad Obligatoria
+
+El proyecto deberá mantener una matriz actualizada:
+
+| Plataforma       |     Wi-Fi |       BLE | Zigbee/Thread |  802.15.4 |     5 GHz |          PSRAM | Web local | Deep Sleep | CAN/TWAI |
+| ---------------- | --------: | --------: | ------------: | --------: | --------: | -------------: | --------: | ---------: | -------: |
+| ESP32-WROOM-32E  |         ✓ |         ✓ |             — |         — |         — |   según módulo |         ✓ |          ✓ |        ✓ |
+| ESP32-WROOM-32UE |         ✓ |         ✓ |             — |         — |         — |   según módulo |         ✓ |          ✓ |        ✓ |
+| ESP32-S3         |         ✓ |         ✓ |             — |         — |         — |       opcional |         ✓ |          ✓ |        ✓ |
+| ESP32-C5         |         ✓ |         ✓ |             ✓ |         ✓ |         ✓ |       opcional |         ✓ |          ✓ |   CAN FD |
+| ESP32-C6         |         ✓ |         ✓ |             ✓ |         ✓ |         — | según variante |         ✓ |          ✓ |     TWAI |
+| ESP32-P4         | expansión | expansión |     expansión | expansión | expansión |    según placa |         ✓ |          ✓ |        ✓ |
+
+**Nota:** esta tabla es una matriz arquitectónica; los perfiles de placa deberán validar las capacidades concretas de cada módulo y variante antes de habilitarlas.
+
+Las características oficiales confirman las diferencias relevantes: WROOM-32E/32UE son módulos ESP32 clásicos con Wi-Fi 2.4 GHz y Bluetooth; S3 ofrece Wi-Fi/BLE y PSRAM según variante; C6 integra Wi-Fi 6 + BLE + 802.15.4; C5 añade Wi-Fi 6 de 2.4/5 GHz y 802.15.4; P4 necesita expansión para Wi-Fi/Bluetooth.
+
+---
+
+# 303. Arquitectura de Software Definitiva
+
+La separación recomendada queda:
+
+```text
+┌──────────────────────────────────────────────┐
+│                  Web UI                      │
+├──────────────────────────────────────────────┤
+│                 REST API                     │
+├──────────────────────────────────────────────┤
+│              WebSocket / Events              │
+├──────────────────────────────────────────────┤
+│               Event Bus                      │
+├──────────────────────────────────────────────┤
+│             Measurement Engine               │
+├──────────────────────────────────────────────┤
+│            Sensor Abstraction                │
+├──────────────────────────────────────────────┤
+│          Hardware Abstraction Layer           │
+├──────────────────────────────────────────────┤
+│             Board / Chip Profile             │
+├──────────────────────────────────────────────┤
+│                 Hardware                     │
+└──────────────────────────────────────────────┘
+```
+
+Y hacia el exterior:
+
+```text
+                     Canonical Data
+                           │
+             ┌─────────────┼─────────────┐
+             ▼             ▼             ▼
+          Local UI       MQTT        Central Server
+             │             │             │
+          WebSocket      Cloud        Dashboard
+             │
+          REST API
+```
+
+---
+
+# 304. Regla de Diseño para Nuevos ESP32
+
+Cuando aparezca una nueva familia ESP32, no deberá ser necesario reescribir SEMA.
+
+El procedimiento deberá ser:
+
+```text
+Nuevo ESP32
+    ↓
+Crear Chip Profile
+    ↓
+Definir capacidades
+    ↓
+Definir GPIO matrix
+    ↓
+Definir HAL
+    ↓
+Ejecutar tests
+    ↓
+Agregar matriz de compatibilidad
+    ↓
+SEMA disponible
+```
+
+---
+
+# 305. Sistema de Tests Multiplataforma
+
+Se deberá crear una batería de pruebas:
+
+```text
+Boot
+GPIO
+ADC
+I2C
+SPI
+UART
+PWM
+PCNT
+Interrupt
+RTC
+Deep Sleep
+Wake-up
+Wi-Fi
+BLE
+802.15.4
+CAN/TWAI
+Storage
+HTTP
+WebSocket
+REST
+OTA
+Watchdog
+Power Management
+```
+
+Cada placa deberá tener:
+
+```text
+PASS
+FAIL
+NOT_SUPPORTED
+```
+
+y no simplemente "compatible".
+
+---
+
+# 306. Compatibilidad Funcional
+
+La UI deberá mostrar:
+
+```text
+✓ Compatible
+⚠ Compatible con módulo externo
+⚠ Limitado por hardware
+✗ No disponible
+```
+
+Por ejemplo:
+
+```text
+ESP32-P4
+
+Wi-Fi
+⚠ Requiere ESP32-C5/C6
+
+Bluetooth
+⚠ Requiere coprocesador
+
+Ethernet
+✓
+
+Web Server
+✓
+```
+
+---
+
+# 307. Diseño para el Futuro
+
+La arquitectura deberá permitir añadir posteriormente:
+
+* Ethernet;
+* LTE/4G;
+* NB-IoT;
+* LoRaWAN;
+* Zigbee;
+* Thread;
+* Bluetooth;
+* GNSS;
+* CAN FD;
+* RS485;
+* USB;
+* nuevos sensores;
+* nuevos servicios meteorológicos;
+* nuevas bases de datos;
+* nuevos servidores centrales.
+
+Sin modificar el núcleo meteorológico.
+
+---
+
+# 308. Resultado Arquitectónico
+
+La arquitectura final de SEMA deberá considerarse como:
+
+```text
+                 ┌──────────────────────┐
+                 │      SEMA CORE       │
+                 └──────────┬───────────┘
+                            │
+       ┌────────────────────┼────────────────────┐
+       │                    │                    │
+       ▼                    ▼                    ▼
+   Hardware             Measurements          Events
+   Abstraction               │                    │
+       │                     │                    │
+       └─────────────────────┼────────────────────┘
+                             ▼
+                      Canonical Data
+                             │
+             ┌───────────────┼────────────────┐
+             │               │                │
+             ▼               ▼                ▼
+          Local UI         REST API        Publishers
+             │               │                │
+             │               │          ┌─────┼─────┐
+             │               │          ▼     ▼     ▼
+             │               │        MQTT  Cloud Server
+             │               │
+             └───────────────┼─────────────────────┐
+                             │                     │
+                             ▼                     ▼
+                       Local Storage        Central Server
+                                                   │
+                                  ┌────────────────┼───────────────┐
+                                  ▼                ▼               ▼
+                              Dashboard         Database         OTA
+                                  │                │               │
+                                  └────────────────┼───────────────┘
+                                                   ▼
+                                               Multi-Site
+```
+
+---
+
+# 309. Recomendación Arquitectónica Final
+
+SEMA deberá considerarse desde el principio como una **plataforma distribuida de estaciones meteorológicas**, y no simplemente como un programa para leer sensores.
+
+El diseño deberá permitir:
+
+```text
+1 SEMA
+   ↓
+Web local
+```
+
+o:
+
+```text
+10 SEMA
+   ↓
+Servidor central
+```
+
+o:
+
+```text
+100+ SEMA
+   ↓
+Cluster/servidor central
+   ↓
+Base de datos
+   ↓
+Dashboard
+```
+
+sin modificar la lógica fundamental de adquisición meteorológica.
+
+La estación individual continuará siendo funcional incluso si todo lo demás desaparece.
+
+---
+
+# 310. Criterio de Implementación
+
+El orden recomendado para continuar la programación será:
+
+```text
+1. HAL
+2. Board Profiles
+3. Capability Manager
+4. Resource Conflict Validator
+5. Sensor Registry
+6. Measurement Engine
+7. Canonical Data Model
+8. Local Storage
+9. Event Bus
+10. Local REST API
+11. Local Web UI
+12. WebSocket
+13. Authentication
+14. Power Manager
+15. Watchdog / Health Monitor
+16. External Publishers
+17. OTA
+18. Central Server Protocol
+19. Central Server
+20. Multi-station Dashboard
+```
+
+Esto evita desarrollar primero una interfaz que posteriormente quede atada a un único ESP32.
+
+# 311. Regla de Oro del Proyecto
+
+> **La estación debe poder vivir sola. El servidor central debe poder administrar muchas estaciones. Ninguno debe depender innecesariamente del otro.**
+
+Esta será la base de escalabilidad de SEMA.
+
+
 La configuración deberá ser suficientemente abstracta para que agregar un nuevo sensor, bus, protocolo o servicio externo no obligue a modificar la arquitectura central.
 
 El objetivo final no es construir una única estación meteorológica, sino desarrollar una **plataforma SEMA capaz de adaptarse a diferentes necesidades mediante configuración, módulos y hardware intercambiable sin necesidad de modificar el firmware para cada instalación**.
