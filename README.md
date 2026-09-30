@@ -9164,6 +9164,3308 @@ Esto evita desarrollar primero una interfaz que posteriormente quede atada a un 
 
 Esta será la base de escalabilidad de SEMA.
 
+# 312. Arquitectura de Ejecución Multitarea
+
+SEMA deberá utilizar una arquitectura multitarea basada en **FreeRTOS de ESP-IDF**.
+
+La aplicación no deberá implementarse como un único `loop()` monolítico.
+
+La arquitectura deberá dividir las funciones en tareas independientes:
+
+```text
+                    SEMA Runtime
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+        ▼                ▼                ▼
+   Sensor Tasks      Communication      System Tasks
+        │                │                │
+        ├── I2C          ├── Wi-Fi        ├── Watchdog
+        ├── SPI          ├── MQTT         ├── Health
+        ├── UART         ├── HTTP         ├── Scheduler
+        ├── ADC          ├── WebSocket     ├── Storage
+        └── GPIO         └── RS485         └── Power
+```
+
+El objetivo será:
+
+* evitar bloqueos;
+* aislar errores;
+* aprovechar múltiples núcleos cuando existan;
+* mantener tiempos de respuesta predecibles;
+* permitir bajo consumo;
+* facilitar diagnósticos;
+* permitir escalar la cantidad de sensores;
+* evitar que la interfaz web interfiera con la adquisición meteorológica.
+
+---
+
+# 313. FreeRTOS como Runtime Base
+
+SEMA deberá utilizar **FreeRTOS proporcionado por ESP-IDF** como sistema operativo en tiempo de ejecución.
+
+Se utilizarán sus mecanismos para:
+
+* Tasks;
+* Queues;
+* Semaphores;
+* Mutexes;
+* Event Groups;
+* Task Notifications;
+* Software Timers;
+* Stream Buffers;
+* Message Buffers;
+* Task Watchdog;
+* sincronización entre tareas;
+* planificación por prioridades.
+
+La arquitectura deberá evitar crear una tarea por cada pequeña operación.
+
+Por ejemplo, no será necesario crear:
+
+```text
+TemperatureTask
+HumidityTask
+PressureTask
+```
+
+si todos esos sensores pertenecen al mismo bus I2C y pueden ser gestionados eficientemente por un único:
+
+```text
+I2CMeasurementTask
+```
+
+---
+
+# 314. Principio de Responsabilidad de las Tasks
+
+Cada tarea deberá tener una responsabilidad clara.
+
+Ejemplo:
+
+```text
+SensorManagerTask
+    ↓
+adquisición de sensores
+
+MeasurementTask
+    ↓
+validación + conversión + cálculo
+
+StorageTask
+    ↓
+persistencia
+
+NetworkTask
+    ↓
+conectividad
+
+PublishTask
+    ↓
+servicios externos
+
+WebTask
+    ↓
+HTTP/WebSocket
+
+HealthTask
+    ↓
+diagnóstico
+
+PowerTask
+    ↓
+energía + sleep
+
+WatchdogTask
+    ↓
+supervisión
+```
+
+---
+
+# 315. No Bloquear Tasks Críticas
+
+Ninguna tarea crítica deberá realizar operaciones potencialmente bloqueantes indefinidamente.
+
+Por ejemplo, evitar:
+
+```text
+SensorTask
+   ↓
+HTTP request
+   ↓
+esperar Internet
+   ↓
+esperar servidor
+   ↓
+timeout de 30 segundos
+```
+
+En su lugar:
+
+```text
+SensorTask
+   ↓
+Measurement
+   ↓
+Queue
+   ↓
+PublishTask
+```
+
+La tarea de sensores queda disponible inmediatamente.
+
+---
+
+# 316. Modelo Producer / Consumer
+
+SEMA deberá utilizar ampliamente el patrón:
+
+```text
+Producer
+   ↓
+Queue
+   ↓
+Consumer
+```
+
+Ejemplo:
+
+```text
+Sensor Driver
+      ↓
+Measurement Queue
+      ↓
+Measurement Engine
+      ↓
+Storage Queue
+      ↓
+Storage Task
+```
+
+Otro:
+
+```text
+Event Bus
+    ↓
+Publish Queue
+    ↓
+MQTT / HTTP / Central Server
+```
+
+---
+
+# 317. Event Bus Multitarea
+
+El Event Bus deberá ser seguro para múltiples tareas.
+
+Ejemplo:
+
+```text
+Rain ISR
+   ↓
+Event
+   ↓
+Event Bus
+   ├── MeasurementTask
+   ├── StorageTask
+   ├── AlertTask
+   ├── WebSocketTask
+   └── PublishTask
+```
+
+Una tarea no deberá llamar directamente a otra.
+
+Se utilizarán:
+
+* queues;
+* task notifications;
+* event groups;
+* message buffers.
+
+---
+
+# 318. Interrupciones y FreeRTOS
+
+Las ISR deberán mantenerse extremadamente cortas.
+
+Una interrupción deberá hacer:
+
+```text
+GPIO interrupt
+      ↓
+capture timestamp
+      ↓
+increment counter / notify
+      ↓
+return
+```
+
+No deberá:
+
+```text
+ISR
+ ↓
+leer sensor I2C
+ ↓
+hacer JSON
+ ↓
+escribir Flash
+ ↓
+enviar Wi-Fi
+```
+
+La operación pesada deberá ejecutarse en una Task.
+
+---
+
+# 319. Rain Wake-up + FreeRTOS
+
+El detector de lluvia deberá poder trabajar en conjunto con:
+
+```text
+Deep Sleep
+     ↓
+GPIO / RTC Wake
+     ↓
+Boot
+     ↓
+FreeRTOS
+     ↓
+Rain Event
+     ↓
+Measurement
+```
+
+Durante funcionamiento normal:
+
+```text
+Rain GPIO
+    ↓
+ISR
+    ↓
+Task Notification
+    ↓
+RainTask
+```
+
+Esto permite utilizar el mismo concepto tanto en modo activo como en bajo consumo.
+
+---
+
+# 320. Task Notifications
+
+Cuando solamente sea necesario despertar una tarea, se deberá preferir:
+
+```text
+Task Notification
+```
+
+antes que crear una Queue innecesaria.
+
+Ejemplo:
+
+```text
+Rain ISR
+    ↓
+notify RainTask
+    ↓
+RainTask wakes
+```
+
+Esto reduce memoria y latencia.
+
+---
+
+# 321. Queues para Datos
+
+Cuando sea necesario transportar información estructurada:
+
+```text
+Measurement
+Event
+Command
+Alarm
+NetworkMessage
+```
+
+se utilizarán queues.
+
+Ejemplo:
+
+```text
+Measurement Queue
+┌─────────────────────┐
+│ Temperature         │
+│ Humidity            │
+│ Pressure            │
+│ Timestamp           │
+│ Quality             │
+└─────────────────────┘
+```
+
+---
+
+# 322. Mutex para Recursos Compartidos
+
+Los recursos compartidos deberán utilizar mutex cuando sea necesario:
+
+```text
+I2C Bus
+SPI Bus
+Configuration
+Storage
+Shared buffers
+Network state
+```
+
+Pero se deberá evitar mantener un mutex durante operaciones largas.
+
+---
+
+# 323. Priority Inversion
+
+SEMA deberá considerar el problema de **priority inversion**.
+
+Cuando sea apropiado se utilizarán mutex con herencia de prioridad.
+
+Las tareas críticas no deberán quedar bloqueadas indefinidamente por tareas de baja prioridad.
+
+---
+
+# 324. Diseño de Prioridades
+
+Se deberá definir una política de prioridades.
+
+Ejemplo conceptual:
+
+```text
+Priority 24–30
+ISR-related / emergency processing
+
+Priority 18–23
+Critical system tasks
+
+Priority 12–17
+Sensor acquisition
+
+Priority 8–11
+Storage / communications
+
+Priority 4–7
+Web / UI / background
+
+Priority 1–3
+Maintenance / diagnostics
+```
+
+Los valores finales deberán determinarse mediante profiling y no asumirse como valores universales.
+
+---
+
+# 325. Prioridad Dinámica
+
+SEMA podrá modificar temporalmente la prioridad de una tarea cuando exista una condición crítica.
+
+Ejemplo:
+
+```text
+Lightning detected
+        ↓
+Event
+        ↓
+Critical processing
+        ↓
+Temporary priority boost
+```
+
+Una vez procesado:
+
+```text
+return to normal priority
+```
+
+Esto deberá utilizarse con moderación para evitar starvation.
+
+---
+
+# 326. CPU Affinity / Task Pinning
+
+En plataformas multicore, SEMA deberá soportar:
+
+```text
+Core 0
+Core 1
+```
+
+mediante afinidad de tareas.
+
+ESP-IDF proporciona `xTaskCreatePinnedToCore()` para fijar una tarea a un núcleo concreto y permite `tskNO_AFFINITY` para que pueda ejecutarse en cualquiera de los núcleos disponibles.
+
+Ejemplo conceptual:
+
+```text
+Core 0
+├── Wi-Fi
+├── Network
+└── Web
+
+Core 1
+├── Sensors
+├── Measurement
+└── Storage
+```
+
+Pero **no se deberá asumir esta distribución como regla fija**.
+
+---
+
+# 327. Regla de Task Pinning
+
+SEMA deberá aplicar:
+
+> **Pinning solamente cuando exista una razón técnica para utilizarlo.**
+
+No se deberá fijar todas las tareas arbitrariamente.
+
+Preferencia:
+
+```text
+Task independiente
+        ↓
+tskNO_AFFINITY
+```
+
+y:
+
+```text
+Task sensible a latencia / hardware / compatibilidad
+        ↓
+Pinned
+```
+
+Esto mantiene flexibilidad.
+
+---
+
+# 328. Tareas que Podrían Requerir Pinning
+
+Dependiendo de la plataforma y del driver:
+
+```text
+Sensor acquisition
+Timing-critical processing
+High-frequency pulse counting support
+Special communication tasks
+Low-latency control
+```
+
+podrán fijarse a un núcleo.
+
+Las tareas de:
+
+```text
+Web
+REST
+JSON
+Dashboard
+Background
+```
+
+normalmente deberán permanecer sin afinidad cuando sea posible.
+
+---
+
+# 329. SMP — Symmetric Multiprocessing
+
+En procesadores multinúcleo, SEMA deberá soportar **SMP**.
+
+El objetivo será permitir que múltiples tareas puedan ejecutarse concurrentemente utilizando los núcleos disponibles.
+
+Conceptualmente:
+
+```text
+                FreeRTOS Scheduler
+                       │
+             ┌─────────┴─────────┐
+             ▼                   ▼
+          CPU 0                CPU 1
+             │                   │
+       SensorTask           NetworkTask
+       StorageTask          WebTask
+```
+
+El FreeRTOS de ESP-IDF incorpora soporte SMP para los escenarios de múltiples núcleos soportados por ESP-IDF.
+
+---
+
+# 330. No Confundir SMP con Task Pinning
+
+SEMA deberá distinguir:
+
+### SMP
+
+Permite que el scheduler distribuya tareas entre CPUs.
+
+### Task Pinning
+
+Restringe una tarea a una CPU.
+
+Por lo tanto:
+
+```text
+SMP
+=
+libertad de ejecución
+
+Pinning
+=
+restricción deliberada
+```
+
+Ambas funciones pueden coexistir.
+
+---
+
+# 331. SMP Adaptativo
+
+SEMA deberá detectar:
+
+```text
+CONFIG_NUMBER_OF_CORES
+```
+
+o la capacidad equivalente de la plataforma.
+
+Entonces:
+
+```text
+2 cores
+    ↓
+SMP profile
+
+1 core
+    ↓
+Single-core profile
+```
+
+Una estación con un solo núcleo no deberá intentar crear afinidad hacia un Core 1 inexistente.
+
+---
+
+# 332. Compatibilidad Unicore
+
+ESP32-C6 es un ejemplo de SoC de un solo núcleo; en la documentación de ESP-IDF `CONFIG_FREERTOS_UNICORE` está fijado para esta plataforma.
+
+Por ello:
+
+```text
+ESP32-C6
+    ↓
+Core 0
+    ↓
+Todas las Tasks
+```
+
+pero seguirá utilizando multitarea FreeRTOS.
+
+Esto es importante:
+
+> **Multitarea no requiere múltiples núcleos.**
+
+---
+
+# 333. Arquitectura Single-Core
+
+En un ESP32 de un núcleo:
+
+```text
+              CPU 0
+                │
+       ┌────────┼────────┐
+       ▼        ▼        ▼
+    Sensors   Network   Storage
+       │        │        │
+       └────────┼────────┘
+                ▼
+             Scheduler
+```
+
+Las tareas se ejecutarán concurrentemente desde el punto de vista lógico mediante time slicing y prioridades.
+
+---
+
+# 334. Arquitectura Dual-Core
+
+En un ESP32/S3 dual-core:
+
+```text
+                  Scheduler
+                 /         \
+                /           \
+            Core 0          Core 1
+              │               │
+        NetworkTask       SensorTask
+        WebTask           StorageTask
+        MQTTTask          MeasurementTask
+```
+
+La asignación real podrá variar según carga.
+
+---
+
+# 335. SMP + Event Bus
+
+El Event Bus deberá ser independiente de la CPU.
+
+Por ejemplo:
+
+```text
+Core 1
+SensorTask
+    ↓
+Event Queue
+    ↓
+Core 0
+NetworkTask
+    ↓
+MQTT
+```
+
+El código de aplicación no deberá conocer necesariamente en qué núcleo se encuentra el consumidor.
+
+---
+
+# 336. SMP + Shared Memory
+
+Cuando varias tareas utilicen datos compartidos:
+
+```text
+SensorTask
+      │
+      ▼
+Shared Measurement State
+      │
+ ┌────┴────┐
+ ▼         ▼
+Web       MQTT
+```
+
+se deberán definir claramente:
+
+* ownership;
+* mutex;
+* atomicidad;
+* lifetime;
+* actualización;
+* consistencia.
+
+No se deberán compartir estructuras modificables sin protección.
+
+---
+
+# 337. Datos Inmutables entre Tasks
+
+Cuando sea posible, SEMA deberá preferir:
+
+```text
+Producer
+   ↓
+copy / immutable message
+   ↓
+Consumer
+```
+
+en lugar de múltiples Tasks modificando el mismo objeto.
+
+Esto reduce:
+
+* race conditions;
+* deadlocks;
+* corrupción de memoria.
+
+---
+
+# 338. Atomic Operations
+
+Para contadores simples:
+
+```text
+pulse_count
+event_count
+error_count
+sequence_id
+```
+
+se deberán utilizar operaciones atómicas cuando corresponda.
+
+Especialmente para:
+
+```text
+ISR ↔ Task
+Task ↔ Task
+Core 0 ↔ Core 1
+```
+
+---
+
+# 339. Memory Ownership
+
+Cada buffer deberá tener un propietario claro.
+
+Ejemplo:
+
+```text
+Sensor Driver
+     owns
+sensor_buffer
+
+Measurement Engine
+     owns
+measurement
+
+Publish Queue
+     owns
+message until consumed
+```
+
+No se deberá devolver un puntero a memoria que posteriormente quede inválido.
+
+---
+
+# 340. Zero-Copy cuando Sea Conveniente
+
+Para sistemas con muchas mediciones:
+
+```text
+Sensor
+ ↓
+Buffer
+ ↓
+Queue pointer
+```
+
+podrá utilizarse zero-copy.
+
+Pero deberá existir un sistema claro de:
+
+```text
+allocate
+ownership
+consume
+release
+```
+
+La optimización no deberá introducir fugas de memoria.
+
+---
+
+# 341. Memory Pools
+
+SEMA deberá considerar memory pools para objetos frecuentes:
+
+```text
+Measurement
+Event
+Alarm
+Network packet
+```
+
+Ejemplo:
+
+```text
+Measurement Pool
+├── object 1
+├── object 2
+├── object 3
+├── ...
+└── object N
+```
+
+Esto puede reducir fragmentación de heap en funcionamiento prolongado.
+
+---
+
+# 342. Heap Monitoring
+
+Health Monitor deberá registrar:
+
+```text
+Free Heap
+Minimum Free Heap
+Largest Free Block
+Internal RAM
+PSRAM
+```
+
+Cuando esté disponible.
+
+Esto permitirá detectar:
+
+```text
+Memory leak
+Fragmentation
+Memory pressure
+```
+
+---
+
+# 343. Stack Monitoring
+
+Cada Task deberá registrar:
+
+```text
+Task Name
+Priority
+Core
+Stack Size
+Minimum Free Stack
+Runtime
+State
+```
+
+Esto permitirá detectar:
+
+```text
+Stack overflow risk
+```
+
+antes de un crash.
+
+---
+
+# 344. Task Registry
+
+SEMA deberá mantener un registro interno:
+
+```text
+TaskRegistry
+```
+
+Ejemplo:
+
+```text
+SensorManager
+MeasurementEngine
+Storage
+Network
+MQTT
+Web
+WebSocket
+Health
+Watchdog
+Power
+Scheduler
+```
+
+Cada entrada deberá contener:
+
+```text
+task_id
+name
+priority
+stack
+core_affinity
+state
+last_activity
+runtime
+restart_count
+```
+
+---
+
+# 345. Task Health Monitor
+
+El sistema deberá poder detectar:
+
+```text
+Task stopped responding
+```
+
+mediante:
+
+```text
+last_activity_timestamp
+heartbeat
+expected_period
+```
+
+Ejemplo:
+
+```text
+SensorTask
+expected: every 10s
+last activity: 95s ago
+```
+
+Resultado:
+
+```text
+TASK_STALLED
+```
+
+---
+
+# 346. Recuperación de Tasks
+
+Cuando sea seguro, SEMA deberá poder reiniciar una tarea individual:
+
+```text
+Task failure
+     ↓
+Stop task
+     ↓
+Release resources
+     ↓
+Reinitialize driver
+     ↓
+Restart task
+```
+
+Esto será preferible a reiniciar todo el ESP32 por un fallo aislado.
+
+---
+
+# 347. Escalamiento de Recuperación
+
+La recuperación deberá seguir:
+
+```text
+Nivel 1
+Retry operation
+
+Nivel 2
+Restart driver
+
+Nivel 3
+Restart task
+
+Nivel 4
+Reset subsystem
+
+Nivel 5
+Restart ESP32
+
+Nivel 6
+Safe Mode
+```
+
+Esto complementará el Watchdog ya definido.
+
+---
+
+# 348. Task Watchdog
+
+SEMA deberá utilizar el Task Watchdog de ESP-IDF para detectar tareas que dejan de ejecutarse correctamente.
+
+Cada tarea crítica deberá tener una política:
+
+```text
+monitored
+not monitored
+supervised indirectly
+```
+
+No se deberá registrar indiscriminadamente cada tarea como crítica.
+
+---
+
+# 349. Watchdog Jerárquico
+
+La arquitectura final deberá utilizar:
+
+```text
+Hardware Watchdog
+       ↓
+Task Watchdog
+       ↓
+Health Monitor
+       ↓
+Task Supervisor
+       ↓
+Subsystem Recovery
+```
+
+Cada nivel deberá tener una responsabilidad diferente.
+
+---
+
+# 350. Runtime Statistics
+
+Cuando sea posible, SEMA deberá recopilar:
+
+```text
+CPU utilization
+Task runtime
+Idle time
+Context switches
+Queue usage
+```
+
+Esto permitirá detectar:
+
+```text
+CPU saturation
+```
+
+antes de que aparezcan errores.
+
+---
+
+# 351. CPU Load Protection
+
+Si:
+
+```text
+CPU load > threshold
+```
+
+SEMA podrá reducir tareas no críticas:
+
+```text
+↓ WebSocket frequency
+↓ Dashboard refresh
+↓ Debug logging
+↓ Cloud publishing
+```
+
+pero deberá preservar:
+
+```text
+Sensors
+Storage
+Watchdog
+Power management
+Critical events
+```
+
+---
+
+# 352. Backpressure
+
+Cuando una Queue se encuentre llena:
+
+```text
+Producer
+   ↓
+Queue FULL
+```
+
+no deberá bloquear indefinidamente.
+
+La política deberá ser configurable:
+
+```text
+DROP_OLDEST
+DROP_NEWEST
+BLOCK_TIMEOUT
+CRITICAL_QUEUE
+EXPAND_IF_POSSIBLE
+```
+
+---
+
+# 353. Priorización de Datos
+
+No todos los datos tienen la misma importancia.
+
+Ejemplo:
+
+```text
+Lightning event
+    prioridad CRITICAL
+
+Rain event
+    prioridad HIGH
+
+Temperature
+    prioridad NORMAL
+
+Debug log
+    prioridad LOW
+```
+
+Las colas podrán implementar prioridades o diferentes canales.
+
+---
+
+# 354. Event Queue Crítica
+
+Deberá existir una cola reservada para eventos críticos.
+
+Ejemplo:
+
+```text
+CriticalEventQueue
+```
+
+que no pueda ser saturada por:
+
+```text
+debug logs
+normal measurements
+web events
+```
+
+---
+
+# 355. Scheduler Interno SEMA
+
+Sobre FreeRTOS deberá existir un:
+
+```text
+SEMA Scheduler
+```
+
+responsable de eventos meteorológicos programados.
+
+Ejemplo:
+
+```text
+cada 1 s
+wind pulse processing
+
+cada 5 s
+fast sensors
+
+cada 30 s
+environment sensors
+
+cada 1 min
+derived metrics
+
+cada 5 min
+cloud publish
+
+cada 1 h
+statistics
+```
+
+No se deberán crear cientos de software timers innecesariamente.
+
+---
+
+# 356. Scheduler Basado en Deadlines
+
+Cada tarea programada podrá tener:
+
+```text
+period
+deadline
+priority
+jitter
+last_run
+next_run
+```
+
+Esto permitirá controlar la calidad temporal de la estación.
+
+---
+
+# 357. Jitter Monitoring
+
+SEMA deberá registrar:
+
+```text
+Expected:
+10.000 s
+
+Actual:
+10.018 s
+
+Jitter:
+18 ms
+```
+
+Esto será especialmente importante para:
+
+* lluvia;
+* viento;
+* pulsos;
+* muestreo;
+* sensores rápidos.
+
+---
+
+# 358. Monotonic Clock
+
+Para intervalos y deadlines se deberá utilizar un reloj monotónico.
+
+No se deberá utilizar directamente:
+
+```text
+hora NTP
+```
+
+para decidir:
+
+```text
+timeout
+periodic task
+deadline
+retry
+watchdog
+```
+
+El cambio de hora NTP no deberá romper los timers internos.
+
+---
+
+# 359. Wall Clock
+
+La hora absoluta:
+
+```text
+2026-09-30 11:42:00
+```
+
+se utilizará para:
+
+* timestamps;
+* históricos;
+* informes;
+* sunrise/sunset;
+* estadísticas;
+* publicación externa.
+
+La arquitectura deberá separar:
+
+```text
+Monotonic Time
+```
+
+de:
+
+```text
+Wall Clock
+```
+
+---
+
+# 360. CPU-Aware Power Manager
+
+El Power Manager deberá conocer el estado de las Tasks.
+
+Antes de Deep Sleep:
+
+```text
+Stop non-critical tasks
+        ↓
+Flush storage
+        ↓
+Flush publish queue
+        ↓
+Save state
+        ↓
+Configure wake sources
+        ↓
+Sleep
+```
+
+No se deberá entrar en Deep Sleep mientras existan operaciones críticas pendientes.
+
+---
+
+# 361. Sleep-Aware Task Architecture
+
+Cada Task deberá poder indicar:
+
+```text
+SLEEP_SAFE
+SLEEP_BLOCKING
+SLEEP_CRITICAL
+```
+
+Ejemplo:
+
+```text
+WebTask
+SLEEP_SAFE
+
+StorageTask
+SLEEP_BLOCKING
+
+PowerTask
+SLEEP_CRITICAL
+```
+
+---
+
+# 362. Wake-up Manager
+
+Todas las fuentes de despertar deberán centralizarse:
+
+```text
+RTC
+GPIO
+Rain
+Lightning
+Timer
+External INT
+UART
+CAN
+Network
+Button
+```
+
+en:
+
+```text
+WakeupManager
+```
+
+Esto evita que cada módulo implemente su propia lógica de sleep.
+
+---
+
+# 363. Wake Reason
+
+Después de despertar:
+
+```text
+WakeupManager
+      ↓
+Wake Reason
+```
+
+Ejemplo:
+
+```json
+{
+  "reason": "RAIN_INTERRUPT",
+  "source": "GPIO_27",
+  "timestamp": 1727700000
+}
+```
+
+También:
+
+```text
+RTC_TIMER
+BUTTON
+LIGHTNING
+EXTERNAL_INTERRUPT
+BROWNOUT_RECOVERY
+POWER_ON
+```
+
+---
+
+# 364. Task Groups
+
+Las tareas podrán agruparse:
+
+```text
+SYSTEM
+SENSORS
+MEASUREMENT
+STORAGE
+NETWORK
+PUBLISH
+WEB
+DIAGNOSTICS
+POWER
+```
+
+Esto facilitará:
+
+* apagado;
+* reinicio;
+* diagnóstico;
+* priorización;
+* estadísticas.
+
+---
+
+# 365. Module Lifecycle
+
+Todo módulo SEMA deberá implementar un ciclo de vida:
+
+```text
+DISCOVER
+ ↓
+INITIALIZE
+ ↓
+START
+ ↓
+RUNNING
+ ↓
+DEGRADED
+ ↓
+STOP
+ ↓
+RESTART
+ ↓
+FAILED
+```
+
+Esto permitirá reiniciar módulos individualmente.
+
+---
+
+# 366. Resource Manager
+
+Deberá existir un:
+
+```text
+ResourceManager
+```
+
+para controlar:
+
+* GPIO;
+* I2C;
+* SPI;
+* UART;
+* ADC;
+* timers;
+* interrupts;
+* PCNT;
+* memoria;
+* buses.
+
+Ejemplo:
+
+```text
+GPIO 27
+ └── owner: RainSensor
+```
+
+Si otro módulo intenta utilizarlo:
+
+```text
+RESOURCE_CONFLICT
+```
+
+---
+
+# 367. Dynamic Resource Allocation
+
+Cuando sea viable:
+
+```text
+Sensor removed
+      ↓
+GPIO released
+      ↓
+New sensor
+      ↓
+GPIO allocated
+```
+
+Esto será coherente con el sistema de configuración web dinámica.
+
+---
+
+# 368. Bus Manager
+
+Cada bus deberá tener un manager:
+
+```text
+I2CManager
+SPIManager
+UARTManager
+RS485Manager
+CANManager
+```
+
+Estos managers deberán manejar:
+
+* inicialización;
+* velocidad;
+* ownership;
+* mutex;
+* recuperación;
+* diagnóstico;
+* dispositivos;
+* conflictos.
+
+---
+
+# 369. I2C Bus Recovery Task
+
+Si el bus queda bloqueado:
+
+```text
+I2C ERROR
+   ↓
+detect SDA/SCL stuck
+   ↓
+Bus Recovery
+   ↓
+reinitialize I2C
+   ↓
+retry
+```
+
+No deberá ser necesario reiniciar toda la estación por un bloqueo I2C.
+
+---
+
+# 370. RS485 / Modbus Task Architecture
+
+Los dispositivos Modbus deberán gestionarse mediante una tarea o scheduler específico:
+
+```text
+ModbusManager
+      ↓
+Request Queue
+      ↓
+RS485 Task
+      ↓
+Response
+      ↓
+Measurement
+```
+
+No se deberán hacer consultas Modbus bloqueantes desde la Web Task.
+
+---
+
+# 371. CAN Task Architecture
+
+CAN/TWAI deberá utilizar:
+
+```text
+CAN RX Task
+CAN TX Queue
+CAN Event Queue
+```
+
+y separar:
+
+```text
+ISR / driver
+```
+
+de:
+
+```text
+application processing
+```
+
+---
+
+# 372. Wind / Rain Pulse Processing
+
+Para:
+
+* anemómetro;
+* pluviómetro;
+* sensores de pulsos;
+
+se deberá utilizar preferentemente hardware de conteo cuando esté disponible.
+
+Arquitectura:
+
+```text
+Pulse
+ ↓
+Hardware counter / ISR
+ ↓
+Counter
+ ↓
+MeasurementTask
+ ↓
+Wind speed / Rain rate
+```
+
+Esto evita despertar una tarea completa para cada pulso.
+
+---
+
+# 373. Debounce
+
+El procesamiento de pulsos deberá tener:
+
+```text
+hardware debounce
+```
+
+o:
+
+```text
+software debounce
+```
+
+según sensor y plataforma.
+
+La configuración deberá permitir:
+
+```text
+debounce_us
+debounce_ms
+minimum_pulse_width
+```
+
+---
+
+# 374. ADC Task
+
+Los sensores analógicos deberán utilizar una adquisición centralizada cuando corresponda:
+
+```text
+ADC Manager
+    ↓
+Sampling
+    ↓
+Filtering
+    ↓
+Calibration
+    ↓
+Measurement
+```
+
+Esto permitirá aplicar:
+
+* oversampling;
+* promedio;
+* mediana;
+* filtro;
+* calibración.
+
+---
+
+# 375. Sensor Sampling Profiles
+
+Cada canal deberá poder indicar:
+
+```text
+sample_rate
+read_interval
+averaging
+filter
+priority
+deadline
+```
+
+Ejemplo:
+
+```text
+Temperature
+sample every 10 s
+
+Wind
+sample every 1 s
+
+Rain
+interrupt-driven
+
+Solar radiation
+sample every 5 s
+```
+
+---
+
+# 376. Fast / Slow Sensor Domains
+
+SEMA podrá dividir sensores:
+
+```text
+FAST DOMAIN
+Wind
+Rain
+Lightning
+Pulse sensors
+
+NORMAL DOMAIN
+Temperature
+Humidity
+Pressure
+
+SLOW DOMAIN
+CO₂
+Soil
+Air quality
+```
+
+Esto permitirá optimizar CPU y energía.
+
+---
+
+# 377. Sensor Batching
+
+Cuando varios sensores estén en el mismo bus:
+
+```text
+I2C
+ ├── BME280
+ ├── SHT40
+ └── BH1750
+```
+
+se podrá agrupar su adquisición:
+
+```text
+I2C Task
+ ↓
+read BME280
+read SHT40
+read BH1750
+ ↓
+Measurement Queue
+```
+
+reduciendo inicializaciones y accesos repetidos.
+
+---
+
+# 378. Network Task Separation
+
+La red deberá separarse en:
+
+```text
+NetworkManager
+```
+
+y:
+
+```text
+Application Publishers
+```
+
+Ejemplo:
+
+```text
+Wi-Fi
+   ↓
+NetworkManager
+   ├── HTTP
+   ├── MQTT
+   ├── WebSocket
+   ├── Central Server
+   └── External Publishers
+```
+
+---
+
+# 379. Network Reconnection State Machine
+
+La red no deberá utilizar:
+
+```text
+while (!connected) delay(...)
+```
+
+durante largos períodos.
+
+Deberá existir:
+
+```text
+DISCONNECTED
+ ↓
+CONNECTING
+ ↓
+CONNECTED
+ ↓
+DEGRADED
+ ↓
+RECONNECTING
+ ↓
+CONNECTED
+```
+
+con backoff.
+
+---
+
+# 380. Network Backoff
+
+Ejemplo:
+
+```text
+1 s
+2 s
+4 s
+8 s
+16 s
+30 s
+60 s
+```
+
+con máximo configurable.
+
+No se deberá bloquear el resto del sistema esperando Wi-Fi.
+
+---
+
+# 381. Web Task Isolation
+
+La Web Task nunca deberá tener acceso directo a:
+
+```text
+GPIO
+sensor driver
+storage internals
+network internals
+```
+
+Debe utilizar:
+
+```text
+API
+Service Layer
+Command Queue
+```
+
+Ejemplo:
+
+```text
+Web UI
+ ↓
+REST API
+ ↓
+Command Manager
+ ↓
+Sensor/Configuration subsystem
+```
+
+---
+
+# 382. Web Command Queue
+
+Las operaciones que modifiquen hardware deberán pasar por una cola:
+
+```text
+HTTP Request
+     ↓
+Command Queue
+     ↓
+Command Manager
+     ↓
+Hardware
+```
+
+Esto evita que múltiples usuarios ejecuten simultáneamente cambios conflictivos.
+
+---
+
+# 383. Configuration Task
+
+La configuración deberá tener su propia tarea:
+
+```text
+ConfigurationManagerTask
+```
+
+responsable de:
+
+* validar;
+* guardar;
+* versionar;
+* aplicar;
+* rollback;
+* notificar cambios.
+
+---
+
+# 384. Atomic Configuration Commit
+
+La nueva configuración deberá escribirse de forma segura:
+
+```text
+New config
+   ↓
+Serialize
+   ↓
+CRC/hash
+   ↓
+Write backup
+   ↓
+Validate
+   ↓
+Commit
+```
+
+Si se interrumpe la alimentación:
+
+```text
+rollback
+```
+
+---
+
+# 385. Logging Task
+
+Los logs deberán utilizar una tarea independiente:
+
+```text
+Application
+ ↓
+Log Queue
+ ↓
+LoggerTask
+ ↓
+Serial / Flash / Network
+```
+
+Esto evita que imprimir por UART bloquee sensores.
+
+---
+
+# 386. Log Levels
+
+Deberán existir:
+
+```text
+NONE
+ERROR
+WARN
+INFO
+DEBUG
+TRACE
+```
+
+El nivel podrá cambiarse desde Web UI/API.
+
+En producción se recomienda evitar TRACE permanente.
+
+---
+
+# 387. Crash Diagnostics
+
+Cuando ocurra un crash:
+
+```text
+Crash
+ ↓
+Exception information
+ ↓
+Reset reason
+ ↓
+Task information
+ ↓
+CPU information
+ ↓
+Persist diagnostic
+ ↓
+Restart
+```
+
+El diagnóstico deberá poder consultarse posteriormente desde:
+
+```text
+/api/v1/diagnostics
+```
+
+---
+
+# 388. Core Dump / Crash Storage
+
+En plataformas y configuraciones compatibles se deberá considerar almacenar:
+
+```text
+Core Dump
+```
+
+para diagnóstico posterior.
+
+Debe existir una opción:
+
+```text
+Enable crash diagnostics
+```
+
+para instalaciones de desarrollo.
+
+---
+
+# 389. Deadlock Detection
+
+Health Monitor deberá poder detectar síntomas de:
+
+```text
+Task stalled
+Queue blocked
+Mutex held too long
+```
+
+Cuando sea viable.
+
+No se deberá intentar "detectar todos los deadlocks" mediante una lógica compleja en runtime, pero sí monitorizar tiempos de bloqueo anómalos.
+
+---
+
+# 390. Queue Monitoring
+
+Cada Queue importante deberá exponer:
+
+```text
+capacity
+used
+high_water_mark
+blocked_count
+dropped_messages
+```
+
+Esto permitirá dimensionar correctamente el sistema.
+
+---
+
+# 391. Runtime Profiler
+
+SEMA deberá incorporar un modo:
+
+```text
+Performance Monitor
+```
+
+que muestre:
+
+```text
+CPU load
+RAM
+PSRAM
+Task runtime
+Task stack
+Queue usage
+Network latency
+Sensor latency
+Storage latency
+```
+
+---
+
+# 392. Performance Profiles
+
+Se deberán definir perfiles:
+
+```text
+PERFORMANCE
+BALANCED
+LOW_POWER
+ULTRA_LOW_POWER
+```
+
+### PERFORMANCE
+
+* frecuencia alta;
+* WebSocket activo;
+* histórico frecuente;
+* publicaciones frecuentes.
+
+### BALANCED
+
+Configuración estándar.
+
+### LOW_POWER
+
+* menos frecuencia;
+* conexiones agrupadas;
+* WebSocket limitado;
+* deep sleep frecuente.
+
+### ULTRA_LOW_POWER
+
+* wake → measure → store → transmit → sleep.
+
+---
+
+# 393. Automatic Performance Profile
+
+SEMA podrá cambiar automáticamente:
+
+```text
+Battery high
+    ↓
+BALANCED
+
+Battery low
+    ↓
+LOW_POWER
+
+Critical battery
+    ↓
+ULTRA_LOW_POWER
+```
+
+---
+
+# 394. Thermal-Aware Scheduling
+
+Si el chip alcanza una temperatura interna elevada:
+
+```text
+Temperature Warning
+ ↓
+reduce workload
+ ↓
+reduce CPU frequency if supported
+ ↓
+reduce network activity
+```
+
+El sistema deberá protegerse sin comprometer mediciones críticas.
+
+---
+
+# 395. Core Load Balancing
+
+En plataformas multicore, las tareas sin afinidad deberán permitir que FreeRTOS distribuya carga cuando sea apropiado.
+
+No se deberá intentar realizar manualmente:
+
+```text
+if CPU0 busy
+    move task to CPU1
+```
+
+si el scheduler puede realizarlo correctamente.
+
+La lógica SEMA deberá intervenir solamente cuando exista una necesidad específica.
+
+---
+
+# 396. Pinning Configurable
+
+Para instalaciones avanzadas podrá existir:
+
+```text
+Task Affinity
+```
+
+en modo experto:
+
+```text
+SensorTask
+Auto
+
+NetworkTask
+Auto
+
+StorageTask
+Core 1
+
+WebTask
+Auto
+```
+
+Pero la configuración normal deberá ser:
+
+```text
+AUTO
+```
+
+---
+
+# 397. Pinning Validado
+
+Si el usuario selecciona:
+
+```text
+Core 1
+```
+
+en un ESP32-C6:
+
+```text
+ERROR
+
+Core 1 does not exist on this platform.
+Available cores: 0
+```
+
+La configuración deberá ser rechazada antes de aplicarse.
+
+---
+
+# 398. Affinity Capability
+
+Agregar al sistema de capacidades:
+
+```json
+{
+  "cpu": {
+    "cores": 2,
+    "smp": true,
+    "task_affinity": true
+  }
+}
+```
+
+Para un dispositivo unicore:
+
+```json
+{
+  "cpu": {
+    "cores": 1,
+    "smp": false,
+    "task_affinity": false
+  }
+}
+```
+
+---
+
+# 399. FreeRTOS Configuration Profile
+
+SEMA deberá mantener configuraciones específicas mediante Kconfig/ESP-IDF para:
+
+```text
+FreeRTOS
+Task Watchdog
+Tick rate
+Stack checking
+Runtime statistics
+Trace
+Timers
+Queue registry
+```
+
+No se deberá modificar directamente el `FreeRTOSConfig.h` privado de ESP-IDF; las opciones configurables deberán utilizar los mecanismos de configuración de ESP-IDF.
+
+---
+
+# 400. Amazon SMP FreeRTOS
+
+SEMA deberá mantener una abstracción que permita eventualmente evaluar:
+
+```text
+ESP-IDF FreeRTOS
+```
+
+frente a:
+
+```text
+Amazon SMP FreeRTOS
+```
+
+pero **no se deberá depender inicialmente del SMP experimental de Amazon**.
+
+La documentación de ESP-IDF identifica actualmente esa alternativa como experimental/en desarrollo y advierte que puede sufrir cambios incompatibles.
+
+Por lo tanto:
+
+```text
+SEMA
+ ↓
+SEMA RT Abstraction
+ ↓
+ESP-IDF FreeRTOS
+```
+
+será la implementación inicial recomendada.
+
+---
+
+# 401. RT Abstraction Layer
+
+Para evitar dependencia excesiva del kernel:
+
+```text
+SEMA Runtime API
+       ↓
+RT Abstraction
+       ↓
+FreeRTOS
+```
+
+SEMA deberá abstraer:
+
+```text
+Task
+Queue
+Mutex
+Semaphore
+Event
+Timer
+Notification
+```
+
+Esto facilitará futuras migraciones.
+
+---
+
+# 402. No Abstraer Innecesariamente
+
+La capa de abstracción no deberá ocultar absolutamente todo FreeRTOS.
+
+Cuando una característica específica de ESP-IDF sea necesaria:
+
+```text
+SEMA
+ ↓
+ESP-IDF extension
+```
+
+podrá utilizarse directamente.
+
+El objetivo es reducir acoplamiento, no crear otro sistema operativo artificial.
+
+---
+
+# 403. Static vs Dynamic Tasks
+
+Las tareas críticas podrán utilizar creación estática:
+
+```text
+xTaskCreateStatic...
+```
+
+cuando se requiera comportamiento determinista.
+
+Las tareas dinámicas podrán utilizar:
+
+```text
+xTaskCreate...
+```
+
+cuando la flexibilidad sea más importante.
+
+La decisión deberá documentarse por tarea.
+
+---
+
+# 404. Política de Memoria de Tasks
+
+Cada Task deberá declarar:
+
+```text
+stack size
+stack location
+priority
+affinity
+watchdog
+criticality
+restart policy
+```
+
+Ejemplo:
+
+```text
+SensorTask
+stack: 4096
+priority: 12
+affinity: AUTO
+watchdog: YES
+criticality: HIGH
+restart: ALLOWED
+```
+
+---
+
+# 405. Task Metadata
+
+Cada Task tendrá:
+
+```text
+task_id
+name
+version
+priority
+stack_size
+minimum_stack
+affinity
+cpu_time
+heartbeat
+restart_count
+criticality
+watchdog
+```
+
+Esto permitirá diagnóstico tanto local como desde el servidor central.
+
+---
+
+# 406. Task Dependency Graph
+
+SEMA deberá documentar dependencias:
+
+```text
+NetworkManager
+     ↓
+Publisher
+     ↓
+Storage
+```
+
+y:
+
+```text
+SensorManager
+     ↓
+MeasurementEngine
+     ↓
+Storage
+     ↓
+Publisher
+```
+
+No deberá existir dependencia circular.
+
+---
+
+# 407. Startup Order
+
+El arranque deberá seguir:
+
+```text
+Boot
+ ↓
+Hardware
+ ↓
+RTOS
+ ↓
+Resource Manager
+ ↓
+Configuration
+ ↓
+Storage
+ ↓
+Sensor Manager
+ ↓
+Measurement Engine
+ ↓
+Network
+ ↓
+Publishers
+ ↓
+Web
+ ↓
+Health Monitor
+ ↓
+RUNNING
+```
+
+---
+
+# 408. Graceful Shutdown
+
+Antes de sleep/reboot:
+
+```text
+Stop Publishers
+ ↓
+Flush queues
+ ↓
+Flush storage
+ ↓
+Save runtime state
+ ↓
+Stop sensors
+ ↓
+Configure wakeup
+ ↓
+Sleep/Reboot
+```
+
+---
+
+# 409. Critical Section Policy
+
+Las secciones críticas deberán ser extremadamente cortas.
+
+No se deberá realizar dentro de una critical section:
+
+```text
+I2C
+SPI
+HTTP
+JSON serialization
+Flash writes
+delay()
+```
+
+Solamente se protegerá el acceso necesario.
+
+---
+
+# 410. ISR-to-Task Latency
+
+SEMA deberá medir, cuando sea relevante:
+
+```text
+Interrupt timestamp
+       ↓
+Task processing timestamp
+       ↓
+latency
+```
+
+Esto permitirá validar:
+
+* rain interrupt;
+* lightning;
+* wind pulses;
+* external alarm inputs.
+
+---
+
+# 411. Determinismo
+
+Las funciones relacionadas con:
+
+```text
+rain
+wind
+lightning
+pulse counting
+wake-up
+```
+
+deberán priorizar:
+
+```text
+latency
+determinism
+```
+
+por encima de:
+
+```text
+UI
+cloud
+logging
+```
+
+---
+
+# 412. Real-Time Budget
+
+Cada operación crítica podrá definir:
+
+```text
+WCET
+```
+
+o un tiempo máximo esperado.
+
+Ejemplo:
+
+```text
+Rain Event Processing
+Target: < 10 ms
+
+Sensor Read
+Target: < 100 ms
+
+Storage Commit
+Target: < 500 ms
+```
+
+Los valores finales deberán medirse experimentalmente.
+
+---
+
+# 413. Scheduler Jitter Budget
+
+Para tareas periódicas:
+
+```text
+period = 10 s
+allowed jitter = ±100 ms
+```
+
+SEMA podrá registrar incumplimientos:
+
+```text
+SCHEDULER_DEADLINE_MISSED
+```
+
+---
+
+# 414. Stress Testing
+
+Antes de considerar estable una plataforma, se deberán realizar pruebas:
+
+```text
+1000+ hours runtime
+```
+
+cuando sea posible, bajo:
+
+* múltiples sensores;
+* WebSocket;
+* MQTT;
+* almacenamiento;
+* Wi-Fi reconnection;
+* OTA;
+* rain interrupts;
+* wind pulses;
+* bajo voltaje;
+* cambios de configuración.
+
+---
+
+# 415. Concurrency Testing
+
+Se deberán probar simultáneamente:
+
+```text
+Sensor acquisition
++
+WebSocket clients
++
+MQTT
++
+Storage
++
+REST API
++
+Configuration
+```
+
+para detectar:
+
+* race conditions;
+* deadlocks;
+* starvation;
+* memory leaks.
+
+---
+
+# 416. Fault Injection
+
+SEMA deberá tener pruebas de fallos:
+
+```text
+Disconnect sensor
+Disconnect I2C
+Disconnect Wi-Fi
+Fill storage
+Block server
+Flood WebSocket
+Generate rain pulses
+Generate lightning event
+Reset during write
+Power loss during configuration
+```
+
+El resultado esperado deberá estar documentado.
+
+---
+
+# 417. Chaos / Recovery Testing
+
+Se deberá comprobar que:
+
+```text
+One subsystem fails
+        ↓
+Other subsystems continue
+```
+
+Ejemplo:
+
+```text
+MQTT failure
+     ↓
+Sensors continue
+Storage continues
+Web continues
+```
+
+---
+
+# 418. Graceful Degradation
+
+Cuando falten recursos:
+
+```text
+Memory low
+CPU high
+Battery low
+Network unavailable
+Storage almost full
+```
+
+SEMA deberá degradar primero:
+
+```text
+Cloud
+Remote dashboard
+Debug
+High-frequency UI
+```
+
+antes de:
+
+```text
+Sensors
+Storage
+Safety
+Wake-up
+Core measurements
+```
+
+---
+
+# 419. Resource Budget Manager
+
+Agregar:
+
+```text
+ResourceBudgetManager
+```
+
+que controle:
+
+```text
+CPU
+RAM
+PSRAM
+Flash
+Storage
+Network bandwidth
+Power
+Task count
+Queue usage
+```
+
+---
+
+# 420. Capability + Resource + Runtime
+
+La arquitectura final deberá tomar decisiones considerando tres dimensiones:
+
+```text
+CAPABILITIES
+¿Qué puede hacer?
+
+RESOURCES
+¿Cuánto tiene disponible?
+
+RUNTIME STATE
+¿Cómo está funcionando ahora?
+```
+
+Ejemplo:
+
+```text
+Wi-Fi:
+capability = YES
+
+RAM:
+available = LOW
+
+Runtime:
+battery = LOW
+
+Resultado:
+disable high-frequency WebSocket
+```
+
+---
+
+# 421. Arquitectura de Ejecución Final
+
+La arquitectura completa deberá quedar:
+
+```text
+                        SEMA CORE
+                           │
+                 ┌─────────┴─────────┐
+                 │ Runtime Manager   │
+                 └─────────┬─────────┘
+                           │
+        ┌──────────────────┼──────────────────┐
+        ▼                  ▼                  ▼
+     FreeRTOS          Scheduler          Resource
+     Runtime            SEMA              Manager
+        │                  │                  │
+   ┌────┼────┐             │             ┌───┼────┐
+   ▼    ▼    ▼             ▼             ▼   ▼    ▼
+ Tasks Queues Events    Deadlines       GPIO Bus Memory
+   │
+   ├── Sensors
+   ├── Measurement
+   ├── Storage
+   ├── Network
+   ├── Publishers
+   ├── Web
+   ├── Health
+   ├── Watchdog
+   └── Power
+```
+
+---
+
+# 422. Ejemplo de Ejecución en ESP32-S3
+
+Una configuración posible:
+
+```text
+ESP32-S3 — Dual Core
+
+Core 0
+├── NetworkManager
+├── WebServer
+├── WebSocket
+├── MQTT
+└── External Publishers
+
+Core 1
+├── SensorManager
+├── MeasurementEngine
+├── Storage
+├── Rain/Wind processing
+└── Health Monitor
+```
+
+Pero el sistema deberá poder utilizar `AUTO` cuando no exista una necesidad real de fijar afinidad.
+
+---
+
+# 423. Ejemplo de Ejecución en ESP32-C6
+
+```text
+ESP32-C6 — Single Core
+
+Core 0
+├── FreeRTOS Scheduler
+├── SensorManager
+├── Measurement
+├── Storage
+├── Network
+├── Web
+├── MQTT
+├── Health
+└── Power
+```
+
+Aquí la optimización deberá centrarse en:
+
+* prioridades;
+* tiempos de bloqueo;
+* queues;
+* bajo consumo;
+* tareas eficientes;
+* evitar operaciones largas.
+
+---
+
+# 424. Ejemplo de Ejecución en ESP32-WROOM-32E
+
+```text
+ESP32 clásico — Dual Core
+
+Core 0
+├── System / Network
+└── Web
+
+Core 1
+├── Sensors
+├── Measurement
+└── Storage
+```
+
+El perfil podrá utilizar Task Pinning cuando las pruebas demuestren una ventaja.
+
+---
+
+# 425. Ejemplo ESP32-P4 + C6
+
+```text
+                  ESP32-P4
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+     Sensors      Processing    Storage
+        │
+        └────────────┐
+                     │
+                ESP32-C6
+                     │
+              Wi-Fi / 802.15.4
+```
+
+Cada procesador deberá tener su propio runtime y comunicación claramente definida.
+
+---
+
+# 426. Multi-MCU Runtime
+
+En plataformas con coprocesador:
+
+```text
+SEMA Main MCU
+       │
+       │ IPC
+       ▼
+Communication MCU
+```
+
+se deberá utilizar un protocolo de comunicación interno:
+
+```text
+IPC
+```
+
+con:
+
+* mensajes;
+* sequence numbers;
+* CRC;
+* timeout;
+* heartbeat;
+* version;
+* capabilities.
+
+---
+
+# 427. IPC Health Monitoring
+
+Si existe un coprocesador:
+
+```text
+Main MCU
+  ↕ heartbeat
+Radio MCU
+```
+
+se deberá detectar:
+
+```text
+IPC_TIMEOUT
+COPROCESSOR_OFFLINE
+COPROCESSOR_RESET
+```
+
+---
+
+# 428. CPU-Agnostic SEMA Application
+
+La aplicación deberá pensar:
+
+```text
+SensorTask
+NetworkTask
+StorageTask
+```
+
+y no:
+
+```text
+CPU0 sensor
+CPU1 network
+```
+
+La afinidad será una propiedad del runtime, no de la lógica meteorológica.
+
+---
+
+# 429. Configuración de Runtime desde Web
+
+En modo experto podrá visualizarse:
+
+```text
+Runtime
+
+CPU:
+2 cores
+
+SMP:
+Enabled
+
+Task Pinning:
+Automatic
+
+FreeRTOS Tick:
+100 Hz
+
+Watchdog:
+Enabled
+
+Runtime Statistics:
+Enabled
+```
+
+Pero las configuraciones peligrosas no deberán exponerse al usuario normal.
+
+---
+
+# 430. Diagnóstico de Scheduler
+
+Agregar:
+
+```text
+/api/v1/diagnostics/tasks
+```
+
+y:
+
+```text
+/api/v1/diagnostics/runtime
+```
+
+Ejemplo:
+
+```json
+{
+  "cores": 2,
+  "smp": true,
+  "tasks": 17,
+  "cpu": {
+    "core0": 41.2,
+    "core1": 27.8
+  },
+  "heap_free": 183420,
+  "queue_high_watermark": 72
+}
+```
+
+---
+
+# 431. Dashboard de Runtime
+
+La Web UI podrá tener:
+
+```text
+Sistema
+ └── Runtime
+      ├── CPU
+      ├── Tasks
+      ├── Memory
+      ├── Queues
+      ├── Watchdog
+      ├── Events
+      └── Scheduler
+```
+
+Esto será principalmente para:
+
+```text
+Expert Mode
+Maintenance Mode
+Developer Mode
+```
+
+---
+
+# 432. Documentación Automática de Tasks
+
+SEMA deberá poder generar un listado:
+
+```text
+Task              Priority   Core     Stack     State
+------------------------------------------------------
+SensorManager     12         Auto     4096      RUN
+Measurement        14         Auto     4096      RUN
+Storage            10         Auto     4096      RUN
+Network             9         Auto     6144      RUN
+Web                 7         Auto     8192      RUN
+Health             15         Auto     4096      RUN
+Watchdog            20         Auto     4096      RUN
+```
+
+---
+
+# 433. Reglas de Diseño Multitarea
+
+Toda implementación nueva deberá cumplir:
+
+1. No utilizar `delay()` largos en Tasks críticas.
+2. No bloquear esperando Internet.
+3. No ejecutar HTTP desde sensores.
+4. No escribir Flash desde ISR.
+5. No realizar JSON complejo desde ISR.
+6. No compartir memoria mutable sin protección.
+7. No mantener mutex durante operaciones largas.
+8. No crear Tasks innecesarias.
+9. No fijar Tasks a cores sin justificación.
+10. No asumir que todos los ESP32 tienen dos cores.
+11. No asumir que todos tienen los mismos periféricos.
+12. Todas las Tasks críticas deben poder ser supervisadas.
+13. Todos los subsistemas deben poder degradarse.
+14. Todas las operaciones largas deben tener timeout.
+15. Todo módulo debe poder recuperarse individualmente cuando sea posible.
+
+---
+
+# 434. Principio de Diseño
+
+La regla fundamental será:
+
+> **FreeRTOS proporciona la ejecución concurrente; SMP permite aprovechar múltiples núcleos; Task Pinning permite optimizar tareas específicas; SEMA Runtime decide cómo utilizarlos según las capacidades y recursos reales del hardware.**
+
+---
+
+# 435. Resultado Final
+
+Con estas ampliaciones, SEMA tendrá cuatro niveles claramente separados:
+
+```text
+┌────────────────────────────────────────────┐
+│              SEMA APPLICATION              │
+│ Sensors / Weather / API / Web / Cloud      │
+├────────────────────────────────────────────┤
+│              SEMA RUNTIME                  │
+│ Scheduler / Event Bus / Resource Manager   │
+├────────────────────────────────────────────┤
+│                 FREERTOS                   │
+│ Tasks / Queues / Mutex / Events / SMP      │
+├────────────────────────────────────────────┤
+│             ESP-IDF / HAL                  │
+│ Drivers / GPIO / Wi-Fi / ADC / SPI / I2C  │
+├────────────────────────────────────────────┤
+│                 HARDWARE                   │
+│ ESP32 / S3 / C5 / C6 / P4 / WROOM          │
+└────────────────────────────────────────────┘
+```
+
+Esta separación permitirá que SEMA aproveche el hardware disponible sin quedar arquitectónicamente atado a una determinada familia ESP32.
+
+---
+
+# 436. Objetivo de Rendimiento
+
+El objetivo no será:
+
+> "usar todos los núcleos al 100%".
+
+El objetivo será:
+
+> **utilizar la cantidad mínima de CPU necesaria para cumplir las tareas meteorológicas con determinismo, estabilidad y bajo consumo.**
+
+Por ello, un ESP32-C6 ejecutando SEMA eficientemente al 15–30 % de CPU podrá ser preferible a un sistema que fuerce innecesariamente todos los recursos de un ESP32-S3.
+
+---
+
+# 437. Objetivo de Robustez
+
+SEMA deberá poder continuar funcionando aunque:
+
+```text
+WebSocket falle
+MQTT falle
+Cloud falle
+Sensor individual falle
+I2C falle temporalmente
+Wi-Fi falle
+Servidor central falle
+```
+
+La arquitectura FreeRTOS + Event Bus + queues + Health Monitor + Watchdog + Store & Forward deberá garantizar que un subsistema defectuoso no arrastre al resto.
+
+---
+
+# 438. Objetivo de Escalabilidad
+
+La arquitectura deberá soportar desde:
+
+```text
+ESP32 económico
++
+5 sensores
++
+Deep Sleep
+```
+
+hasta:
+
+```text
+ESP32-S3
++
+PSRAM
++
+20/50+ canales
++
+WebSocket
++
+MQTT
++
+RS485
++
+CAN
++
+LoRa
++
+Zigbee
++
+Servidor central
+```
+
+sin cambiar el modelo fundamental de software.
+
+Los límites concretos deberán determinarse mediante benchmarks por plataforma.
+
+---
+
+# 439. Pruebas de Aceptación del Runtime
+
+Antes de declarar una plataforma SEMA como estable, deberá superar:
+
+### Test 1 — Sensor
+
+```text
+Sensor → Measurement → Storage
+```
+
+### Test 2 — Web
+
+```text
+Sensor → WebSocket → Browser
+```
+
+### Test 3 — Network failure
+
+```text
+Wi-Fi OFF
+→ Sensors continue
+→ Storage continues
+```
+
+### Test 4 — Server failure
+
+```text
+Central Server OFF
+→ Local Web continues
+```
+
+### Test 5 — Task failure
+
+```text
+Task stalled
+→ Restart subsystem
+```
+
+### Test 6 — Memory pressure
+
+```text
+Low memory
+→ Graceful degradation
+```
+
+### Test 7 — Deep Sleep
+
+```text
+Sleep
+→ Rain interrupt
+→ Wake
+→ Measurement
+```
+
+### Test 8 — Dual Core
+
+```text
+ESP32/S3
+→ parallel workload
+→ no race condition
+```
+
+### Test 9 — Single Core
+
+```text
+ESP32-C6
+→ same application
+→ no Core 1 assumptions
+```
+
+### Test 10 — Long Duration
+
+```text
+24 h
+→ 7 days
+→ 30 days
+```
+
+sin memory leak ni degradación progresiva.
+
+---
+
+# 440. Regla Final del Runtime SEMA
+
+> **El hardware define las capacidades; el Runtime define cómo utilizarlas; FreeRTOS proporciona la multitarea; SMP permite aprovechar múltiples núcleos; Task Pinning se utiliza solamente cuando aporta una ventaja demostrable; y la lógica meteorológica permanece independiente de todos ellos.**
 
 La configuración deberá ser suficientemente abstracta para que agregar un nuevo sensor, bus, protocolo o servicio externo no obligue a modificar la arquitectura central.
 
