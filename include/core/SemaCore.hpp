@@ -13,6 +13,7 @@
 #include "core/Version.hpp"
 #include "core/network/WiFiManager.hpp"
 #include "core/PowerManager.hpp"
+#include "core/Watchdog.hpp"
 #include "core/publishers/PublisherManager.hpp"
 #include "core/storage/HistoryStore.hpp"
 #include "core/storage/NvsStore.hpp"
@@ -41,6 +42,7 @@ public:
   Scheduler& scheduler() { return scheduler_; }
   WiFiManager& wifi() { return wifi_; }
   PowerManager& power() { return PowerManager::instance(); }
+  Watchdog& watchdog() { return watchdog_; }
   SensorManager& sensors() { return sensors_; }
   HistoryStore& history() { return history_; }
   PublisherManager& publishers() { return publishers_; }
@@ -60,6 +62,7 @@ private:
   PublisherManager publishers_;
   RuleEngine rules_;
   EventLog eventLog_;
+  Watchdog watchdog_;
   std::vector<DetectedDevice> detectedDevices_;
   Scheduler scheduler_;
   WiFiManager wifi_;

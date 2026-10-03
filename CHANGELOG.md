@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.36.0] - 2026-10-03
+
+### Added
+
+- Watchdog jerárquico (D-0019): task watchdog del ESP32 para el bucle principal.
+
 ## [0.35.0] - 2026-10-03
 
 ### Added
@@ -297,6 +303,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.36.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.36.0
 [0.35.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.35.0
 [0.34.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.34.0
 [0.33.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.33.0

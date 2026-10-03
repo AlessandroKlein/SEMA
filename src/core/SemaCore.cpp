@@ -141,6 +141,9 @@ void SemaCore::setup() {
 
   modules_.enableAll();
 
+  // Watchdog jerárquico (D-0019): reinicia el SoC si el loop se bloquea.
+  watchdog_.begin(10);
+
   // Evento de arranque (D-0008/§205).
   Event boot;
   boot.timestampMs = millis();
@@ -161,6 +164,7 @@ void SemaCore::setup() {
 }
 
 void SemaCore::loop() {
+  watchdog_.feed();
   modules_.loopAll();
   wifi_.loop();
   http_.loop();
