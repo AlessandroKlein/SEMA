@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Arduino.h>
 #include <cstdint>
 #include <functional>
 #include <vector>
@@ -38,15 +39,28 @@ enum class Severity : uint8_t {
 // Evento tipado (D-0045): event_id, timestamp, source, type, severity, payload,
 // correlation_id y destino opcional.
 struct Event {
-  uint32_t id = 0;                   // event_id (secuencia)
-  uint32_t timestampMs = 0;          // millis() monotónico
-  const char* source = nullptr;      // id del sensor/módulo
+  uint32_t id = 0;              // event_id (secuencia)
+  uint32_t timestampMs = 0;     // millis() monotónico
+  String source;                // id del sensor/módulo
   EventType type = EventType::System;
   Severity severity = Severity::Info;
-  int32_t value = 0;                 // payload numérico simple
-  const char* correlationId = nullptr;  // correlación (opcional)
-  const char* target = nullptr;      // destino (opcional)
+  int32_t value = 0;            // payload numérico simple
+  String correlationId;         // correlación (opcional)
+  String target;                // destino (opcional)
 };
+
+// Nombre de la severidad, para serialización/API.
+inline const char* severityName(Severity s) {
+  switch (s) {
+    case Severity::Debug: return "DEBUG";
+    case Severity::Info: return "INFO";
+    case Severity::Notice: return "NOTICE";
+    case Severity::Warning: return "WARNING";
+    case Severity::Error: return "ERROR";
+    case Severity::Critical: return "CRITICAL";
+    default: return "UNKNOWN";
+  }
+}
 
 class EventBus {
 public:

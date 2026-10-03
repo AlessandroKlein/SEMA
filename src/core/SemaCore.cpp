@@ -15,7 +15,7 @@ SemaCore& SemaCore::instance() {
   return core;
 }
 
-SemaCore::SemaCore() : store_(), config_(store_), rules_(events_) {}
+SemaCore::SemaCore() : store_(), config_(store_), rules_(events_), alarmLog_(events_) {}
 
 void SemaCore::setup() {
   Serial.begin(115200);
@@ -104,7 +104,7 @@ void SemaCore::setup() {
 
   // Suscriptor de alarmas (D-0045): por ahora registra en serial.
   events_.subscribe(EventType::Alarm, [](const Event& e) {
-    Serial.printf("[ALARM] %s → %s = %d\n", e.correlationId, e.source, e.value);
+    Serial.printf("[ALARM] %s → %s = %d\n", e.correlationId.c_str(), e.source.c_str(), e.value);
   });
 
   scheduler_.add("core.heartbeat", 5000, []() {

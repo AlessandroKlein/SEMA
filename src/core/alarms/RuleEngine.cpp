@@ -33,12 +33,12 @@ void RuleEngine::evaluate(const std::vector<Measurement>& measurements) {
         Event e;
         e.id = 0;
         e.timestampMs = millis();
-        e.source = m.sensorId.c_str();
+        e.source = m.sensorId;
         e.type = EventType::Alarm;
         e.severity = Severity::Warning;
         e.value = static_cast<int32_t>(m.value * 100.0f);
         e.correlationId = r.id;
-        e.target = nullptr;
+        e.target = "";
         bus_.publish(e);
       }
     }

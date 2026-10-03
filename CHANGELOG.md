@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.19.0] - 2026-10-03
+
+### Added
+
+- `AlarmLog`: registro acotado de alarmas alimentado desde el Event Bus.
+- Endpoint `GET /api/v1/alarms` (D-0041) para consultar las alarmas recientes.
+- `Event` ahora es propietario de sus cadenas (String), evitando punteros colgantes.
+
 ## [0.18.0] - 2026-10-03
 
 ### Added
@@ -174,6 +182,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.19.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.19.0
 [0.18.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.18.0
 [0.17.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.17.0
 [0.16.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.16.0

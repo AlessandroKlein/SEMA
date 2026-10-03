@@ -17,6 +17,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
+  server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   server_.begin();
@@ -137,6 +138,22 @@ void HttpServer::onHistory() {
     o["unit"] = m.unit;
     o["quality"] = qualityName(m.quality);
     o["seq"] = m.sequence;
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onAlarms() {
+  DynamicJsonDocument doc(4096);
+  JsonArray arr = doc.createNestedArray("alarms");
+  for (const Event& e : core_->alarms().events()) {
+    JsonObject o = arr.createNestedObject();
+    o["ts"] = e.timestampMs;
+    o["source"] = e.source;
+    o["rule"] = e.correlationId;
+    o["severity"] = severityName(e.severity);
+    o["value"] = e.value;
   }
   String out;
   serializeJson(doc, out);
