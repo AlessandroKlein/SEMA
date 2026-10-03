@@ -4,7 +4,9 @@
 #include "core/sensors/Aht20Sensor.hpp"
 #include "core/sensors/Bh1750Sensor.hpp"
 #include "core/sensors/Bme280Sensor.hpp"
+#include "core/sensors/Bmp280Sensor.hpp"
 #include "core/sensors/Ds18b20Sensor.hpp"
+#include "core/sensors/Sht31Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
 
 namespace sema {
@@ -17,6 +19,12 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   }
   if (spec.model == "SHT40") {
     return new Sht40Sensor(spec.id.c_str(), spec.sda, spec.scl);
+  }
+  if (spec.model == "SHT31") {
+    return new Sht31Sensor(spec.id.c_str(), spec.sda, spec.scl);
+  }
+  if (spec.model == "BMP280") {
+    return new Bmp280Sensor(spec.id.c_str(), spec.sda, spec.scl);
   }
   if (spec.model == "DS18B20") {
     return new Ds18b20Sensor(spec.id.c_str(), spec.pin);

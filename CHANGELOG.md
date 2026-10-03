@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.39.0] - 2026-10-03
+
+### Added
+
+- Drivers `Sht31Sensor` y `Bmp280Sensor` (I²C) + entradas en la factoría; completa
+  el catálogo de Fase 2 (`README.md` §9-10).
+
 ## [0.38.0] - 2026-10-03
 
 ### Added
@@ -316,6 +323,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.39.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.39.0
 [0.38.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.38.0
 [0.37.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.37.0
 [0.36.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.36.0
