@@ -94,6 +94,7 @@ Consecuencias prácticas:
 | PCNT (genérico) | lluvia/viento (pulsos) | GPIO (PCNT) | pin configurable |
 | VEML6075 | UVA/UVB/índice UV | I²C | 0x10 |
 | SCD30 | CO₂, temperatura, humedad | I²C | 0x61 |
+| PMS5003 | PM1/PM2.5/PM10 | UART | RX/TX configurables |
 
 ---
 

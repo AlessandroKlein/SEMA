@@ -122,6 +122,8 @@ bool ConfigManager::serialize(String& out) const {
     o["sda"] = s.sda;
     o["scl"] = s.scl;
     o["pin"] = s.pin;
+    o["rx"] = s.rxPin;
+    o["tx"] = s.txPin;
     o["channel"] = s.channel;
     o["unit"] = s.unit;
     o["scale"] = s.scale;
@@ -186,6 +188,8 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     s.sda = o["sda"] | 21;
     s.scl = o["scl"] | 22;
     s.pin = o["pin"] | 0;
+    s.rxPin = o["rx"] | 0;
+    s.txPin = o["tx"] | 0;
     s.channel = o["channel"] | "";
     s.unit = o["unit"] | "";
     s.scale = o["scale"] | 1.0f;

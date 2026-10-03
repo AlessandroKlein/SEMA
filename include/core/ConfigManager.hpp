@@ -76,10 +76,12 @@ struct CalibrationSpec {
 // Especificación de un sensor (D-0042): el catálogo se define por configuración.
 struct SensorSpec {
   String id;
-  String model;      // "BME280" | "SHT40" | "DS18B20" | "BH1750" | "AHT20" | "ADC"
+  String model;      // "BME280" | "SHT40" | "DS18B20" | "BH1750" | "AHT20" | "ADC" | …
   uint8_t sda = 21;
   uint8_t scl = 22;
   uint8_t pin = 0;
+  uint8_t rxPin = 0;  // para sensores UART (p. ej. PMS5003)
+  uint8_t txPin = 0;
   String channel;    // para sensores analógicos (p. ej. "voltage")
   String unit;       // unidad (p. ej. "V")
   float scale = 1.0f;
