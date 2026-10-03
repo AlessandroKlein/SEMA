@@ -36,6 +36,7 @@ private:
   void onDiagnostics();
   void onSensors();
   void onHistory();
+  void onEvents();
   void onAlarms();
   void onNotFound();
 

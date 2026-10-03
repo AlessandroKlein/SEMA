@@ -23,6 +23,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
+  server_.on("/api/v1/events", HTTP_GET, [this]() { onEvents(); });
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
   server_.onNotFound([this]() { onNotFound(); });
 
@@ -285,10 +286,30 @@ void HttpServer::onHistory() {
   server_.send(200, "application/json", out);
 }
 
+void HttpServer::onEvents() {
+  DynamicJsonDocument doc(4096);
+  JsonArray arr = doc.createNestedArray("events");
+  for (const Event& e : core_->eventLog().events()) {
+    JsonObject o = arr.createNestedObject();
+    o["ts"] = e.timestampMs;
+    o["type"] = eventTypeName(e.type);
+    o["source"] = e.source;
+    o["rule"] = e.correlationId;
+    o["severity"] = severityName(e.severity);
+    o["value"] = e.value;
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
 void HttpServer::onAlarms() {
   DynamicJsonDocument doc(4096);
   JsonArray arr = doc.createNestedArray("alarms");
-  for (const Event& e : core_->alarms().events()) {
+  for (const Event& e : core_->eventLog().events()) {
+    if (e.type != EventType::Alarm) {
+      continue;
+    }
     JsonObject o = arr.createNestedObject();
     o["ts"] = e.timestampMs;
     o["source"] = e.source;

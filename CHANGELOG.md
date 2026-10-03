@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.31.0] - 2026-10-03
+
+### Added
+
+- `EventLog` generalizado (D-0008/§205): registra y persiste todos los tipos de
+  evento; evento de arranque `system/boot`.
+- `GET /api/v1/events` (todos los eventos); `/api/v1/alarms` filtra alarmas.
+
 ## [0.30.0] - 2026-10-03
 
 ### Added
@@ -261,6 +269,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.31.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.31.0
 [0.30.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.30.0
 [0.29.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.29.0
 [0.28.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.28.0

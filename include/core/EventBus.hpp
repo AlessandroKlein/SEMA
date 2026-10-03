@@ -62,6 +62,37 @@ inline const char* severityName(Severity s) {
   }
 }
 
+// Nombre del tipo de evento, para serialización/API.
+inline const char* eventTypeName(EventType t) {
+  switch (t) {
+    case EventType::Sensor: return "sensor";
+    case EventType::Rain: return "rain";
+    case EventType::Lightning: return "lightning";
+    case EventType::Battery: return "battery";
+    case EventType::Network: return "network";
+    case EventType::Alarm: return "alarm";
+    case EventType::System: return "system";
+    case EventType::Wake: return "wake";
+    case EventType::Sleep: return "sleep";
+    default: return "unknown";
+  }
+}
+
+// Convierte un nombre de tipo de evento al enum, para deserialización.
+inline EventType parseEventType(const char* name) {
+  if (name == nullptr) return EventType::System;
+  if (strcmp(name, "sensor") == 0) return EventType::Sensor;
+  if (strcmp(name, "rain") == 0) return EventType::Rain;
+  if (strcmp(name, "lightning") == 0) return EventType::Lightning;
+  if (strcmp(name, "battery") == 0) return EventType::Battery;
+  if (strcmp(name, "network") == 0) return EventType::Network;
+  if (strcmp(name, "alarm") == 0) return EventType::Alarm;
+  if (strcmp(name, "system") == 0) return EventType::System;
+  if (strcmp(name, "wake") == 0) return EventType::Wake;
+  if (strcmp(name, "sleep") == 0) return EventType::Sleep;
+  return EventType::System;
+}
+
 // Convierte un nombre de severidad al enum, para deserialización.
 inline Severity parseSeverity(const char* name) {
   if (name == nullptr) return Severity::Info;

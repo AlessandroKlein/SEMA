@@ -2,8 +2,8 @@
 
 #include "core/CapabilityManager.hpp"
 #include "core/ConfigManager.hpp"
-#include "core/alarms/AlarmLog.hpp"
 #include "core/alarms/RuleEngine.hpp"
+#include "core/events/EventLog.hpp"
 #include "core/EventBus.hpp"
 #include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
@@ -43,7 +43,7 @@ public:
   HistoryStore& history() { return history_; }
   PublisherManager& publishers() { return publishers_; }
   RuleEngine& rules() { return rules_; }
-  AlarmLog& alarms() { return alarmLog_; }
+  EventLog& eventLog() { return eventLog_; }
   const std::vector<DetectedDevice>& detectedDevices() const { return detectedDevices_; }
 
 private:
@@ -57,7 +57,7 @@ private:
   HistoryStore history_;
   PublisherManager publishers_;
   RuleEngine rules_;
-  AlarmLog alarmLog_;
+  EventLog eventLog_;
   std::vector<DetectedDevice> detectedDevices_;
   Scheduler scheduler_;
   WiFiManager wifi_;

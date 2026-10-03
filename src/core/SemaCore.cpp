@@ -19,7 +19,7 @@ SemaCore& SemaCore::instance() {
   return core;
 }
 
-SemaCore::SemaCore() : store_(), config_(store_), rules_(events_), alarmLog_(events_) {}
+SemaCore::SemaCore() : store_(), config_(store_), rules_(events_), eventLog_(events_) {}
 
 void SemaCore::setup() {
   Serial.begin(115200);
@@ -27,7 +27,7 @@ void SemaCore::setup() {
 
   store_.begin("sema");
   history_.begin();
-  alarmLog_.begin();
+  eventLog_.begin();
 
   // Perfil base ESP32 clásico (D-0050/D-0051). En una iteración posterior esto se
   // carga desde el Board/Chip Profile en lugar de declararse aquí.
@@ -136,6 +136,15 @@ void SemaCore::setup() {
   });
 
   modules_.enableAll();
+
+  // Evento de arranque (D-0008/§205).
+  Event boot;
+  boot.timestampMs = millis();
+  boot.type = EventType::System;
+  boot.severity = Severity::Info;
+  boot.source = "core";
+  boot.correlationId = "boot";
+  events_.publish(boot);
 
   Serial.printf("Sensores: %u registrados, %u activos\n",
                 static_cast<unsigned>(sensors_.count()),
