@@ -48,10 +48,19 @@ int32_t WiFiManager::rssi() const {
 }
 
 void WiFiManager::loop() {
-  // Reintento simple de STA cuando se pierde la conexión. Se mejora con backoff
-  // en una iteración posterior (README §183).
+  const uint32_t now = millis();
   if (staMode_ && WiFi.status() != WL_CONNECTED) {
-    // reservado para política de reconexión
+    // Reconexión con backoff exponencial (README §183): 2 s → 4 s → … → 60 s.
+    if (now - lastReconnectAttempt_ >= reconnectInterval_) {
+      lastReconnectAttempt_ = now;
+      ++reconnectAttempts_;
+      WiFi.reconnect();
+      reconnectInterval_ = reconnectInterval_ * 2 > 60000 ? 60000 : reconnectInterval_ * 2;
+    }
+  } else if (staMode_ && reconnectAttempts_ > 0) {
+    // Reconectado: se restablece el backoff.
+    reconnectAttempts_ = 0;
+    reconnectInterval_ = 2000;
   }
   // mDNS se procesa internamente por la tarea de WiFi (ESPmDNS).
 }

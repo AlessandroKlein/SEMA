@@ -27,6 +27,9 @@ private:
 
   bool staMode_ = false;
   bool mdnsStarted_ = false;
+  uint32_t lastReconnectAttempt_ = 0;
+  uint32_t reconnectAttempts_ = 0;
+  uint32_t reconnectInterval_ = 2000;  // backoff exponencial: 2 s → 60 s
 };
 
 }  // namespace sema
