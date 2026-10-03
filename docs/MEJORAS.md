@@ -33,7 +33,8 @@ MCP23017 · 74HC595 · 74HC165 · ADS1115
 ```text
 Viento · Lluvia · Radiación · UV · Rayos
 ```
-🔄 (v0.47.0): pluviómetro/anemómetro por PCNT (conteo de pulsos).
+🔄 (v0.48.0): lluvia/viento por PCNT (conteo de pulsos) y UV (VEML6075).
+Falta radiación y rayos.
 
 ### Fase 5 — Calidad ambiental
 ```text
@@ -83,7 +84,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Detección I²C | ✅ |
 | Detección 1-Wire | ⬜ (driver DS18B20; sin auto-detección) |
 | Configuración GPIO | ⬜ |
-| Configuración ADC | 🔄 (AdcSensor; no configurable por web) |
+| Configuración ADC | ✅ (AdcSensor configurable vía `sensors[]`) |
 | MCP23017 / 74HC595 / 74HC165 | ⬜ |
 | RS485 / Modbus RTU / CAN | ⬜ |
 | LoRa / Zigbee | ⬜ |
@@ -110,7 +111,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Expansión GPIO (MCP23017/ADS1115) | ⬜ | Fase 3 (requieren hardware) |
 | Buses industriales (RS485/CAN) | ⬜ | Fase 6 (requieren hardware) |
 | LoRa / Zigbee | ⬜ | Fase 7 (requieren hardware) |
-| Sensores CO₂/PM/UV/viento/lluvia | ⬜ | Fases 4/5 (requieren hardware) |
+| Rayos (AS3935) / CO / Radiación | ⬜ | Fases 4/5 (requieren hardware) |
 
 ---
 
