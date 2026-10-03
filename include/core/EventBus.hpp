@@ -62,6 +62,18 @@ inline const char* severityName(Severity s) {
   }
 }
 
+// Convierte un nombre de severidad al enum, para deserialización.
+inline Severity parseSeverity(const char* name) {
+  if (name == nullptr) return Severity::Info;
+  if (strcmp(name, "DEBUG") == 0) return Severity::Debug;
+  if (strcmp(name, "INFO") == 0) return Severity::Info;
+  if (strcmp(name, "NOTICE") == 0) return Severity::Notice;
+  if (strcmp(name, "WARNING") == 0) return Severity::Warning;
+  if (strcmp(name, "ERROR") == 0) return Severity::Error;
+  if (strcmp(name, "CRITICAL") == 0) return Severity::Critical;
+  return Severity::Info;
+}
+
 class EventBus {
 public:
   using Handler = std::function<void(const Event&)>;

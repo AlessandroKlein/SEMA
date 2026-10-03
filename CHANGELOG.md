@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.25.0] - 2026-10-03
+
+### Added
+
+- Persistencia de alarmas (D-0041/§87): `AlarmLog` guarda los eventos `Alarm` en
+  LittleFS (JSONL) y los recarga al arrancar.
+
 ## [0.24.0] - 2026-10-03
 
 ### Added
@@ -219,6 +226,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.25.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.25.0
 [0.24.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.24.0
 [0.23.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.23.0
 [0.22.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.22.0

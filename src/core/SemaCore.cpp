@@ -25,6 +25,7 @@ void SemaCore::setup() {
 
   store_.begin("sema");
   history_.begin();
+  alarmLog_.begin();
 
   // Perfil base ESP32 clásico (D-0050/D-0051). En una iteración posterior esto se
   // carga desde el Board/Chip Profile en lugar de declararse aquí.
