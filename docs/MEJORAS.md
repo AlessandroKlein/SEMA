@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.25.0
+> **Tipo:** Roadmap | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.26.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso · ⬜ pendiente.
@@ -20,7 +20,7 @@ Scheduler y Web/REST `/api/v1`. Falta diagnóstico, WebSocket y mDNS.
 ```text
 DS18B20 · AHT20/AHT21/AHT30 · SHT31/SHT40 · BME280 · BMP280 · BH1750
 ```
-🔄 en curso (v0.24.0): Sensor Engine + BME280, SHT40, DS18B20 y BH1750.
+🔄 en curso (v0.26.0): Sensor Engine + BME280, SHT40, DS18B20, BH1750 y AHT20.
 
 ### Fase 3 — Expansión
 ```text
