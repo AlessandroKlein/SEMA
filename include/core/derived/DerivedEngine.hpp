@@ -18,8 +18,10 @@ public:
   static void compute(std::vector<Measurement>& measurements);
 
   // Fórmulas públicas y testables.
-  static float dewPoint(float tempC, float relHum);   // °C
-  static float heatIndex(float tempC, float relHum);  // °C
+  static float dewPoint(float tempC, float relHum);            // °C
+  static float heatIndex(float tempC, float relHum);           // °C
+  static float saturationVaporPressure(float tempC);           // hPa
+  static float absoluteHumidity(float tempC, float relHum);    // g/m³
 };
 
 }  // namespace sema

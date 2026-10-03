@@ -23,6 +23,17 @@ float DerivedEngine::heatIndex(float tempC, float relHum) {
   return (hi - 32.0f) * 5.0f / 9.0f;
 }
 
+float DerivedEngine::saturationVaporPressure(float tempC) {
+  // Magnus: presión de vapor de saturación en hPa.
+  return 6.112f * expf((17.67f * tempC) / (tempC + 243.5f));
+}
+
+float DerivedEngine::absoluteHumidity(float tempC, float relHum) {
+  // Humedad absoluta en g/m³ a partir de la presión de vapor real.
+  const float e = saturationVaporPressure(tempC) * relHum / 100.0f;
+  return 216.7f * e / (tempC + 273.15f);
+}
+
 void DerivedEngine::compute(std::vector<Measurement>& measurements) {
   // Busca un sensor que aporte temperatura y humedad simultáneamente (mismo id).
   const Measurement* temp = nullptr;
@@ -70,6 +81,28 @@ void DerivedEngine::compute(std::vector<Measurement>& measurements) {
   heat.sequence = temp->sequence;
   heat.timestamp = temp->timestamp;
   measurements.push_back(heat);
+
+  Measurement vpres;
+  vpres.sensorId = "DERIVED";
+  vpres.channelId = "vapor_pressure";
+  vpres.measurement = "vapor_pressure";
+  vpres.value = saturationVaporPressure(temp->value) * hum->value / 100.0f;
+  vpres.unit = "hPa";
+  vpres.quality = Quality::Valid;
+  vpres.sequence = temp->sequence;
+  vpres.timestamp = temp->timestamp;
+  measurements.push_back(vpres);
+
+  Measurement ahum;
+  ahum.sensorId = "DERIVED";
+  ahum.channelId = "absolute_humidity";
+  ahum.measurement = "absolute_humidity";
+  ahum.value = absoluteHumidity(temp->value, hum->value);
+  ahum.unit = "g/m3";
+  ahum.quality = Quality::Valid;
+  ahum.sequence = temp->sequence;
+  ahum.timestamp = temp->timestamp;
+  measurements.push_back(ahum);
 }
 
 }  // namespace sema
