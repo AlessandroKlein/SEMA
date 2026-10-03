@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.41.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.42.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.

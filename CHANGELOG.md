@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.42.0] - 2026-10-03
+
+### Added
+
+- `/api/v1/diagnostics` enriquecido: firmware/hw, salud, tareas, módulos, eventos
+  y heap.
+
 ## [0.41.0] - 2026-10-03
 
 ### Added
@@ -337,6 +344,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.42.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.42.0
 [0.41.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.41.0
 [0.40.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.40.0
 [0.39.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.39.0

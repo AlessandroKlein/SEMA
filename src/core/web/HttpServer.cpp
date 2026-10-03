@@ -269,12 +269,17 @@ void HttpServer::onEnergy() {
 
 void HttpServer::onDiagnostics() {
   DynamicJsonDocument doc(1024);
+  doc["firmware"] = SEMA_FW_VERSION;
+  doc["hw"] = SEMA_HW_VERSION;
   doc["uptime_s"] = millis() / 1000;
   doc["free_heap"] = ESP.getFreeHeap();
   doc["reset_reason"] = static_cast<int>(esp_reset_reason());
+  doc["health"] = core_->health().status();
   doc["history"]["entries"] = core_->history().count();
   doc["history"]["max"] = core_->history().maxEntries();
-  doc["tasks"] = 0;
+  doc["tasks"] = core_->scheduler().count();
+  doc["modules"] = core_->modules().count();
+  doc["events"] = core_->eventLog().events().size();
 
   JsonArray i2c = doc.createNestedArray("i2c_devices");
   for (const DetectedDevice& d : core_->detectedDevices()) {
