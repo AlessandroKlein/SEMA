@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.16.0] - 2026-10-03
+
+### Added
+
+- Driver `Ds18b20Sensor` (temperatura) sobre 1-Wire (`README.md` §12).
+- Dependencias OneWire y DallasTemperature.
+
 ## [0.15.0] - 2026-10-03
 
 ### Added
@@ -151,6 +158,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.16.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.16.0
 [0.15.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.15.0
 [0.14.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.14.0
 [0.13.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.13.0
