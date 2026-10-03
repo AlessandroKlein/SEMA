@@ -162,8 +162,20 @@ void HttpServer::onDiagnostics() {
 }
 
 void HttpServer::onSensors() {
-  DynamicJsonDocument doc(1024);
-  JsonArray arr = doc.createNestedArray("sensors");
+  DynamicJsonDocument doc(2048);
+
+  JsonArray catalog = doc.createNestedArray("catalog");
+  std::vector<SensorInfo> info;
+  core_->sensors().describe(info);
+  for (const SensorInfo& s : info) {
+    JsonObject o = catalog.createNestedObject();
+    o["id"] = s.id;
+    o["model"] = s.model;
+    o["interface"] = s.interface;
+    o["healthy"] = s.healthy;
+  }
+
+  JsonArray arr = doc.createNestedArray("measurements");
   for (const Measurement& m : core_->sensors().measurements()) {
     JsonObject o = arr.createNestedObject();
     o["sensor_id"] = m.sensorId;
@@ -174,6 +186,7 @@ void HttpServer::onSensors() {
     o["quality"] = qualityName(m.quality);
     o["sequence"] = m.sequence;
   }
+
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);

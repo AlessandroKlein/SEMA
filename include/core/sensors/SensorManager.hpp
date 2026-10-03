@@ -15,6 +15,15 @@
 
 namespace sema {
 
+// Descriptor de un sensor registrado (README §48): identidad, modelo, interfaz
+// y estado.
+struct SensorInfo {
+  String id;
+  String model;
+  String interface;
+  bool healthy;
+};
+
 class SensorManager {
 public:
   void registerSensor(Sensor* sensor);
@@ -26,6 +35,7 @@ public:
 
   size_t count() const { return sensors_.size(); }
   size_t onlineCount() const;
+  void describe(std::vector<SensorInfo>& out) const;
   const std::vector<Measurement>& measurements() const { return measurements_; }
 
 private:

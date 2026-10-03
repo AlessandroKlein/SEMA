@@ -41,6 +41,18 @@ void SensorManager::readAll() {
   DerivedEngine::compute(measurements_);
 }
 
+void SensorManager::describe(std::vector<SensorInfo>& out) const {
+  out.clear();
+  for (const Sensor* sensor : sensors_) {
+    SensorInfo info;
+    info.id = sensor->id();
+    info.model = sensor->model();
+    info.interface = sensor->interface();
+    info.healthy = sensor->healthy();
+    out.push_back(info);
+  }
+}
+
 size_t SensorManager::onlineCount() const {
   size_t n = 0;
   for (const Sensor* sensor : sensors_) {
