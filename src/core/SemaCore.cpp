@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "core/publishers/HttpPublisher.hpp"
 #include "core/sensors/Bme280Sensor.hpp"
 #include "core/sensors/Ds18b20Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
@@ -94,6 +95,10 @@ void SemaCore::setup() {
 
   http_.begin(*this);
 
+  // Publicadores (D-0010): webhook genérico (URL vacía → deshabilitado).
+  static HttpPublisher webhook("webhook", "");
+  publishers_.registerPublisher(&webhook);
+
   scheduler_.add("core.heartbeat", 5000, []() {
     // Heartbeat periódico del Core. Aquí se integrará el Health Monitor (D-0020).
   });
@@ -102,6 +107,7 @@ void SemaCore::setup() {
     sensors_.readAll();
     for (const Measurement& m : sensors_.measurements()) {
       history_.append(m);
+      publishers_.publishAll(m);
     }
   });
 

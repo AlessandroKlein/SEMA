@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.17.0] - 2026-10-03
+
+### Added
+
+- Infraestructura de publicadores (D-0010): `Publisher`, `PublisherManager`.
+- `HttpPublisher` (webhook genérico, D-0047/§113): POST JSON del Modelo Canónico.
+- Los publicadores se ejecutan tras el almacenamiento de cada medición.
+
 ## [0.16.0] - 2026-10-03
 
 ### Added
@@ -158,6 +166,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.17.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.17.0
 [0.16.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.16.0
 [0.15.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.15.0
 [0.14.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.14.0

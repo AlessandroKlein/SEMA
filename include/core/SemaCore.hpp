@@ -10,6 +10,7 @@
 #include "core/Scheduler.hpp"
 #include "core/Version.hpp"
 #include "core/network/WiFiManager.hpp"
+#include "core/publishers/PublisherManager.hpp"
 #include "core/storage/HistoryStore.hpp"
 #include "core/storage/NvsStore.hpp"
 #include "core/web/HttpServer.hpp"
@@ -37,6 +38,7 @@ public:
   Scheduler& scheduler() { return scheduler_; }
   SensorManager& sensors() { return sensors_; }
   HistoryStore& history() { return history_; }
+  PublisherManager& publishers() { return publishers_; }
   const std::vector<DetectedDevice>& detectedDevices() const { return detectedDevices_; }
 
 private:
@@ -48,6 +50,7 @@ private:
   ConfigManager config_;
   SensorManager sensors_;
   HistoryStore history_;
+  PublisherManager publishers_;
   std::vector<DetectedDevice> detectedDevices_;
   Scheduler scheduler_;
   WiFiManager wifi_;
