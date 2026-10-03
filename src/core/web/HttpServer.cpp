@@ -15,6 +15,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
+  server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   server_.begin();
@@ -40,9 +41,9 @@ void HttpServer::onHealth() {
   doc["status"] = "HEALTHY";
   doc["uptime_s"] = millis() / 1000;
   doc["free_heap"] = ESP.getFreeHeap();
-  doc["sensors"]["total"] = 0;
-  doc["sensors"]["online"] = 0;
-  doc["sensors"]["error"] = 0;
+  doc["sensors"]["total"] = core_->sensors().count();
+  doc["sensors"]["online"] = core_->sensors().onlineCount();
+  doc["sensors"]["error"] = core_->sensors().count() - core_->sensors().onlineCount();
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);
@@ -76,6 +77,24 @@ void HttpServer::onDiagnostics() {
   doc["free_heap"] = ESP.getFreeHeap();
   doc["reset_reason"] = static_cast<int>(esp_reset_reason());
   doc["tasks"] = 0;
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onSensors() {
+  DynamicJsonDocument doc(1024);
+  JsonArray arr = doc.createNestedArray("sensors");
+  for (const Measurement& m : core_->sensors().measurements()) {
+    JsonObject o = arr.createNestedObject();
+    o["sensor_id"] = m.sensorId;
+    o["channel_id"] = m.channelId;
+    o["measurement"] = m.measurement;
+    o["value"] = m.value;
+    o["unit"] = m.unit;
+    o["quality"] = qualityName(m.quality);
+    o["sequence"] = m.sequence;
+  }
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);

@@ -5,6 +5,7 @@
 #include "core/EventBus.hpp"
 #include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
+#include "core/sensors/SensorManager.hpp"
 #include "core/Scheduler.hpp"
 #include "core/Version.hpp"
 #include "core/network/WiFiManager.hpp"
@@ -32,6 +33,7 @@ public:
   ConfigManager& config() { return config_; }
   CapabilityManager& capabilities() { return CapabilityManager::instance(); }
   Scheduler& scheduler() { return scheduler_; }
+  SensorManager& sensors() { return sensors_; }
 
 private:
   SemaCore();
@@ -40,6 +42,7 @@ private:
   ModuleRegistry modules_;
   EventBus events_;
   ConfigManager config_;
+  SensorManager sensors_;
   Scheduler scheduler_;
   WiFiManager wifi_;
   HttpServer http_;

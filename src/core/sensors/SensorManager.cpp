@@ -1,0 +1,40 @@
+#include "core/sensors/SensorManager.hpp"
+
+namespace sema {
+
+void SensorManager::registerSensor(Sensor* sensor) {
+  sensors_.push_back(sensor);
+}
+
+void SensorManager::beginAll() {
+  for (Sensor* sensor : sensors_) {
+    sensor->begin();
+  }
+}
+
+void SensorManager::readAll() {
+  measurements_.clear();
+
+  Measurement buffer[4];
+  for (Sensor* sensor : sensors_) {
+    if (!sensor->healthy()) {
+      continue;
+    }
+    const uint8_t n = sensor->measure(buffer, 4);
+    for (uint8_t i = 0; i < n; ++i) {
+      measurements_.push_back(buffer[i]);
+    }
+  }
+}
+
+size_t SensorManager::onlineCount() const {
+  size_t n = 0;
+  for (const Sensor* sensor : sensors_) {
+    if (sensor->healthy()) {
+      ++n;
+    }
+  }
+  return n;
+}
+
+}  // namespace sema

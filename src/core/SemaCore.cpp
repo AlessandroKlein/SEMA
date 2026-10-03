@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "core/sensors/Bme280Sensor.hpp"
+
 namespace sema {
 
 SemaCore& SemaCore::instance() {
@@ -52,6 +54,11 @@ void SemaCore::setup() {
                 caps.has(Capability::DualCore) ? 1 : 0,
                 caps.has(Capability::Can) ? 1 : 0);
 
+  // Fase 2 — Sensor Engine: registra drivers y arranca la lectura periódica.
+  static Bme280Sensor bme280("EXT", 21, 22);
+  sensors_.registerSensor(&bme280);
+  sensors_.beginAll();
+
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
               config_.get().network.password,
@@ -63,8 +70,15 @@ void SemaCore::setup() {
     // Heartbeat periódico del Core. Aquí se integrará el Health Monitor (D-0020).
   });
 
+  scheduler_.add("sensors.read", 10000, [this]() {
+    sensors_.readAll();
+  });
+
   modules_.enableAll();
 
+  Serial.printf("Sensores: %u registrados, %u activos\n",
+                static_cast<unsigned>(sensors_.count()),
+                static_cast<unsigned>(sensors_.onlineCount()));
   Serial.printf("Web local: http://%s/\n", wifi_.localIP().c_str());
   Serial.printf("Módulos registrados: %u\n", static_cast<unsigned>(modules_.count()));
 }

@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.9.0] - 2026-10-03
+
+### Added
+
+- Fase 2 — Sensor Engine (primera iteración):
+  - `Sensor` (interfaz de driver por magnitud) y `SensorManager` (registro + lectura).
+  - Driver `Bme280Sensor` (temperatura, humedad, presión) sobre I²C.
+  - Endpoint `GET /api/v1/sensors` y contadores reales en `/api/v1/health`.
+- Dependencias Adafruit BME280 (+ Unified Sensor, BusIO).
+
 ## [0.8.0] - 2026-10-03
 
 ### Added
@@ -96,6 +106,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.9.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.9.0
 [0.8.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.8.0
 [0.7.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.7.0
 [0.6.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.6.0

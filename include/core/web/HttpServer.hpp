@@ -23,6 +23,7 @@ private:
   void onSystem();
   void onConfig();
   void onDiagnostics();
+  void onSensors();
   void onNotFound();
 
   ::WebServer server_;

@@ -37,4 +37,19 @@ struct Measurement {
   uint32_t timestamp = 0;  // epoch seconds UTC
 };
 
+// Nombre del Quality Flag (D-0056), para serialización/API.
+inline const char* qualityName(Quality q) {
+  switch (q) {
+    case Quality::Valid: return "VALID";
+    case Quality::Invalid: return "INVALID";
+    case Quality::Stale: return "STALE";
+    case Quality::Timeout: return "TIMEOUT";
+    case Quality::OutOfRange: return "OUT_OF_RANGE";
+    case Quality::CalibrationError: return "CALIBRATION_ERROR";
+    case Quality::CommunicationError: return "COMMUNICATION_ERROR";
+    case Quality::SensorDisconnected: return "SENSOR_DISCONNECTED";
+    default: return "UNKNOWN";
+  }
+}
+
 }  // namespace sema
