@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.30.0] - 2026-10-03
+
+### Added
+
+- Sensor analógico `AdcSensor` (ADC interno, D-0051/§32-33): escala/offset.
+- Medición de tensión de batería (D-0021/§37) con divisor resistivo.
+
 ## [0.29.0] - 2026-10-03
 
 ### Added
@@ -254,6 +261,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.30.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.30.0
 [0.29.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.29.0
 [0.28.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.28.0
 [0.27.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.27.0

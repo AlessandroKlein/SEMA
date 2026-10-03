@@ -5,6 +5,7 @@
 
 #include "core/publishers/HttpPublisher.hpp"
 #include "core/publishers/MqttPublisher.hpp"
+#include "core/sensors/AdcSensor.hpp"
 #include "core/sensors/Aht20Sensor.hpp"
 #include "core/sensors/Bh1750Sensor.hpp"
 #include "core/sensors/Bme280Sensor.hpp"
@@ -77,11 +78,14 @@ void SemaCore::setup() {
   static Ds18b20Sensor ds18b20("SOIL", 4);  // 1-Wire con pull-up 4,7 kΩ (README §12)
   static Bh1750Sensor bh1750("LUX", 21, 22);
   static Aht20Sensor aht20("AUX", 21, 22);
+  // Batería (ADC interno, GPIO34): divisor 11:1 para 12 V (README §37).
+  static AdcSensor battery("BATT", 34, "voltage", "V", 3.3f * 11.0f / 4095.0f, 0.0f);
   sensors_.registerSensor(&bme280);
   sensors_.registerSensor(&sht40);
   sensors_.registerSensor(&ds18b20);
   sensors_.registerSensor(&bh1750);
   sensors_.registerSensor(&aht20);
+  sensors_.registerSensor(&battery);
   sensors_.beginAll();
 
   // Calibración de ejemplo (D-0055): límites de temperatura. En una iteración
