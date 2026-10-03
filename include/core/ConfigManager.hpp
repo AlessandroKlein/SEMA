@@ -46,6 +46,13 @@ struct EnergyConfig {
   uint8_t rainPin = 0;  // GPIO del pluviómetro (D-0022); 0 = deshabilitado
 };
 
+struct PublishersConfig {
+  String webhookUrl;   // vacío = deshabilitado
+  String mqttHost;     // vacío = deshabilitado
+  uint16_t mqttPort = 1883;
+  String mqttTopic = "sema/measurement";
+};
+
 // Especificación de un sensor (D-0042): el catálogo se define por configuración.
 struct SensorSpec {
   String id;
@@ -68,6 +75,7 @@ struct Config {
   StorageConfig storage;
   SecurityConfig security;
   EnergyConfig energy;
+  PublishersConfig publishers;
   std::vector<SensorSpec> sensors;  // vacío = usar catálogo por defecto
 };
 

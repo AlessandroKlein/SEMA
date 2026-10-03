@@ -127,9 +127,11 @@ void SemaCore::setup() {
 
   http_.begin(*this);
 
-  // Publicadores (D-0010): webhook HTTP y MQTT (host/URL vacíos → deshabilitados).
-  static HttpPublisher webhook("webhook", "");
-  static MqttPublisher mqtt("mqtt", "", 1883, "sema/measurement");
+  // Publicadores (D-0010): webhook HTTP y MQTT, configurados desde la config.
+  static HttpPublisher webhook("webhook", config_.get().publishers.webhookUrl.c_str());
+  static MqttPublisher mqtt("mqtt", config_.get().publishers.mqttHost.c_str(),
+                            config_.get().publishers.mqttPort,
+                            config_.get().publishers.mqttTopic.c_str());
   publishers_.registerPublisher(&webhook);
   publishers_.registerPublisher(&mqtt);
 

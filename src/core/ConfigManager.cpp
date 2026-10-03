@@ -90,6 +90,10 @@ bool ConfigManager::serialize(String& out) const {
   doc["security"]["api_key"] = config_.security.apiKey;
   doc["security"]["server_key"] = config_.security.serverKey;
   doc["energy"]["rain_pin"] = config_.energy.rainPin;
+  doc["publishers"]["webhook_url"] = config_.publishers.webhookUrl;
+  doc["publishers"]["mqtt_host"] = config_.publishers.mqttHost;
+  doc["publishers"]["mqtt_port"] = config_.publishers.mqttPort;
+  doc["publishers"]["mqtt_topic"] = config_.publishers.mqttTopic;
   JsonArray sensors = doc.createNestedArray("sensors");
   for (const SensorSpec& s : config_.sensors) {
     JsonObject o = sensors.createNestedObject();
@@ -128,6 +132,10 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.security.apiKey = doc["security"]["api_key"] | "";
   c.security.serverKey = doc["security"]["server_key"] | "";
   c.energy.rainPin = doc["energy"]["rain_pin"] | 0;
+  c.publishers.webhookUrl = doc["publishers"]["webhook_url"] | "";
+  c.publishers.mqttHost = doc["publishers"]["mqtt_host"] | "";
+  c.publishers.mqttPort = doc["publishers"]["mqtt_port"] | 1883;
+  c.publishers.mqttTopic = doc["publishers"]["mqtt_topic"] | "sema/measurement";
   c.sensors.clear();
   for (JsonObject o : doc["sensors"].as<JsonArray>()) {
     SensorSpec s;
