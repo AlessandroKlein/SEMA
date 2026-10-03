@@ -1,6 +1,6 @@
 # Arquitectura e implementación — SEMA
 
-> **Tipo:** Concepto | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.7.0
+> **Tipo:** Concepto | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.8.0
 
 Consolida la arquitectura de SEMA a partir de la especificación del `README.md`.
 Es la referencia para implementar el firmware de forma modular. El estado de qué
@@ -266,7 +266,7 @@ D-0046), derivadas del contrato de [`DUDAS-Y-DECISIONES.md`](DUDAS-Y-DECISIONES.
   "schema_version": 1,
   "station":  { "id": "SEMA-001", "name": "Estación Norte" },
   "board":    { "profile": "esp32" },
-  "network":  { "mode": "STA", "ssid": "", "hostname": "sema-001", "mdns": true },
+  "network":  { "mode": "STA", "ssid": "", "password": "", "hostname": "sema-001", "mdns": true },
   "time":     { "timezone": "America/Argentina/Buenos_Aires", "ntp": true },
   "sensors":  [],
   "channels": [],

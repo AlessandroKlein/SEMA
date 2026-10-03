@@ -21,6 +21,7 @@ struct StationConfig {
 struct NetworkConfig {
   String mode;      // "STA" | "AP"
   String ssid;
+  String password;
   String hostname;
   bool mdns;
 };
@@ -54,6 +55,7 @@ public:
 
   const Config& get() const { return config_; }
   bool valid() const { return valid_; }
+  bool toJson(String& out) const { return serialize(out); }
 
 private:
   bool validate(const Config& c) const;

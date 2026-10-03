@@ -51,13 +51,29 @@ void SemaCore::setup() {
                 caps.has(Capability::Pcnt) ? 1 : 0,
                 caps.has(Capability::DualCore) ? 1 : 0,
                 caps.has(Capability::Can) ? 1 : 0);
-  Serial.printf("Módulos registrados: %u\n", static_cast<unsigned>(modules_.count()));
+
+  wifi_.begin(config_.get().network.mode,
+              config_.get().network.ssid,
+              config_.get().network.password,
+              config_.get().network.hostname);
+
+  http_.begin(*this);
+
+  scheduler_.add("core.heartbeat", 5000, []() {
+    // Heartbeat periódico del Core. Aquí se integrará el Health Monitor (D-0020).
+  });
 
   modules_.enableAll();
+
+  Serial.printf("Web local: http://%s/\n", wifi_.localIP().c_str());
+  Serial.printf("Módulos registrados: %u\n", static_cast<unsigned>(modules_.count()));
 }
 
 void SemaCore::loop() {
   modules_.loopAll();
+  wifi_.loop();
+  http_.loop();
+  scheduler_.run();
 }
 
 }  // namespace sema

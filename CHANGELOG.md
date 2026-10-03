@@ -6,6 +6,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.8.0] - 2026-10-03
+
+### Added
+
+- `Scheduler` (D-0018): tareas periódicas por intervalo.
+- `WiFiManager`: conexión STA o Access Point de emergencia (`README.md` §59-60).
+- `HttpServer`: REST local `/api/v1/status·health·system·config·diagnostics` (D-0041).
+- `NetworkConfig.password` y `ConfigManager::toJson()`.
+
 ## [0.7.0] - 2026-10-03
 
 ### Added
@@ -87,6 +96,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.8.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.8.0
 [0.7.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.7.0
 [0.6.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.6.0
 [0.5.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.5.0

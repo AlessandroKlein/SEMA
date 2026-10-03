@@ -1,0 +1,88 @@
+#include "core/web/HttpServer.hpp"
+
+#include <ArduinoJson.h>
+#include <esp_system.h>
+
+#include "core/SemaCore.hpp"
+
+namespace sema {
+
+void HttpServer::begin(SemaCore& core) {
+  core_ = &core;
+
+  server_.on("/api/v1/status", HTTP_GET, [this]() { onStatus(); });
+  server_.on("/api/v1/health", HTTP_GET, [this]() { onHealth(); });
+  server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
+  server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
+  server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
+  server_.onNotFound([this]() { onNotFound(); });
+
+  server_.begin();
+}
+
+void HttpServer::loop() {
+  server_.handleClient();
+}
+
+void HttpServer::onStatus() {
+  DynamicJsonDocument doc(256);
+  doc["station"] = core_->config().get().station.id;
+  doc["name"] = core_->config().get().station.name;
+  doc["firmware"] = SEMA_FW_VERSION;
+  doc["uptime_s"] = millis() / 1000;
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onHealth() {
+  DynamicJsonDocument doc(384);
+  doc["status"] = "HEALTHY";
+  doc["uptime_s"] = millis() / 1000;
+  doc["free_heap"] = ESP.getFreeHeap();
+  doc["sensors"]["total"] = 0;
+  doc["sensors"]["online"] = 0;
+  doc["sensors"]["error"] = 0;
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onSystem() {
+  DynamicJsonDocument doc(256);
+  doc["id"] = core_->config().get().station.id;
+  doc["name"] = core_->config().get().station.name;
+  doc["firmware"] = SEMA_FW_VERSION;
+  doc["hw"] = SEMA_HW_VERSION;
+  doc["config_schema"] = SEMA_CONFIG_SCHEMA_VERSION;
+  doc["protocol"] = SEMA_PROTOCOL_VERSION;
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onConfig() {
+  String out;
+  if (core_->config().toJson(out)) {
+    server_.send(200, "application/json", out);
+  } else {
+    server_.send(500, "application/json", "{\"error\":\"serialization failed\"}");
+  }
+}
+
+void HttpServer::onDiagnostics() {
+  DynamicJsonDocument doc(256);
+  doc["uptime_s"] = millis() / 1000;
+  doc["free_heap"] = ESP.getFreeHeap();
+  doc["reset_reason"] = static_cast<int>(esp_reset_reason());
+  doc["tasks"] = 0;
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onNotFound() {
+  server_.send(404, "application/json", "{\"error\":\"not found\"}");
+}
+
+}  // namespace sema

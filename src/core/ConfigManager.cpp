@@ -80,6 +80,7 @@ bool ConfigManager::serialize(String& out) const {
   doc["station"]["name"] = config_.station.name;
   doc["network"]["mode"] = config_.network.mode;
   doc["network"]["ssid"] = config_.network.ssid;
+  doc["network"]["password"] = config_.network.password;
   doc["network"]["hostname"] = config_.network.hostname;
   doc["network"]["mdns"] = config_.network.mdns;
   doc["system"]["timezone"] = config_.system.timezone;
@@ -101,6 +102,7 @@ bool ConfigManager::deserialize(const String& in) {
   config_.station.name = doc["station"]["name"] | "Estación Norte";
   config_.network.mode = doc["network"]["mode"] | "STA";
   config_.network.ssid = doc["network"]["ssid"] | "";
+  config_.network.password = doc["network"]["password"] | "";
   config_.network.hostname = doc["network"]["hostname"] | "sema-001";
   config_.network.mdns = doc["network"]["mdns"] | true;
   config_.system.timezone = doc["system"]["timezone"] | "America/Argentina/Buenos_Aires";
