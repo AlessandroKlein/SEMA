@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.12.0] - 2026-10-03
+
+### Added
+
+- Driver `Sht40Sensor` (temperatura y humedad) sobre I²C (D-0002/D-0043).
+- Dependencia Adafruit SHT4x.
+
 ## [0.11.0] - 2026-10-03
 
 ### Added
@@ -122,6 +129,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.12.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.12.0
 [0.11.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.11.0
 [0.10.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.10.0
 [0.9.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.9.0

@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include "core/sensors/Bme280Sensor.hpp"
+#include "core/sensors/Sht40Sensor.hpp"
 
 namespace sema {
 
@@ -57,7 +58,9 @@ void SemaCore::setup() {
 
   // Fase 2 — Sensor Engine: registra drivers y arranca la lectura periódica.
   static Bme280Sensor bme280("EXT", 21, 22);
+  static Sht40Sensor sht40("INT", 21, 22);
   sensors_.registerSensor(&bme280);
+  sensors_.registerSensor(&sht40);
   sensors_.beginAll();
 
   wifi_.begin(config_.get().network.mode,
