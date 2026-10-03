@@ -25,6 +25,8 @@ public:
   void setMaxEntries(uint32_t max) { maxEntries_ = max; }
 
 private:
+  bool rotate();
+
   String path_;
   size_t count_ = 0;
   uint32_t maxEntries_ = 10000;

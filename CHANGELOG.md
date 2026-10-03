@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.53.0] - 2026-10-03
+
+### Added
+
+- Rotación del histórico (D-0057): `HistoryStore` conserva la mitad más reciente y
+  reescribe al alcanzar el límite (ya no descarta las mediciones nuevas).
+
 ## [0.52.0] - 2026-10-03
 
 ### Added
@@ -412,6 +419,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.53.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.53.0
 [0.52.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.52.0
 [0.51.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.51.0
 [0.50.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.50.0

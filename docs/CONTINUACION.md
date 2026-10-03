@@ -51,7 +51,7 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 | Prioridad | Ítem | Nota |
 |:---------:|------|------|
 | 1 | **NTP/RTC** — epoch UTC real en timestamps (D-0044) | Hoy los timestamps son `millis()/1000` |
-| 2 | **Rotación del histórico/eventos** (D-0057) | Hoy los archivos JSONL crecen sin límite |
+| 2 | **Rotación del EventLog** (D-0057) | Histórico ya rota; falta rotar eventos |
 | 3 | **Re-aplicar config sin reinicio** | `PUT /config` que cambie sensores/reglas/publicadores hoy exige reboot |
 | 4 | **Dashboard avanzado** | Gráficos, histórico en la web, edición de config desde la UI |
 | 5 | **TLS/HTTPS + rate limiting** (opcional) | Seguridad adicional |

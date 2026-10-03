@@ -44,11 +44,49 @@ bool HistoryStore::begin(const char* path) {
   return true;
 }
 
+bool HistoryStore::rotate() {
+  // D-0057: conserva la mitad más reciente y reescribe el archivo.
+  std::deque<String> lines;
+  File f = LittleFS.open(path_, "r");
+  if (f) {
+    while (f.available()) {
+      String line = f.readStringUntil('\n');
+      line.trim();
+      if (line.length() > 0) {
+        lines.push_back(line);
+      }
+    }
+    f.close();
+  }
+
+  const size_t keep = lines.size() / 2;
+  if (keep == lines.size()) {
+    return true;  // nada que rotar
+  }
+  const size_t skip = lines.size() - keep;
+
+  File w = LittleFS.open(path_, "w");  // trunca
+  if (!w) {
+    return false;
+  }
+  size_t idx = 0;
+  for (const String& line : lines) {
+    if (idx++ < skip) {
+      continue;
+    }
+    w.println(line);
+  }
+  w.close();
+
+  count_ = keep;
+  return true;
+}
+
 bool HistoryStore::append(const Measurement& m) {
   if (count_ >= maxEntries_) {
-    // TODO(D-0057): rotación por niveles (alta resolución + agregados) en lugar
-    // de simplemente descartar.
-    return false;
+    if (!rotate()) {
+      return false;
+    }
   }
 
   DynamicJsonDocument doc(256);
