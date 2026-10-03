@@ -103,6 +103,17 @@ bool ConfigManager::serialize(String& out) const {
     o["op"] = r.op;
     o["value"] = r.value;
   }
+  JsonArray calibrations = doc.createNestedArray("calibrations");
+  for (const CalibrationSpec& c : config_.calibrations) {
+    JsonObject o = calibrations.createNestedObject();
+    o["sensor_id"] = c.sensorId;
+    o["channel_id"] = c.channelId;
+    o["gain"] = c.gain;
+    o["offset"] = c.offset;
+    o["has_range"] = c.hasRange;
+    o["min"] = c.min;
+    o["max"] = c.max;
+  }
   JsonArray sensors = doc.createNestedArray("sensors");
   for (const SensorSpec& s : config_.sensors) {
     JsonObject o = sensors.createNestedObject();
@@ -154,6 +165,18 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     r.op = o["op"] | "gt";
     r.value = o["value"] | 0.0f;
     c.rules.push_back(r);
+  }
+  c.calibrations.clear();
+  for (JsonObject o : doc["calibrations"].as<JsonArray>()) {
+    CalibrationSpec cal;
+    cal.sensorId = o["sensor_id"] | "";
+    cal.channelId = o["channel_id"] | "";
+    cal.gain = o["gain"] | 1.0f;
+    cal.offset = o["offset"] | 0.0f;
+    cal.hasRange = o["has_range"] | false;
+    cal.min = o["min"] | 0.0f;
+    cal.max = o["max"] | 0.0f;
+    c.calibrations.push_back(cal);
   }
   c.sensors.clear();
   for (JsonObject o : doc["sensors"].as<JsonArray>()) {

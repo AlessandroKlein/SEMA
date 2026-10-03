@@ -183,6 +183,9 @@ edita desde la web o la API. Ejemplo completo:
   "rules": [
     { "name": "high_temp", "sensor_id": "EXT", "channel_id": "temperature", "op": "gt", "value": 40.0 }
   ],
+  "calibrations": [
+    { "sensor_id": "EXT", "channel_id": "temperature", "gain": 1.0, "offset": 0.0, "has_range": true, "min": -40.0, "max": 85.0 }
+  ],
   "energy": { "rain_pin": 0 },
   "sensors": [
     { "id": "EXT",  "model": "BME280",  "sda": 21, "scl": 22 },
@@ -203,6 +206,7 @@ edita desde la web o la API. Ejemplo completo:
 | `security` | Claves de acceso (`api_key`, `server_key`) |
 | `publishers` | Webhook URL y MQTT (host/puerto/topic) |
 | `rules` | Reglas de alarma (nombre, sensor, canal, operador, umbral) |
+| `calibrations` | Calibración por canal (gain/offset/rango) |
 | `energy` | Pin del pluviómetro para wake-up |
 | `sensors` | **Catálogo de sensores** (si está vacío, se usa el catálogo por defecto) |
 

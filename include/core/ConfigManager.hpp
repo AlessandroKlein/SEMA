@@ -62,6 +62,17 @@ struct RuleSpec {
   float value = 0.0f;
 };
 
+// Especificación de calibración por canal (D-0055): configurable.
+struct CalibrationSpec {
+  String sensorId;
+  String channelId;
+  float gain = 1.0f;
+  float offset = 0.0f;
+  bool hasRange = false;
+  float min = 0.0f;
+  float max = 0.0f;
+};
+
 // Especificación de un sensor (D-0042): el catálogo se define por configuración.
 struct SensorSpec {
   String id;
@@ -85,8 +96,9 @@ struct Config {
   SecurityConfig security;
   EnergyConfig energy;
   PublishersConfig publishers;
-  std::vector<SensorSpec> sensors;  // vacío = usar catálogo por defecto
-  std::vector<RuleSpec> rules;      // vacío = usar regla por defecto
+  std::vector<SensorSpec> sensors;          // vacío = usar catálogo por defecto
+  std::vector<RuleSpec> rules;              // vacío = usar regla por defecto
+  std::vector<CalibrationSpec> calibrations; // vacío = usar calibración por defecto
 };
 
 class ConfigManager {
