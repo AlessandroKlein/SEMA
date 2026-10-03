@@ -1,6 +1,6 @@
 # Arquitectura e implementación — SEMA
 
-> **Tipo:** Concepto | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.2.0
+> **Tipo:** Concepto | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.3.0
 
 Consolida la arquitectura de SEMA a partir de la especificación del `README.md`.
 Es la referencia para implementar el firmware de forma modular. El estado de qué
@@ -63,6 +63,34 @@ exponen magnitudes (no modelos), y los **Services** consumen esas magnitudes.
 
 ---
 
+## 2.1 Compatibilidad multigeneración: perfiles y HAL
+
+La compatibilidad entre variantes de ESP32 **no se resuelve con `#ifdef`
+repartidos** (ver [`DUDAS-Y-DECISIONES.md`](DUDAS-Y-DECISIONES.md) §2):
+
+```text
+SEMA Application
+       │
+       ▼
+SEMA Core
+       ├── Capability Manager
+       ├── Resource Manager
+       ├── Runtime Manager
+       └── Hardware Abstraction Layer (HAL)
+                    │
+                    ▼
+             Board/Chip Profile
+```
+
+- **Capability Manager** — qué puede hacer la plataforma (ADC, PCNT, PSRAM, SMP,
+  Wi-Fi, 802.15.4, CAN/TWAI, …).
+- **Resource Manager** — asigna y valida recursos (GPIO, periféricos, canales,
+  buses) detectando conflictos.
+- **Runtime Manager** — tareas y afinidad (`AUTO` por defecto) sobre FreeRTOS.
+- **HAL + Board/Chip Profile** — única frontera con el hardware concreto.
+
+---
+
 ## 3. Estructura de carpetas (`README.md` §77)
 
 ```text
@@ -99,18 +127,21 @@ Los detalles podrán evolucionar durante el desarrollo (`README.md` §77).
 CORE
  ├── Sensor Engine (medición + validación + calibración)
  ├── Configuration (persistencia, esquema versionado, migraciones)
+ ├── Capability Manager / Resource Manager / Runtime Manager / HAL
  ├── Event Bus / Event Manager
  ├── Scheduler (tareas por capacidades)
- ├── Storage (histórico, eventos, logs)
+ ├── Storage API (NVS / Flash / LittleFS / SD / externo)
  ├── Web Server / API / WebSocket
  └── Diagnostics (health, watchdog, observabilidad)
 
-OPTIONAL
+CAPACIDADES / INTERFACES (implementaciones, no módulos que contaminan el Core)
+ ├── MQTT, HTTP, LoRa, Zigbee, RS485, CAN, OTA
  ├── Weather, Air Quality, Lightning, Soil, Energy
- ├── LoRa, Zigbee, RS485, CAN, MQTT, SD, OTA
 ```
 
-El Core no debe depender de módulos opcionales (`README.md` §52, §25).
+El Core conoce el concepto de almacenamiento y de cada capacidad, pero las
+implementaciones concretas se registran por interfaz (`DUDAS-Y-DECISIONES.md`
+D-0003).
 
 ---
 

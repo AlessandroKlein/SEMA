@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.3.0] - 2026-10-03
+
+### Changed
+
+- `docs/DUDAS-Y-DECISIONES.md` llevado a contrato arquitectónico: 40 decisiones
+  (D-0001…D-0040) y 20 dudas (Q-0001…Q-0020).
+- `docs/IMPLEMENTACION.md` incorpora la compatibilidad por perfiles
+  (Capability / Resource / Runtime Manager + HAL) y el Storage API.
+- Corrección D-0003: almacenamiento y protocolos como abstracciones del Core.
+
 ## [0.2.0] - 2026-10-03
 
 ### Added
@@ -35,5 +45,6 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.3.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.3.0
 [0.2.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.2.0
 [0.1.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.1.0
