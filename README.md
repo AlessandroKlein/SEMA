@@ -7,6 +7,13 @@ Sistema modular de adquisición, procesamiento, almacenamiento, visualización y
 > **Principio fundamental:**
 > **El hardware define las capacidades. La configuración web define cómo se utilizan.**
 
+## Repositorios
+
+| Repositorio | URL |
+| --- | --- |
+| Código del proyecto | `git@github.com:AlessandroKlein/SEMA.git` |
+| Documentación / wiki | `git@github.com:AlessandroKlein/Docs.git` |
+
 ---
 
 # 1. Descripción general

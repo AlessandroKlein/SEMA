@@ -1,18 +1,18 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+#include "core/SemaCore.hpp"
+
+// =============================================================================
+// SEMA — Sistema de Estación Meteorológica Autónoma
+// =============================================================================
+// main.cpp se mantiene deliberadamente pequeño (DESIGN-SYSTEM.md §102).
+// Su única responsabilidad es arrancar el Core; la lógica vive en módulos
+// registrados sobre ModuleRegistry y coordinados por SemaCore.
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  sema::SemaCore::instance().setup();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  sema::SemaCore::instance().loop();
 }
