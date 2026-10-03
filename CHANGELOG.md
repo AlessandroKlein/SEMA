@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.38.0] - 2026-10-03
+
+### Added
+
+- Catálogo de sensores configurable (D-0042): `sensors` en `schema=1` y
+  `SensorFactory`; la configuración define qué drivers se instancian.
+
 ## [0.37.0] - 2026-10-03
 
 ### Added
@@ -309,6 +316,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.38.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.38.0
 [0.37.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.37.0
 [0.36.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.36.0
 [0.35.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.35.0

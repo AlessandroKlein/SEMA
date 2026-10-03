@@ -74,7 +74,7 @@ bool ConfigManager::validate(const Config& c) const {
 }
 
 bool ConfigManager::serialize(String& out) const {
-  DynamicJsonDocument doc(1024);
+  DynamicJsonDocument doc(2048);
   doc["schema_version"] = config_.schemaVersion;
   doc["station"]["id"] = config_.station.id;
   doc["station"]["name"] = config_.station.name;
@@ -89,12 +89,25 @@ bool ConfigManager::serialize(String& out) const {
   doc["storage"]["retention_days"] = config_.storage.retentionDays;
   doc["security"]["api_key"] = config_.security.apiKey;
   doc["energy"]["rain_pin"] = config_.energy.rainPin;
+  JsonArray sensors = doc.createNestedArray("sensors");
+  for (const SensorSpec& s : config_.sensors) {
+    JsonObject o = sensors.createNestedObject();
+    o["id"] = s.id;
+    o["model"] = s.model;
+    o["sda"] = s.sda;
+    o["scl"] = s.scl;
+    o["pin"] = s.pin;
+    o["channel"] = s.channel;
+    o["unit"] = s.unit;
+    o["scale"] = s.scale;
+    o["offset"] = s.offset;
+  }
   serializeJson(doc, out);
   return true;
 }
 
 bool ConfigManager::parseInto(const String& in, Config& c) {
-  DynamicJsonDocument doc(1024);
+  DynamicJsonDocument doc(2048);
   const DeserializationError err = deserializeJson(doc, in);
   if (err) {
     return false;
@@ -113,6 +126,20 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
   c.security.apiKey = doc["security"]["api_key"] | "";
   c.energy.rainPin = doc["energy"]["rain_pin"] | 0;
+  c.sensors.clear();
+  for (JsonObject o : doc["sensors"].as<JsonArray>()) {
+    SensorSpec s;
+    s.id = o["id"] | "";
+    s.model = o["model"] | "";
+    s.sda = o["sda"] | 21;
+    s.scl = o["scl"] | 22;
+    s.pin = o["pin"] | 0;
+    s.channel = o["channel"] | "";
+    s.unit = o["unit"] | "";
+    s.scale = o["scale"] | 1.0f;
+    s.offset = o["offset"] | 0.0f;
+    c.sensors.push_back(s);
+  }
   return true;
 }
 

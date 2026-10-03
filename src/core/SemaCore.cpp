@@ -11,6 +11,7 @@
 #include "core/sensors/Bme280Sensor.hpp"
 #include "core/sensors/Ds18b20Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
+#include "core/sensors/SensorFactory.hpp"
 
 namespace sema {
 
@@ -77,19 +78,34 @@ void SemaCore::setup() {
   }
 
   // Fase 2 — Sensor Engine: registra drivers y arranca la lectura periódica.
-  static Bme280Sensor bme280("EXT", 21, 22);
-  static Sht40Sensor sht40("INT", 21, 22);
-  static Ds18b20Sensor ds18b20("SOIL", 4);  // 1-Wire con pull-up 4,7 kΩ (README §12)
-  static Bh1750Sensor bh1750("LUX", 21, 22);
-  static Aht20Sensor aht20("AUX", 21, 22);
-  // Batería (ADC interno, GPIO34): divisor 11:1 para 12 V (README §37).
-  static AdcSensor battery("BATT", 34, "voltage", "V", 3.3f * 11.0f / 4095.0f, 0.0f);
-  sensors_.registerSensor(&bme280);
-  sensors_.registerSensor(&sht40);
-  sensors_.registerSensor(&ds18b20);
-  sensors_.registerSensor(&bh1750);
-  sensors_.registerSensor(&aht20);
-  sensors_.registerSensor(&battery);
+  if (config_.get().sensors.empty()) {
+    // Catálogo por defecto (retrocompatibilidad) si la config no define sensores.
+    static Bme280Sensor bme280("EXT", 21, 22);
+    static Sht40Sensor sht40("INT", 21, 22);
+    static Ds18b20Sensor ds18b20("SOIL", 4);  // 1-Wire con pull-up 4,7 kΩ (README §12)
+    static Bh1750Sensor bh1750("LUX", 21, 22);
+    static Aht20Sensor aht20("AUX", 21, 22);
+    // Batería (ADC interno, GPIO34): divisor 11:1 para 12 V (README §37).
+    static AdcSensor battery("BATT", 34, "voltage", "V", 3.3f * 11.0f / 4095.0f, 0.0f);
+    sensors_.registerSensor(&bme280);
+    sensors_.registerSensor(&sht40);
+    sensors_.registerSensor(&ds18b20);
+    sensors_.registerSensor(&bh1750);
+    sensors_.registerSensor(&aht20);
+    sensors_.registerSensor(&battery);
+  } else {
+    // D-0042: el catálogo de sensores viene de la configuración.
+    for (const SensorSpec& spec : config_.get().sensors) {
+      Sensor* sensor = SensorFactory::create(spec);
+      if (sensor != nullptr) {
+        sensors_.registerSensor(sensor);
+        ownedSensors_.push_back(sensor);
+      } else {
+        Serial.printf("Sensor desconocido: %s (modelo %s)\n",
+                      spec.id.c_str(), spec.model.c_str());
+      }
+    }
+  }
   sensors_.beginAll();
 
   // Calibración de ejemplo (D-0055): límites de temperatura. En una iteración

@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.37.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.38.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -80,7 +80,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Dashboard modular | 🔄 (página básica en `/`) |
 | Sistema de módulos | 🔄 (interfaz + registro; sin módulos reales) |
 | Sistema de sensores | ✅ |
-| Catálogo de sensores | 🔄 (drivers hardcodeados; falta catálogo configurable) |
+| Catálogo de sensores | ✅ (configurable vía factoría) |
 | Detección I²C | ✅ |
 | Detección 1-Wire | ⬜ (driver DS18B20; sin auto-detección) |
 | Configuración GPIO | ⬜ |

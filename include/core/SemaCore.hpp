@@ -64,6 +64,7 @@ private:
   EventLog eventLog_;
   Watchdog watchdog_;
   std::vector<DetectedDevice> detectedDevices_;
+  std::vector<Sensor*> ownedSensors_;  // sensores creados por la factoría (D-0042)
   Scheduler scheduler_;
   WiFiManager wifi_;
   HttpServer http_;

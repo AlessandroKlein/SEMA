@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <cstdint>
+#include <vector>
 
 #include "core/storage/Storage.hpp"
 
@@ -44,6 +45,19 @@ struct EnergyConfig {
   uint8_t rainPin = 0;  // GPIO del pluviómetro (D-0022); 0 = deshabilitado
 };
 
+// Especificación de un sensor (D-0042): el catálogo se define por configuración.
+struct SensorSpec {
+  String id;
+  String model;      // "BME280" | "SHT40" | "DS18B20" | "BH1750" | "AHT20" | "ADC"
+  uint8_t sda = 21;
+  uint8_t scl = 22;
+  uint8_t pin = 0;
+  String channel;    // para sensores analógicos (p. ej. "voltage")
+  String unit;       // unidad (p. ej. "V")
+  float scale = 1.0f;
+  float offset = 0.0f;
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -53,6 +67,7 @@ struct Config {
   StorageConfig storage;
   SecurityConfig security;
   EnergyConfig energy;
+  std::vector<SensorSpec> sensors;  // vacío = usar catálogo por defecto
 };
 
 class ConfigManager {
