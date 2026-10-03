@@ -9,6 +9,7 @@
 #include "core/sensors/PcntSensor.hpp"
 #include "core/sensors/Sht31Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
+#include "core/sensors/Veml6075Sensor.hpp"
 
 namespace sema {
 
@@ -43,6 +44,9 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   if (spec.model == "PCNT") {
     return new PcntSensor(spec.id.c_str(), spec.pin, spec.channel.c_str(),
                           spec.unit.c_str(), spec.scale);
+  }
+  if (spec.model == "VEML6075") {
+    return new Veml6075Sensor(spec.id.c_str(), spec.sda, spec.scl);
   }
   return nullptr;
 }
