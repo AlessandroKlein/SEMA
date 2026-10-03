@@ -18,7 +18,8 @@ Sistema modular de adquisición, procesamiento, almacenamiento, visualización y
 
 ¿No conocés el proyecto? Empezá por la **[Guía de inicio](docs/GUIA.md)**: concepto,
 hardware, compilación, configuración, API y estructura del código en un solo
-documento, pensado para leerse sin conocimientos previos.
+documento, pensado para leerse sin conocimientos previos. Para retomar el trabajo,
+ver **[Continuación](docs/CONTINUACION.md)** (estado actual + pendientes + flujo).
 
 ---
 

@@ -411,3 +411,4 @@ código → pio run (compilar) → bump de versión → CHANGELOG → commit
 - [`Decisiones.md`](DUDAS-Y-DECISIONES.md) — decisiones de diseño (D-0001…D-0060).
 - [`IMPLEMENTACION.md`](IMPLEMENTACION.md) — especificación técnica.
 - [`MEJORAS.md`](MEJORAS.md) — roadmap y Definition of Done.
+- [`CONTINUACION.md`](CONTINUACION.md) — estado actual, pendientes y flujo para retomar.
