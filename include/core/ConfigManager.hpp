@@ -36,6 +36,10 @@ struct StorageConfig {
   uint32_t retentionDays;
 };
 
+struct SecurityConfig {
+  String apiKey;    // clave de API (D-0048); vacía = sin autenticación
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -43,6 +47,7 @@ struct Config {
   NetworkConfig network;
   SystemConfig system;
   StorageConfig storage;
+  SecurityConfig security;
 };
 
 class ConfigManager {

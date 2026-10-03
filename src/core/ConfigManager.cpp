@@ -87,6 +87,7 @@ bool ConfigManager::serialize(String& out) const {
   doc["system"]["log_level"] = config_.system.logLevel;
   doc["storage"]["backend"] = config_.storage.backend;
   doc["storage"]["retention_days"] = config_.storage.retentionDays;
+  doc["security"]["api_key"] = config_.security.apiKey;
   serializeJson(doc, out);
   return true;
 }
@@ -109,6 +110,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.system.logLevel = doc["system"]["log_level"] | "INFO";
   c.storage.backend = doc["storage"]["backend"] | "littlefs";
   c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
+  c.security.apiKey = doc["security"]["api_key"] | "";
   return true;
 }
 

@@ -28,11 +28,14 @@ private:
   void onSystem();
   void onConfig();
   void onConfigPut();
+  void onRestart();
   void onDiagnostics();
   void onSensors();
   void onHistory();
   void onAlarms();
   void onNotFound();
+
+  bool authorized();
 
   ::WebServer server_;
   ::WebSocketsServer ws_{81};

@@ -6,6 +6,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.23.0] - 2026-10-03
+
+### Added
+
+- Autenticación de API (D-0048): `security.api_key` en `schema=1`; las
+  operaciones de escritura (`PUT /api/v1/config`, `POST /api/v1/restart`)
+  exigen el header `X-API-Key` cuando la clave está configurada.
+- Endpoint `POST /api/v1/restart`.
+
 ## [0.22.0] - 2026-10-03
 
 ### Added
@@ -204,6 +213,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.23.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.23.0
 [0.22.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.22.0
 [0.21.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.21.0
 [0.20.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.20.0

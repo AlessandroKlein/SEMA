@@ -15,11 +15,15 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
+  server_.on("/api/v1/restart", HTTP_POST, [this]() { onRestart(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
   server_.onNotFound([this]() { onNotFound(); });
+
+  static const char* kHeaders[] = {"X-API-Key"};
+  server_.collectHeaders(kHeaders, 1);
 
   server_.begin();
   ws_.begin();
@@ -99,8 +103,29 @@ void HttpServer::onConfig() {
   }
 }
 
+bool HttpServer::authorized() {
+  const String key = core_->config().get().security.apiKey;
+  if (key.length() == 0) {
+    return true;  // sin clave configurada → permitir (primera configuración)
+  }
+  return server_.hasHeader("X-API-Key") && server_.header("X-API-Key") == key;
+}
+
+void HttpServer::onRestart() {
+  if (!authorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  server_.send(200, "application/json", "{\"ok\":true}");
+  delay(100);
+  ESP.restart();
+}
+
 void HttpServer::onConfigPut() {
-  // TODO(D-0048): requiere autenticación (Bearer/API Key) antes de aplicar.
+  if (!authorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
   if (!server_.hasArg("plain")) {
     server_.send(400, "application/json", "{\"error\":\"body required\"}");
     return;
