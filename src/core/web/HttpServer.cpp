@@ -17,6 +17,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
+  server_.on("/api/v1/backup", HTTP_GET, [this]() { onBackup(); });
+  server_.on("/api/v1/backup", HTTP_POST, [this]() { onConfigPut(); });
   server_.on("/api/v1/restart", HTTP_POST, [this]() { onRestart(); });
   server_.on("/api/v1/ota", HTTP_POST, [this]() { onOta(); }, [this]() { onOtaUpload(); });
   server_.on("/api/v1/capabilities", HTTP_GET, [this]() { onCapabilities(); });
@@ -130,6 +132,28 @@ void HttpServer::onHealth() {
   doc["sensors"]["total"] = core_->sensors().count();
   doc["sensors"]["online"] = core_->sensors().onlineCount();
   doc["sensors"]["error"] = core_->sensors().count() - core_->sensors().onlineCount();
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onBackup() {
+  // Respaldo autodescriptivo: configuración completa + metadatos (D-0044/D-0046).
+  // Los campos "backup_*"/"firmware"/"timestamp" se ignoran al restaurar.
+  String cfg;
+  if (!core_->config().toJson(cfg)) {
+    server_.send(500, "application/json", "{\"error\":\"serialization failed\"}");
+    return;
+  }
+  DynamicJsonDocument doc(4096);
+  if (deserializeJson(doc, cfg)) {
+    server_.send(500, "application/json", "{\"error\":\"internal\"}");
+    return;
+  }
+  doc["backup_format"] = "sema-backup";
+  doc["backup_version"] = 1;
+  doc["firmware"] = SEMA_FW_VERSION;
+  doc["timestamp"] = millis() / 1000;
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);

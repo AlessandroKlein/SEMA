@@ -29,6 +29,7 @@ private:
   void onSystem();
   void onConfig();
   void onConfigPut();
+  void onBackup();
   void onRestart();
   void onOta();
   void onOtaUpload();

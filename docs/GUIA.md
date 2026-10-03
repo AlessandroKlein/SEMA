@@ -234,6 +234,8 @@ Central). Si no hay claves configuradas, se permite (primera configuración).
 | GET | `/system` | Info del sistema | — |
 | GET | `/config` | Configuración actual (JSON) | — |
 | PUT | `/config` | Aplica nueva configuración | ✔ |
+| GET | `/backup` | Respaldo (config + metadatos) | — |
+| POST | `/backup` | Restaura un respaldo | ✔ |
 | GET | `/sensors` | Catálogo + mediciones actuales | — |
 | GET | `/history` | Histórico reciente | — |
 | GET | `/alarms` | Solo eventos de alarma | — |
