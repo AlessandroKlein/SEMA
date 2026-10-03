@@ -5,6 +5,7 @@
 
 #include "core/publishers/HttpPublisher.hpp"
 #include "core/publishers/MqttPublisher.hpp"
+#include "core/sensors/Bh1750Sensor.hpp"
 #include "core/sensors/Bme280Sensor.hpp"
 #include "core/sensors/Ds18b20Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
@@ -72,9 +73,11 @@ void SemaCore::setup() {
   static Bme280Sensor bme280("EXT", 21, 22);
   static Sht40Sensor sht40("INT", 21, 22);
   static Ds18b20Sensor ds18b20("SOIL", 4);  // 1-Wire con pull-up 4,7 kΩ (README §12)
+  static Bh1750Sensor bh1750("LUX", 21, 22);
   sensors_.registerSensor(&bme280);
   sensors_.registerSensor(&sht40);
   sensors_.registerSensor(&ds18b20);
+  sensors_.registerSensor(&bh1750);
   sensors_.beginAll();
 
   // Calibración de ejemplo (D-0055): límites de temperatura. En una iteración

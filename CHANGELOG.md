@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.24.0] - 2026-10-03
+
+### Added
+
+- Driver `Bh1750Sensor` (luminosidad, lux) sobre I²C (`README.md` §13).
+
 ## [0.23.0] - 2026-10-03
 
 ### Added
@@ -213,6 +219,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.24.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.24.0
 [0.23.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.23.0
 [0.22.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.22.0
 [0.21.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.21.0
