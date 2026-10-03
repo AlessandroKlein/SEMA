@@ -1,5 +1,7 @@
 #include "core/sensors/SensorManager.hpp"
 
+#include "core/derived/DerivedEngine.hpp"
+
 namespace sema {
 
 void SensorManager::registerSensor(Sensor* sensor) {
@@ -25,6 +27,9 @@ void SensorManager::readAll() {
       measurements_.push_back(buffer[i]);
     }
   }
+
+  // Procesamiento derivado (D-0044 §83): punto de rocío, índice de calor, …
+  DerivedEngine::compute(measurements_);
 }
 
 size_t SensorManager::onlineCount() const {
