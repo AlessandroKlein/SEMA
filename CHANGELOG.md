@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.54.0] - 2026-10-03
+
+### Added
+
+- Board Profile (D-0050): `include/core/BoardProfile.hpp` con `SEMA_FIXED_HARDWARE`
+  y pines fijos para PCB personalizada (deshabilita la configuración de pines por web).
+
 ## [0.53.0] - 2026-10-03
 
 ### Added
@@ -419,6 +426,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.54.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.54.0
 [0.53.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.53.0
 [0.52.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.52.0
 [0.51.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.51.0

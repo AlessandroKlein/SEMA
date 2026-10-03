@@ -79,6 +79,20 @@ Consecuencias prácticas:
 | 1-Wire | GPIO 4 | DS18B20 con pull-up de 4,7 kΩ |
 | ADC batería | GPIO 34 | Divisor resistivo (11:1 para 12 V) |
 
+### Pines fijos para PCB personalizada
+
+Por defecto, los pines de los sensores son **configurables desde la web** (sección
+`sensors` de la configuración). Para una **PCB personalizada** podés fijarlos en
+tiempo de compilación y deshabilitar la configuración por web:
+
+1. Editá `include/core/BoardProfile.hpp`.
+2. Poné `SEMA_FIXED_HARDWARE` en `1`.
+3. Ajustá los pines (`SEMA_PIN_I2C_SDA`, `SEMA_PIN_I2C_SCL`, `SEMA_PIN_ONEWIRE`,
+   `SEMA_PIN_BATTERY_ADC`) a tu diseño.
+
+Con `SEMA_FIXED_HARDWARE = 1`, el catálogo `sensors[]` de la configuración **se
+ignora** y se usa el catálogo fijo con esos pines (D-0050).
+
 ### Sensores soportados (catálogo configurable)
 
 | Modelo | Magnitud | Bus | Dirección/pin |

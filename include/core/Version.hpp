@@ -12,7 +12,7 @@
 //
 // El prefijo "v" minúscula se reserva para tags de git y releases de GitHub.
 
-#define SEMA_FW_VERSION              "0.53.0"
+#define SEMA_FW_VERSION              "0.54.0"
 #define SEMA_HW_VERSION              "rev0"
 #define SEMA_CONFIG_SCHEMA_VERSION   1
 #define SEMA_PROTOCOL_VERSION        1

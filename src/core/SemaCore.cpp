@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "core/BoardProfile.hpp"
 #include "core/publishers/HttpPublisher.hpp"
 #include "core/publishers/MqttPublisher.hpp"
 #include "core/sensors/AdcSensor.hpp"
@@ -70,7 +71,7 @@ void SemaCore::setup() {
                 caps.has(Capability::Can) ? 1 : 0);
 
   // Detección I²C (D-0058): escanea el bus y sugiere modelos por dirección.
-  Wire.begin(21, 22);
+  Wire.begin(SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
   I2cScanner::scan(detectedDevices_);
   for (const DetectedDevice& d : detectedDevices_) {
     Serial.printf("I²C 0x%02X → %s\n", d.address,
@@ -78,15 +79,18 @@ void SemaCore::setup() {
   }
 
   // Fase 2 — Sensor Engine: registra drivers y arranca la lectura periódica.
-  if (config_.get().sensors.empty()) {
-    // Catálogo por defecto (retrocompatibilidad) si la config no define sensores.
-    static Bme280Sensor bme280("EXT", 21, 22);
-    static Sht40Sensor sht40("INT", 21, 22);
-    static Ds18b20Sensor ds18b20("SOIL", 4);  // 1-Wire con pull-up 4,7 kΩ (README §12)
-    static Bh1750Sensor bh1750("LUX", 21, 22);
-    static Aht20Sensor aht20("AUX", 21, 22);
-    // Batería (ADC interno, GPIO34): divisor 11:1 para 12 V (README §37).
-    static AdcSensor battery("BATT", 34, "voltage", "V", 3.3f * 11.0f / 4095.0f, 0.0f);
+  // D-0050: con SEMA_FIXED_HARDWARE=1 se usa el catálogo fijo (pines de
+  // BoardProfile.hpp) y se ignora sensors[] de la configuración.
+  if (SEMA_FIXED_HARDWARE == 1 || config_.get().sensors.empty()) {
+    // Catálogo por defecto con los pines del Board Profile.
+    static Bme280Sensor bme280("EXT", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
+    static Sht40Sensor sht40("INT", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
+    static Ds18b20Sensor ds18b20("SOIL", SEMA_PIN_ONEWIRE);  // pull-up 4,7 kΩ (README §12)
+    static Bh1750Sensor bh1750("LUX", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
+    static Aht20Sensor aht20("AUX", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
+    // Batería (ADC interno): divisor 11:1 para 12 V (README §37).
+    static AdcSensor battery("BATT", SEMA_PIN_BATTERY_ADC, "voltage", "V",
+                             3.3f * 11.0f / 4095.0f, 0.0f);
     sensors_.registerSensor(&bme280);
     sensors_.registerSensor(&sht40);
     sensors_.registerSensor(&ds18b20);
