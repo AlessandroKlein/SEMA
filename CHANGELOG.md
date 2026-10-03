@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.29.0] - 2026-10-03
+
+### Added
+
+- OTA con rollback (D-0049): `POST /api/v1/ota` (multipart/form-data, protegido)
+  actualiza el firmware sobre las particiones OTA redundantes mediante `Update`.
+
 ## [0.28.0] - 2026-10-03
 
 ### Added
@@ -247,6 +254,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.29.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.29.0
 [0.28.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.28.0
 [0.27.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.27.0
 [0.26.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.26.0

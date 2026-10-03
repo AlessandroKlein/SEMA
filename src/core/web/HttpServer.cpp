@@ -1,6 +1,7 @@
 #include "core/web/HttpServer.hpp"
 
 #include <ArduinoJson.h>
+#include <Update.h>
 #include <esp_system.h>
 
 #include "core/SemaCore.hpp"
@@ -16,6 +17,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
   server_.on("/api/v1/restart", HTTP_POST, [this]() { onRestart(); });
+  server_.on("/api/v1/ota", HTTP_POST, [this]() { onOta(); }, [this]() { onOtaUpload(); });
   server_.on("/api/v1/capabilities", HTTP_GET, [this]() { onCapabilities(); });
   server_.on("/api/v1/network", HTTP_GET, [this]() { onNetwork(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
@@ -138,6 +140,39 @@ void HttpServer::onConfigPut() {
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
   }
+}
+
+void HttpServer::onOtaUpload() {
+  HTTPUpload& upload = server_.upload();
+  if (upload.status == UPLOAD_FILE_START) {
+    otaAuthorized_ = authorized();
+    if (!otaAuthorized_) {
+      return;  // no escribir nada si no está autorizado
+    }
+    if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
+      Update.printError(Serial);
+    }
+  } else if (upload.status == UPLOAD_FILE_WRITE) {
+    if (otaAuthorized_ &&
+        Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+      Update.printError(Serial);
+    }
+  } else if (upload.status == UPLOAD_FILE_END) {
+    if (otaAuthorized_) {
+      Update.end(true);
+    }
+  }
+}
+
+void HttpServer::onOta() {
+  if (!otaAuthorized_) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    otaAuthorized_ = false;
+    return;
+  }
+  server_.send(200, "application/json", "{\"ok\":true}");
+  delay(100);
+  ESP.restart();
 }
 
 void HttpServer::onCapabilities() {

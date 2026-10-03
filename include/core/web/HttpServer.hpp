@@ -29,6 +29,8 @@ private:
   void onConfig();
   void onConfigPut();
   void onRestart();
+  void onOta();
+  void onOtaUpload();
   void onCapabilities();
   void onNetwork();
   void onDiagnostics();
@@ -42,6 +44,7 @@ private:
   ::WebServer server_;
   ::WebSocketsServer ws_{81};
   SemaCore* core_ = nullptr;
+  bool otaAuthorized_ = false;
 };
 
 }  // namespace sema
