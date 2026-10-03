@@ -15,7 +15,7 @@ SemaCore& SemaCore::instance() {
   return core;
 }
 
-SemaCore::SemaCore() : store_(), config_(store_) {}
+SemaCore::SemaCore() : store_(), config_(store_), rules_(events_) {}
 
 void SemaCore::setup() {
   Serial.begin(115200);
@@ -99,6 +99,14 @@ void SemaCore::setup() {
   static HttpPublisher webhook("webhook", "");
   publishers_.registerPublisher(&webhook);
 
+  // Regla de ejemplo (D-0059): alarma si la temperatura exterior supera 40 °C.
+  rules_.addRule({"high_temp", "EXT", "temperature", RuleOp::Gt, 40.0f});
+
+  // Suscriptor de alarmas (D-0045): por ahora registra en serial.
+  events_.subscribe(EventType::Alarm, [](const Event& e) {
+    Serial.printf("[ALARM] %s → %s = %d\n", e.correlationId, e.source, e.value);
+  });
+
   scheduler_.add("core.heartbeat", 5000, []() {
     // Heartbeat periódico del Core. Aquí se integrará el Health Monitor (D-0020).
   });
@@ -109,6 +117,7 @@ void SemaCore::setup() {
       history_.append(m);
       publishers_.publishAll(m);
     }
+    rules_.evaluate(sensors_.measurements());
   });
 
   modules_.enableAll();

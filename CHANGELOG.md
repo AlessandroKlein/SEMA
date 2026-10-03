@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.18.0] - 2026-10-03
+
+### Added
+
+- Motor de reglas y alarmas (D-0059): `RuleEngine` con operadores `>`, `<`, `>=`, `<=`.
+- Las reglas publican eventos `Alarm` en el Event Bus (D-0045); suscriptor de
+  ejemplo que registra alarmas en serial.
+
 ## [0.17.0] - 2026-10-03
 
 ### Added
@@ -166,6 +174,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.18.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.18.0
 [0.17.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.17.0
 [0.16.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.16.0
 [0.15.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.15.0
