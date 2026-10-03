@@ -16,6 +16,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
+  server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   server_.begin();
@@ -96,6 +97,36 @@ void HttpServer::onSensors() {
     o["unit"] = m.unit;
     o["quality"] = qualityName(m.quality);
     o["sequence"] = m.sequence;
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onHistory() {
+  size_t limit = 50;
+  if (server_.hasArg("limit")) {
+    const long l = server_.arg("limit").toInt();
+    if (l > 0 && l <= 100) {
+      limit = static_cast<size_t>(l);
+    }
+  }
+
+  std::deque<Measurement> items;
+  core_->history().readRecent(items, limit);
+
+  DynamicJsonDocument doc(16384);
+  JsonArray arr = doc.createNestedArray("history");
+  for (const Measurement& m : items) {
+    JsonObject o = arr.createNestedObject();
+    o["ts"] = m.timestamp;
+    o["sensor"] = m.sensorId;
+    o["channel"] = m.channelId;
+    o["measurement"] = m.measurement;
+    o["value"] = m.value;
+    o["unit"] = m.unit;
+    o["quality"] = qualityName(m.quality);
+    o["seq"] = m.sequence;
   }
   String out;
   serializeJson(doc, out);

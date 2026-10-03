@@ -24,6 +24,7 @@ private:
   void onConfig();
   void onDiagnostics();
   void onSensors();
+  void onHistory();
   void onNotFound();
 
   ::WebServer server_;

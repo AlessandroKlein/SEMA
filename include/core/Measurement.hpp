@@ -52,4 +52,17 @@ inline const char* qualityName(Quality q) {
   }
 }
 
+// Convierte un nombre de Quality Flag (D-0056) al enum, para deserialización.
+inline Quality parseQuality(const char* name) {
+  if (name == nullptr) return Quality::Valid;
+  if (strcmp(name, "INVALID") == 0) return Quality::Invalid;
+  if (strcmp(name, "STALE") == 0) return Quality::Stale;
+  if (strcmp(name, "TIMEOUT") == 0) return Quality::Timeout;
+  if (strcmp(name, "OUT_OF_RANGE") == 0) return Quality::OutOfRange;
+  if (strcmp(name, "CALIBRATION_ERROR") == 0) return Quality::CalibrationError;
+  if (strcmp(name, "COMMUNICATION_ERROR") == 0) return Quality::CommunicationError;
+  if (strcmp(name, "SENSOR_DISCONNECTED") == 0) return Quality::SensorDisconnected;
+  return Quality::Valid;
+}
+
 }  // namespace sema

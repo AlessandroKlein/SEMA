@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.11.0] - 2026-10-03
+
+### Added
+
+- Endpoint `GET /api/v1/history?limit=N` (`README.md` §110) para consultar el histórico.
+- `HistoryStore::readRecent()` y `parseQuality()` (deserialización de Quality Flags).
+
 ## [0.10.0] - 2026-10-03
 
 ### Added
@@ -115,6 +122,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.11.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.11.0
 [0.10.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.10.0
 [0.9.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.9.0
 [0.8.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.8.0

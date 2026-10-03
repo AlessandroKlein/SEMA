@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <cstdint>
+#include <deque>
 
 #include "core/Measurement.hpp"
 
@@ -17,6 +18,7 @@ class HistoryStore {
 public:
   bool begin(const char* path = "/history.jsonl");
   bool append(const Measurement& m);
+  bool readRecent(std::deque<Measurement>& out, size_t maxCount);
 
   size_t count() const { return count_; }
   uint32_t maxEntries() const { return maxEntries_; }
