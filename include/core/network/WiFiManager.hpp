@@ -20,11 +20,13 @@ public:
   String localIP() const;
   int32_t rssi() const;
   bool isAp() const { return !staMode_; }
+  bool mdnsStarted() const { return mdnsStarted_; }
 
 private:
   void startAp(const String& hostname);
 
   bool staMode_ = false;
+  bool mdnsStarted_ = false;
 };
 
 }  // namespace sema

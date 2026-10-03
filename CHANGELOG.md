@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.32.0] - 2026-10-03
+
+### Added
+
+- mDNS (`README.md` §61): la estación se resuelve como `<hostname>.local`.
+- `WiFiManager::mdnsStarted()`.
+
 ## [0.31.0] - 2026-10-03
 
 ### Added
@@ -269,6 +276,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.32.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.32.0
 [0.31.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.31.0
 [0.30.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.30.0
 [0.29.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.29.0

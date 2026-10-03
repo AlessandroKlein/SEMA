@@ -1,5 +1,6 @@
 #include "core/network/WiFiManager.hpp"
 
+#include <ESPmDNS.h>
 #include <WiFi.h>
 
 namespace sema {
@@ -16,6 +17,14 @@ void WiFiManager::begin(const String& mode, const String& ssid,
     }
   } else {
     startAp(hostname);
+  }
+
+  // mDNS (README §61): resuelve <hostname>.local.
+  if (hostname.length() > 0) {
+    mdnsStarted_ = MDNS.begin(hostname.c_str());
+    if (mdnsStarted_) {
+      MDNS.addService("http", "tcp", 80);
+    }
   }
 }
 
@@ -44,6 +53,7 @@ void WiFiManager::loop() {
   if (staMode_ && WiFi.status() != WL_CONNECTED) {
     // reservado para política de reconexión
   }
+  // mDNS se procesa internamente por la tarea de WiFi (ESPmDNS).
 }
 
 }  // namespace sema

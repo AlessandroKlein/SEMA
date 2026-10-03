@@ -150,6 +150,9 @@ void SemaCore::setup() {
                 static_cast<unsigned>(sensors_.count()),
                 static_cast<unsigned>(sensors_.onlineCount()));
   Serial.printf("Web local: http://%s/\n", wifi_.localIP().c_str());
+  if (wifi_.mdnsStarted()) {
+    Serial.printf("mDNS: http://%s.local/\n", config_.get().network.hostname.c_str());
+  }
   Serial.printf("Módulos registrados: %u\n", static_cast<unsigned>(modules_.count()));
 }
 
