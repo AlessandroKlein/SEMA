@@ -38,6 +38,7 @@ public:
   ConfigManager& config() { return config_; }
   CapabilityManager& capabilities() { return CapabilityManager::instance(); }
   Scheduler& scheduler() { return scheduler_; }
+  WiFiManager& wifi() { return wifi_; }
   SensorManager& sensors() { return sensors_; }
   HistoryStore& history() { return history_; }
   PublisherManager& publishers() { return publishers_; }

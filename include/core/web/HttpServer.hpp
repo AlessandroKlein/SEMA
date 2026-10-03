@@ -29,6 +29,8 @@ private:
   void onConfig();
   void onConfigPut();
   void onRestart();
+  void onCapabilities();
+  void onNetwork();
   void onDiagnostics();
   void onSensors();
   void onHistory();

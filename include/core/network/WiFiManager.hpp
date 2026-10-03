@@ -18,6 +18,7 @@ public:
 
   bool connected() const;
   String localIP() const;
+  int32_t rssi() const;
   bool isAp() const { return !staMode_; }
 
 private:

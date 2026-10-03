@@ -16,6 +16,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
   server_.on("/api/v1/restart", HTTP_POST, [this]() { onRestart(); });
+  server_.on("/api/v1/capabilities", HTTP_GET, [this]() { onCapabilities(); });
+  server_.on("/api/v1/network", HTTP_GET, [this]() { onNetwork(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
@@ -136,6 +138,32 @@ void HttpServer::onConfigPut() {
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
   }
+}
+
+void HttpServer::onCapabilities() {
+  DynamicJsonDocument doc(1024);
+  JsonArray arr = doc.createNestedArray("capabilities");
+  CapabilityManager& caps = core_->capabilities();
+  for (uint8_t i = 0; i < static_cast<uint8_t>(Capability::Count); ++i) {
+    const Capability c = static_cast<Capability>(i);
+    if (caps.has(c)) {
+      arr.add(capabilityName(c));
+    }
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onNetwork() {
+  DynamicJsonDocument doc(256);
+  doc["mode"] = core_->wifi().isAp() ? "AP" : "STA";
+  doc["connected"] = core_->wifi().connected();
+  doc["ip"] = core_->wifi().localIP();
+  doc["rssi"] = core_->wifi().rssi();
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
 }
 
 void HttpServer::onDiagnostics() {

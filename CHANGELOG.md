@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.28.0] - 2026-10-03
+
+### Added
+
+- `GET /api/v1/capabilities` (lista de capacidades de la plataforma, D-0051).
+- `GET /api/v1/network` (modo, conexión, IP, RSSI).
+
 ## [0.27.0] - 2026-10-03
 
 ### Added
@@ -240,6 +247,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.28.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.28.0
 [0.27.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.27.0
 [0.26.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.26.0
 [0.25.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.25.0

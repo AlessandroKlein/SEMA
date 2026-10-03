@@ -34,6 +34,10 @@ String WiFiManager::localIP() const {
   return staMode_ ? WiFi.localIP().toString() : WiFi.softAPIP().toString();
 }
 
+int32_t WiFiManager::rssi() const {
+  return staMode_ ? WiFi.RSSI() : 0;
+}
+
 void WiFiManager::loop() {
   // Reintento simple de STA cuando se pierde la conexión. Se mejora con backoff
   // en una iteración posterior (README §183).
