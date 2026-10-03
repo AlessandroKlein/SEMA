@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.6.0] - 2026-10-03
+
+### Added
+
+- Núcleo de la Fase 1:
+  - `ConfigManager` (schema=1, NVS transaccional con rollback).
+  - Storage API + backend `NvsStore` (Preferences).
+  - `CapabilityManager` + enumeración `Capability`.
+  - `Task` (abstracción de tarea sobre FreeRTOS, afinidad `AUTO`).
+- Dependencia `ArduinoJson@6` para serialización de configuración.
+
 ## [0.5.0] - 2026-10-03
 
 ### Changed
@@ -65,6 +76,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.6.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.6.0
 [0.5.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.5.0
 [0.4.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.4.0
 [0.3.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.3.0

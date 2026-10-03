@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.5.0
+> **Tipo:** Roadmap | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.6.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso · ⬜ pendiente.
@@ -13,7 +13,8 @@ Estado de cada ítem: ✅ hecho · 🔄 en curso · ⬜ pendiente.
 ```text
 ESP32 · Web · Configuración · NVS · Diagnóstico
 ```
-⬜ pendiente (esqueleto del Core iniciado en v0.2.0).
+🔄 en curso (v0.6.0): ConfigManager + NVS, Storage API, Capability Manager y Task
+(abstracción RT). Falta Web/REST, scheduler y diagnóstico.
 
 ### Fase 2 — Sensores básicos
 ```text
