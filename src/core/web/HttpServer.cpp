@@ -22,10 +22,35 @@ void HttpServer::begin(SemaCore& core) {
   server_.onNotFound([this]() { onNotFound(); });
 
   server_.begin();
+  ws_.begin();
 }
 
 void HttpServer::loop() {
   server_.handleClient();
+  ws_.loop();
+}
+
+void HttpServer::broadcastMeasurements(const std::vector<Measurement>& measurements) {
+  if (ws_.connectedClients() == 0) {
+    return;
+  }
+
+  DynamicJsonDocument doc(8192);
+  doc["type"] = "measurements";
+  JsonArray arr = doc.createNestedArray("data");
+  for (const Measurement& m : measurements) {
+    JsonObject o = arr.createNestedObject();
+    o["sensor_id"] = m.sensorId;
+    o["channel_id"] = m.channelId;
+    o["measurement"] = m.measurement;
+    o["value"] = m.value;
+    o["unit"] = m.unit;
+    o["quality"] = qualityName(m.quality);
+    o["sequence"] = m.sequence;
+  }
+  String out;
+  serializeJson(doc, out);
+  ws_.broadcastTXT(out.c_str());
 }
 
 void HttpServer::onStatus() {

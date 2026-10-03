@@ -1,6 +1,6 @@
 # Arquitectura e implementación — SEMA
 
-> **Tipo:** Concepto | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.21.0
+> **Tipo:** Concepto | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.22.0
 
 Consolida la arquitectura de SEMA a partir de la especificación del `README.md`.
 Es la referencia para implementar el firmware de forma modular. El estado de qué

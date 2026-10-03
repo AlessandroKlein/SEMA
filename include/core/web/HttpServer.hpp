@@ -1,6 +1,10 @@
 #pragma once
 
 #include <WebServer.h>
+#include <WebSocketsServer.h>
+#include <vector>
+
+#include "core/Measurement.hpp"
 
 // =============================================================================
 // SEMA — Servidor HTTP local (REST /api/v1)
@@ -16,6 +20,7 @@ class HttpServer {
 public:
   void begin(SemaCore& core);
   void loop();
+  void broadcastMeasurements(const std::vector<Measurement>& measurements);
 
 private:
   void onStatus();
@@ -30,6 +35,7 @@ private:
   void onNotFound();
 
   ::WebServer server_;
+  ::WebSocketsServer ws_{81};
   SemaCore* core_ = nullptr;
 };
 

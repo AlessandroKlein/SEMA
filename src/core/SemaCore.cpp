@@ -116,6 +116,7 @@ void SemaCore::setup() {
 
   scheduler_.add("sensors.read", 10000, [this]() {
     sensors_.readAll();
+    http_.broadcastMeasurements(sensors_.measurements());
     for (const Measurement& m : sensors_.measurements()) {
       history_.append(m);
       publishers_.publishAll(m);
