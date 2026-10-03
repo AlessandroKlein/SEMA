@@ -91,25 +91,37 @@ bool ConfigManager::serialize(String& out) const {
   return true;
 }
 
-bool ConfigManager::deserialize(const String& in) {
+bool ConfigManager::parseInto(const String& in, Config& c) {
   DynamicJsonDocument doc(1024);
   const DeserializationError err = deserializeJson(doc, in);
   if (err) {
     return false;
   }
-  config_.schemaVersion = doc["schema_version"] | 1;
-  config_.station.id = doc["station"]["id"] | "SEMA-001";
-  config_.station.name = doc["station"]["name"] | "Estación Norte";
-  config_.network.mode = doc["network"]["mode"] | "STA";
-  config_.network.ssid = doc["network"]["ssid"] | "";
-  config_.network.password = doc["network"]["password"] | "";
-  config_.network.hostname = doc["network"]["hostname"] | "sema-001";
-  config_.network.mdns = doc["network"]["mdns"] | true;
-  config_.system.timezone = doc["system"]["timezone"] | "America/Argentina/Buenos_Aires";
-  config_.system.logLevel = doc["system"]["log_level"] | "INFO";
-  config_.storage.backend = doc["storage"]["backend"] | "littlefs";
-  config_.storage.retentionDays = doc["storage"]["retention_days"] | 30;
+  c.schemaVersion = doc["schema_version"] | 1;
+  c.station.id = doc["station"]["id"] | "SEMA-001";
+  c.station.name = doc["station"]["name"] | "Estación Norte";
+  c.network.mode = doc["network"]["mode"] | "STA";
+  c.network.ssid = doc["network"]["ssid"] | "";
+  c.network.password = doc["network"]["password"] | "";
+  c.network.hostname = doc["network"]["hostname"] | "sema-001";
+  c.network.mdns = doc["network"]["mdns"] | true;
+  c.system.timezone = doc["system"]["timezone"] | "America/Argentina/Buenos_Aires";
+  c.system.logLevel = doc["system"]["log_level"] | "INFO";
+  c.storage.backend = doc["storage"]["backend"] | "littlefs";
+  c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
   return true;
+}
+
+bool ConfigManager::deserialize(const String& in) {
+  return parseInto(in, config_);
+}
+
+bool ConfigManager::applyJson(const String& json) {
+  Config next;
+  if (!parseInto(json, next)) {
+    return false;
+  }
+  return apply(next);
 }
 
 }  // namespace sema

@@ -56,10 +56,12 @@ public:
   const Config& get() const { return config_; }
   bool valid() const { return valid_; }
   bool toJson(String& out) const { return serialize(out); }
+  bool applyJson(const String& json);  // parsea y aplica transaccionalmente
 
 private:
   bool validate(const Config& c) const;
   bool serialize(String& out) const;
+  bool parseInto(const String& in, Config& c);
   bool deserialize(const String& in);
 
   KeyValueStore& store_;

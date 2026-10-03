@@ -22,6 +22,7 @@ private:
   void onHealth();
   void onSystem();
   void onConfig();
+  void onConfigPut();
   void onDiagnostics();
   void onSensors();
   void onHistory();

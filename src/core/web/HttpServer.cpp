@@ -14,6 +14,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/health", HTTP_GET, [this]() { onHealth(); });
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
+  server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
@@ -70,6 +71,20 @@ void HttpServer::onConfig() {
     server_.send(200, "application/json", out);
   } else {
     server_.send(500, "application/json", "{\"error\":\"serialization failed\"}");
+  }
+}
+
+void HttpServer::onConfigPut() {
+  // TODO(D-0048): requiere autenticación (Bearer/API Key) antes de aplicar.
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"body required\"}");
+    return;
+  }
+  const String body = server_.arg("plain");
+  if (core_->config().applyJson(body)) {
+    server_.send(200, "application/json", "{\"ok\":true}");
+  } else {
+    server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
   }
 }
 

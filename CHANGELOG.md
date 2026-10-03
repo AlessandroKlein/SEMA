@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.21.0] - 2026-10-03
+
+### Added
+
+- Configuración desde la web (D-0042): `PUT /api/v1/config` aplica la
+  configuración de forma transaccional (validar → aplicar → persistir → rollback).
+- `ConfigManager::applyJson()`.
+
 ## [0.20.0] - 2026-10-03
 
 ### Added
@@ -189,6 +197,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.21.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.21.0
 [0.20.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.20.0
 [0.19.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.19.0
 [0.18.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.18.0
