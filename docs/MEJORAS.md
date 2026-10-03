@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.40.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.41.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -91,7 +91,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Almacenamiento | ✅ |
 | Histórico | ✅ |
 | Alarmas | ✅ |
-| Diagnóstico | 🔄 (parcial) |
+| Diagnóstico | 🔄 (health monitor + endpoints) |
 | Calibración | 🔄 (escala/offset/rango) |
 | Validación de configuración | ✅ |
 | Backup / Importación / Exportación | ⬜ |

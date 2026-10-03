@@ -123,8 +123,9 @@ void HttpServer::onStatus() {
 
 void HttpServer::onHealth() {
   DynamicJsonDocument doc(384);
-  doc["status"] = "HEALTHY";
-  doc["uptime_s"] = millis() / 1000;
+  const HealthMonitor& h = core_->health();
+  doc["status"] = h.status();
+  doc["uptime_s"] = h.uptimeSeconds();
   doc["free_heap"] = ESP.getFreeHeap();
   doc["sensors"]["total"] = core_->sensors().count();
   doc["sensors"]["online"] = core_->sensors().onlineCount();

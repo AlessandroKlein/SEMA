@@ -141,12 +141,13 @@ void SemaCore::setup() {
     Serial.printf("[ALARM] %s → %s = %d\n", e.correlationId.c_str(), e.source.c_str(), e.value);
   });
 
-  scheduler_.add("core.heartbeat", 5000, []() {
-    // Heartbeat periódico del Core. Aquí se integrará el Health Monitor (D-0020).
+  scheduler_.add("core.heartbeat", 5000, [this]() {
+    health_.tick();  // Health Monitor (D-0020)
   });
 
   scheduler_.add("sensors.read", 10000, [this]() {
     sensors_.readAll();
+    health_.setSensorStats(sensors_.onlineCount(), sensors_.count());
     http_.broadcastMeasurements(sensors_.measurements());
     for (const Measurement& m : sensors_.measurements()) {
       history_.append(m);
@@ -159,6 +160,9 @@ void SemaCore::setup() {
 
   // Watchdog jerárquico (D-0019): reinicia el SoC si el loop se bloquea.
   watchdog_.begin(10);
+
+  // Health Monitor (D-0020).
+  health_.begin();
 
   // Evento de arranque (D-0008/§205).
   Event boot;
