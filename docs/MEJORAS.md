@@ -1,9 +1,9 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.34.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.34.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
-Estado de cada ítem: ✅ hecho · 🔄 en curso · ⬜ pendiente.
+Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
 
 ---
 
@@ -13,14 +13,16 @@ Estado de cada ítem: ✅ hecho · 🔄 en curso · ⬜ pendiente.
 ```text
 ESP32 · Web · Configuración · NVS · Diagnóstico
 ```
-🔄 en curso (v0.8.0): ConfigManager + NVS, Storage API, Capability Manager, Task,
-Scheduler y Web/REST `/api/v1`. Falta diagnóstico, WebSocket y mDNS.
+✅ esencial completa (v0.34.0): ConfigManager+NVS, Storage API, Capability/Runtime
+Manager, Scheduler, Web/REST `/api/v1`, WebSocket, mDNS, autenticación y OTA.
+Diagnóstico parcial.
 
 ### Fase 2 — Sensores básicos
 ```text
 DS18B20 · AHT20/AHT21/AHT30 · SHT31/SHT40 · BME280 · BMP280 · BH1750
 ```
-🔄 en curso (v0.26.0): Sensor Engine + BME280, SHT40, DS18B20, BH1750 y AHT20.
+🔄 (v0.34.0): BME280, SHT40, DS18B20, BH1750 y AHT20 + detección I²C.
+Faltan SHT31, BMP280 y AHT21/AHT30.
 
 ### Fase 3 — Expansión
 ```text
@@ -32,7 +34,7 @@ MCP23017 · 74HC595 · 74HC165 · ADS1115
 ```text
 Viento · Lluvia · Radiación · UV · Rayos
 ```
-⬜ pendiente.
+⬜ pendiente (wake-up por lluvia ya listo, ver Fase 8).
 
 ### Fase 5 — Calidad ambiental
 ```text
@@ -50,13 +52,14 @@ RS485 · Modbus · CAN
 ```text
 LoRa · Zigbee · Ethernet · MQTT · Servidor central
 ```
-⬜ pendiente.
+🔄 MQTT listo (publicador); LoRa/Zigbee/Ethernet/Servidor central pendientes.
 
 ### Fase 8 — Energía
 ```text
 Panel solar · Batería · Medición energética · Deep Sleep
 ```
-⬜ pendiente.
+🔄 (v0.34.0): batería por ADC, perfiles energéticos, deep sleep (timer RTC) y
+wake-up por lluvia. Falta gestión de panel solar.
 
 ### Fase 9 — Plataforma distribuida
 ```text
@@ -68,8 +71,35 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 
 ## 2. Definition of Done (`README.md` §103)
 
-Ver [`IMPLEMENTACION.md`](IMPLEMENTACION.md) §11. La lista completa de requisitos
-se va marcando conforme se implementa cada fase.
+| Requisito | Estado |
+|-----------|:------:|
+| Core funcionando | ✅ |
+| Configuración persistente | ✅ |
+| Web local | ✅ |
+| API | ✅ |
+| Dashboard modular | ⬜ (solo API; falta UI web) |
+| Sistema de módulos | 🔄 (interfaz + registro; sin módulos reales) |
+| Sistema de sensores | ✅ |
+| Catálogo de sensores | 🔄 (drivers hardcodeados; falta catálogo configurable) |
+| Detección I²C | ✅ |
+| Detección 1-Wire | ⬜ (driver DS18B20; sin auto-detección) |
+| Configuración GPIO | ⬜ |
+| Configuración ADC | 🔄 (AdcSensor; no configurable por web) |
+| MCP23017 / 74HC595 / 74HC165 | ⬜ |
+| RS485 / Modbus RTU / CAN | ⬜ |
+| LoRa / Zigbee | ⬜ |
+| Medición energética | 🔄 (batería por ADC) |
+| Almacenamiento | ✅ |
+| Histórico | ✅ |
+| Alarmas | ✅ |
+| Diagnóstico | 🔄 (parcial) |
+| Calibración | 🔄 (escala/offset/rango) |
+| Validación de configuración | ✅ |
+| Backup / Importación / Exportación | ⬜ |
+| OTA | ✅ |
+| Seguridad | 🔄 (API key) |
+| Watchdog | ⬜ |
+| Documentación | ✅ |
 
 ---
 
@@ -77,9 +107,12 @@ se va marcando conforme se implementa cada fase.
 
 | Ítem | Estado | Notas / vía de solución |
 |------|--------|--------------------------|
-| Esqueleto modular del Core (registry, event bus, config) | 🔄 | Base de la Fase 1 |
-| Clonar y publicar wiki SEMA en `AlessandroKlein/Docs` | ⬜ | Al publicar la release de planificación |
-| `firmware_manifest.json` (SHA-256 del binario) | ⬜ | Se crea en la primera release con artefacto `.bin` |
+| Dashboard web (UI) | ⬜ | Servir páginas + JS desde LittleFS |
+| Catálogo de sensores configurable | ⬜ | Configurar sensores desde la web (D-0042) |
+| Watchdog jerárquico (D-0019) | ⬜ | esp_task_wdt + watchdog por tarea |
+| Servidor Central (D-0036/D-0037) | ⬜ | Componente separado (otro repositorio) |
+| Buses industriales (RS485/CAN) | ⬜ | Fases 3/6 |
+| Sensores CO₂/PM/UV/viento/lluvia | ⬜ | Fases 4/5 (requieren hardware) |
 
 ---
 
