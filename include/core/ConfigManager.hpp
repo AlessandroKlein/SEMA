@@ -38,7 +38,8 @@ struct StorageConfig {
 };
 
 struct SecurityConfig {
-  String apiKey;    // clave de API (D-0048); vacía = sin autenticación
+  String apiKey;     // clave de la web local (D-0048); vacía = sin autenticación
+  String serverKey;  // clave del Servidor Central → SEMA (config de riesgo, vía API)
 };
 
 struct EnergyConfig {

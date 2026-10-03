@@ -157,11 +157,18 @@ void HttpServer::onConfig() {
 }
 
 bool HttpServer::authorized() {
-  const String key = core_->config().get().security.apiKey;
-  if (key.length() == 0) {
-    return true;  // sin clave configurada → permitir (primera configuración)
+  // Dos credenciales: la web local (api_key) y el Servidor Central (server_key),
+  // que puede enviar configuración de riesgo por API (D-0048).
+  const SecurityConfig& sec = core_->config().get().security;
+  if (sec.apiKey.length() == 0 && sec.serverKey.length() == 0) {
+    return true;  // sin claves configuradas → permitir (primera configuración)
   }
-  return server_.hasHeader("X-API-Key") && server_.header("X-API-Key") == key;
+  if (!server_.hasHeader("X-API-Key")) {
+    return false;
+  }
+  const String key = server_.header("X-API-Key");
+  return (sec.apiKey.length() > 0 && key == sec.apiKey) ||
+         (sec.serverKey.length() > 0 && key == sec.serverKey);
 }
 
 void HttpServer::onRestart() {

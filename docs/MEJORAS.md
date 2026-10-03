@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.39.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.40.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -96,7 +96,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Validación de configuración | ✅ |
 | Backup / Importación / Exportación | ⬜ |
 | OTA | ✅ |
-| Seguridad | 🔄 (API key) |
+| Seguridad | 🔄 (api_key web + server_key del Central) |
 | Watchdog | ✅ |
 | Documentación | ✅ |
 
@@ -106,11 +106,10 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 
 | Ítem | Estado | Notas / vía de solución |
 |------|--------|--------------------------|
-| Dashboard web (UI) | ⬜ | Servir páginas + JS desde LittleFS |
-| Catálogo de sensores configurable | ⬜ | Configurar sensores desde la web (D-0042) |
-| Watchdog jerárquico (D-0019) | ⬜ | esp_task_wdt + watchdog por tarea |
-| Servidor Central (D-0036/D-0037) | ⬜ | Componente separado (otro repositorio) |
-| Buses industriales (RS485/CAN) | ⬜ | Fases 3/6 |
+| Servidor Central | — | Fuera del alcance de SEMA (proyecto separado); SEMA se conecta con `server_key` |
+| Expansión GPIO (MCP23017/ADS1115) | ⬜ | Fase 3 (requieren hardware) |
+| Buses industriales (RS485/CAN) | ⬜ | Fase 6 (requieren hardware) |
+| LoRa / Zigbee | ⬜ | Fase 7 (requieren hardware) |
 | Sensores CO₂/PM/UV/viento/lluvia | ⬜ | Fases 4/5 (requieren hardware) |
 
 ---

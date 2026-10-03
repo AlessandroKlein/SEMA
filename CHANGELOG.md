@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.40.0] - 2026-10-03
+
+### Added
+
+- `security.server_key` (D-0048): clave API del Servidor Central → SEMA para
+  configuración de riesgo por API; la web local usa `api_key`.
+
 ## [0.39.0] - 2026-10-03
 
 ### Added
@@ -323,6 +330,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.40.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.40.0
 [0.39.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.39.0
 [0.38.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.38.0
 [0.37.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.37.0
