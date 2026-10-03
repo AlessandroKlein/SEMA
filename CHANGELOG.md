@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.4.0] - 2026-10-03
+
+### Added
+
+- Decisiones de implementación D-0041…D-0045 que cierran las primeras dudas:
+  - D-0041: endpoints REST mínimos de Fase 1 (`/api/v1/*`).
+  - D-0042: JSON Schema de configuración `schema=1`.
+  - D-0043: Modelo Canónico de Mediciones.
+  - D-0044: estructura del Event Bus.
+  - D-0045: esquema de almacenamiento local (Storage API).
+
 ## [0.3.0] - 2026-10-03
 
 ### Changed
@@ -45,6 +56,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.4.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.4.0
 [0.3.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.3.0
 [0.2.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.2.0
 [0.1.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.1.0
