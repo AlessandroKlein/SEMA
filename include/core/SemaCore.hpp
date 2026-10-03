@@ -5,6 +5,7 @@
 #include "core/EventBus.hpp"
 #include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
+#include "core/sensors/I2cScanner.hpp"
 #include "core/sensors/SensorManager.hpp"
 #include "core/Scheduler.hpp"
 #include "core/Version.hpp"
@@ -36,6 +37,7 @@ public:
   Scheduler& scheduler() { return scheduler_; }
   SensorManager& sensors() { return sensors_; }
   HistoryStore& history() { return history_; }
+  const std::vector<DetectedDevice>& detectedDevices() const { return detectedDevices_; }
 
 private:
   SemaCore();
@@ -46,6 +48,7 @@ private:
   ConfigManager config_;
   SensorManager sensors_;
   HistoryStore history_;
+  std::vector<DetectedDevice> detectedDevices_;
   Scheduler scheduler_;
   WiFiManager wifi_;
   HttpServer http_;

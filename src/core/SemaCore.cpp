@@ -1,6 +1,7 @@
 #include "core/SemaCore.hpp"
 
 #include <Arduino.h>
+#include <Wire.h>
 
 #include "core/sensors/Bme280Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
@@ -55,6 +56,14 @@ void SemaCore::setup() {
                 caps.has(Capability::Pcnt) ? 1 : 0,
                 caps.has(Capability::DualCore) ? 1 : 0,
                 caps.has(Capability::Can) ? 1 : 0);
+
+  // Detección I²C (D-0058): escanea el bus y sugiere modelos por dirección.
+  Wire.begin(21, 22);
+  I2cScanner::scan(detectedDevices_);
+  for (const DetectedDevice& d : detectedDevices_) {
+    Serial.printf("I²C 0x%02X → %s\n", d.address,
+                  d.model.length() > 0 ? d.model.c_str() : "desconocido");
+  }
 
   // Fase 2 — Sensor Engine: registra drivers y arranca la lectura periódica.
   static Bme280Sensor bme280("EXT", 21, 22);
