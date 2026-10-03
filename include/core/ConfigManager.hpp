@@ -53,6 +53,15 @@ struct PublishersConfig {
   String mqttTopic = "sema/measurement";
 };
 
+// Especificación de una regla de alarma (D-0059): configurable.
+struct RuleSpec {
+  String name;
+  String sensorId;   // "" = cualquier sensor
+  String channelId;  // magnitud a vigilar
+  String op;         // "gt" | "lt" | "ge" | "le"
+  float value = 0.0f;
+};
+
 // Especificación de un sensor (D-0042): el catálogo se define por configuración.
 struct SensorSpec {
   String id;
@@ -77,6 +86,7 @@ struct Config {
   EnergyConfig energy;
   PublishersConfig publishers;
   std::vector<SensorSpec> sensors;  // vacío = usar catálogo por defecto
+  std::vector<RuleSpec> rules;      // vacío = usar regla por defecto
 };
 
 class ConfigManager {

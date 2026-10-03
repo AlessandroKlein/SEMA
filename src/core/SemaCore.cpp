@@ -135,8 +135,20 @@ void SemaCore::setup() {
   publishers_.registerPublisher(&webhook);
   publishers_.registerPublisher(&mqtt);
 
-  // Regla de ejemplo (D-0059): alarma si la temperatura exterior supera 40 °C.
-  rules_.addRule({"high_temp", "EXT", "temperature", RuleOp::Gt, 40.0f});
+  // Reglas de alarma (D-0059): configurables; si no hay, se usa una por defecto.
+  if (config_.get().rules.empty()) {
+    rules_.addRule({"high_temp", "EXT", "temperature", RuleOp::Gt, 40.0f});
+  } else {
+    for (const RuleSpec& spec : config_.get().rules) {
+      Rule r;
+      r.id = spec.name;
+      r.sensorId = spec.sensorId;
+      r.channelId = spec.channelId;
+      r.op = parseRuleOp(spec.op.c_str());
+      r.threshold = spec.value;
+      rules_.addRule(r);
+    }
+  }
 
   // Suscriptor de alarmas (D-0045): por ahora registra en serial.
   events_.subscribe(EventType::Alarm, [](const Event& e) {

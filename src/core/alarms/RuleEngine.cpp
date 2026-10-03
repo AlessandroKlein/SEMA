@@ -11,7 +11,7 @@ void RuleEngine::addRule(const Rule& rule) {
 }
 
 bool RuleEngine::matches(const Rule& r, const Measurement& m) const {
-  if (r.sensorId != nullptr && r.sensorId[0] != '\0' && m.sensorId != r.sensorId) {
+  if (r.sensorId.length() > 0 && m.sensorId != r.sensorId) {
     return false;
   }
   if (m.channelId != r.channelId) {

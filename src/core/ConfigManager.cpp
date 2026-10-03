@@ -94,6 +94,15 @@ bool ConfigManager::serialize(String& out) const {
   doc["publishers"]["mqtt_host"] = config_.publishers.mqttHost;
   doc["publishers"]["mqtt_port"] = config_.publishers.mqttPort;
   doc["publishers"]["mqtt_topic"] = config_.publishers.mqttTopic;
+  JsonArray rules = doc.createNestedArray("rules");
+  for (const RuleSpec& r : config_.rules) {
+    JsonObject o = rules.createNestedObject();
+    o["name"] = r.name;
+    o["sensor_id"] = r.sensorId;
+    o["channel_id"] = r.channelId;
+    o["op"] = r.op;
+    o["value"] = r.value;
+  }
   JsonArray sensors = doc.createNestedArray("sensors");
   for (const SensorSpec& s : config_.sensors) {
     JsonObject o = sensors.createNestedObject();
@@ -136,6 +145,16 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.publishers.mqttHost = doc["publishers"]["mqtt_host"] | "";
   c.publishers.mqttPort = doc["publishers"]["mqtt_port"] | 1883;
   c.publishers.mqttTopic = doc["publishers"]["mqtt_topic"] | "sema/measurement";
+  c.rules.clear();
+  for (JsonObject o : doc["rules"].as<JsonArray>()) {
+    RuleSpec r;
+    r.name = o["name"] | "";
+    r.sensorId = o["sensor_id"] | "";
+    r.channelId = o["channel_id"] | "";
+    r.op = o["op"] | "gt";
+    r.value = o["value"] | 0.0f;
+    c.rules.push_back(r);
+  }
   c.sensors.clear();
   for (JsonObject o : doc["sensors"].as<JsonArray>()) {
     SensorSpec s;

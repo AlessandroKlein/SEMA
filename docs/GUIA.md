@@ -180,6 +180,9 @@ edita desde la web o la API. Ejemplo completo:
     "mqtt_port": 1883,
     "mqtt_topic": "sema/measurement"
   },
+  "rules": [
+    { "name": "high_temp", "sensor_id": "EXT", "channel_id": "temperature", "op": "gt", "value": 40.0 }
+  ],
   "energy": { "rain_pin": 0 },
   "sensors": [
     { "id": "EXT",  "model": "BME280",  "sda": 21, "scl": 22 },
@@ -199,6 +202,7 @@ edita desde la web o la API. Ejemplo completo:
 | `storage` | Backend y retención del histórico |
 | `security` | Claves de acceso (`api_key`, `server_key`) |
 | `publishers` | Webhook URL y MQTT (host/puerto/topic) |
+| `rules` | Reglas de alarma (nombre, sensor, canal, operador, umbral) |
 | `energy` | Pin del pluviómetro para wake-up |
 | `sensors` | **Catálogo de sensores** (si está vacío, se usa el catálogo por defecto) |
 
