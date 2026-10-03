@@ -33,6 +33,7 @@ private:
   void onOtaUpload();
   void onCapabilities();
   void onNetwork();
+  void onEnergy();
   void onDiagnostics();
   void onSensors();
   void onHistory();

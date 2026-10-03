@@ -58,6 +58,7 @@ void SemaCore::setup() {
                 config_.get().station.name.c_str(),
                 config_.get().station.id.c_str());
   Serial.printf("Config válida: %s\n", config_.valid() ? "sí" : "no");
+  Serial.printf("Wake reason: %u\n", PowerManager::instance().wakeReason());
   Serial.printf("Capacidades: ADC=%d PCNT=%d DualCore=%d CAN=%d\n",
                 caps.has(Capability::Adc) ? 1 : 0,
                 caps.has(Capability::Pcnt) ? 1 : 0,

@@ -12,6 +12,7 @@
 #include "core/Scheduler.hpp"
 #include "core/Version.hpp"
 #include "core/network/WiFiManager.hpp"
+#include "core/PowerManager.hpp"
 #include "core/publishers/PublisherManager.hpp"
 #include "core/storage/HistoryStore.hpp"
 #include "core/storage/NvsStore.hpp"
@@ -39,6 +40,7 @@ public:
   CapabilityManager& capabilities() { return CapabilityManager::instance(); }
   Scheduler& scheduler() { return scheduler_; }
   WiFiManager& wifi() { return wifi_; }
+  PowerManager& power() { return PowerManager::instance(); }
   SensorManager& sensors() { return sensors_; }
   HistoryStore& history() { return history_; }
   PublisherManager& publishers() { return publishers_; }

@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.33.0] - 2026-10-03
+
+### Added
+
+- `PowerManager` (D-0054): perfiles energéticos y deep sleep con wake por timer RTC.
+- `GET /api/v1/energy` (perfil y motivo de wake).
+
 ## [0.32.0] - 2026-10-03
 
 ### Added
@@ -276,6 +283,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.33.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.33.0
 [0.32.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.32.0
 [0.31.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.31.0
 [0.30.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.30.0

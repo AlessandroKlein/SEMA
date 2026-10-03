@@ -20,6 +20,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/ota", HTTP_POST, [this]() { onOta(); }, [this]() { onOtaUpload(); });
   server_.on("/api/v1/capabilities", HTTP_GET, [this]() { onCapabilities(); });
   server_.on("/api/v1/network", HTTP_GET, [this]() { onNetwork(); });
+  server_.on("/api/v1/energy", HTTP_GET, [this]() { onEnergy(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
@@ -197,6 +198,15 @@ void HttpServer::onNetwork() {
   doc["connected"] = core_->wifi().connected();
   doc["ip"] = core_->wifi().localIP();
   doc["rssi"] = core_->wifi().rssi();
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onEnergy() {
+  DynamicJsonDocument doc(256);
+  doc["profile"] = energyProfileName(core_->power().profile());
+  doc["wake_reason"] = core_->power().wakeReason();
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);
