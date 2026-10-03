@@ -33,7 +33,7 @@ uint8_t Sht40Sensor::measure(Measurement out[], uint8_t max) {
   const float t = temp.temperature;
   const float h = humidity.relative_humidity;
   // TODO(D-0044): sustituir por epoch UTC real vía NTP/RTC (README §127-129).
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
 
   uint8_t n = 0;
 

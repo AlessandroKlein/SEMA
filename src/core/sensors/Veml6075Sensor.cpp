@@ -30,7 +30,7 @@ uint8_t Veml6075Sensor::measure(Measurement out[], uint8_t max) {
   const float uva = uv.readUVA();
   const float uvb = uv.readUVB();
   const float uvi = uv.readUVI();
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
 
   uint8_t n = 0;
 

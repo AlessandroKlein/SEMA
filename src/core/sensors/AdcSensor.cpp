@@ -27,7 +27,7 @@ uint8_t AdcSensor::measure(Measurement out[], uint8_t max) {
 
   const int raw = analogRead(pin_);
   const float value = raw * scale_ + offset_;
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
 
   out[0].sensorId = id_;
   out[0].channelId = channel_;

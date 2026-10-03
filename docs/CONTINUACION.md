@@ -50,12 +50,11 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 
 | Prioridad | Ítem | Nota |
 |:---------:|------|------|
-| 1 | **NTP/RTC** — epoch UTC real en timestamps (D-0044) | Hoy los timestamps son `millis()/1000` |
-| 2 | **Rotación del EventLog** (D-0057) | Histórico ya rota; falta rotar eventos |
-| 3 | **Re-aplicar config sin reinicio** | `PUT /config` que cambie sensores/reglas/publicadores hoy exige reboot |
-| 4 | **Dashboard avanzado** | Gráficos, histórico en la web, edición de config desde la UI |
-| 5 | **TLS/HTTPS + rate limiting** (opcional) | Seguridad adicional |
-| 6 | **Configuración GPIO standalone** | Entradas/salidas digitales independientes de sensores |
+| 1 | **Rotación del EventLog** (D-0057) | Histórico ya rota; falta rotar eventos |
+| 2 | **Re-aplicar config sin reinicio** | `PUT /config` que cambie sensores/reglas/publicadores hoy exige reboot |
+| 3 | **Dashboard avanzado** | Gráficos, histórico en la web, edición de config desde la UI |
+| 4 | **TLS/HTTPS + rate limiting** (opcional) | Seguridad adicional |
+| 5 | **Configuración GPIO standalone** | Entradas/salidas digitales independientes de sensores |
 
 ### B. Hardware específico (requieren el módulo físico para validar)
 

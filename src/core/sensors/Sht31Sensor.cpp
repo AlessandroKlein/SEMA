@@ -29,7 +29,7 @@ uint8_t Sht31Sensor::measure(Measurement out[], uint8_t max) {
 
   const float t = sht31.readTemperature();
   const float h = sht31.readHumidity();
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
 
   uint8_t n = 0;
 

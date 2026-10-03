@@ -36,7 +36,7 @@ uint8_t Ds18b20Sensor::measure(Measurement out[], uint8_t max) {
   const uint8_t count = ds_->getDeviceCount();
   const uint8_t n = count < max ? count : max;
   // TODO(D-0044): sustituir por epoch UTC real vía NTP/RTC.
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
 
   for (uint8_t i = 0; i < n; ++i) {
     const float t = ds_->getTempCByIndex(i);

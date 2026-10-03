@@ -31,7 +31,7 @@ uint8_t Aht20Sensor::measure(Measurement out[], uint8_t max) {
   aht.getEvent(&humidity, &temp);
   const float t = temp.temperature;
   const float h = humidity.relative_humidity;
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
 
   uint8_t n = 0;
 

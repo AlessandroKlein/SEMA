@@ -32,7 +32,7 @@ uint8_t Pms5003Sensor::measure(Measurement out[], uint8_t max) {
     return 0;  // sin trama válida este ciclo
   }
 
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
   uint8_t n = 0;
 
   out[n].sensorId = id_;

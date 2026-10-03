@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.55.0] - 2026-10-03
+
+### Added
+
+- NTP/RTC (D-0044): sincronización de reloj por NTP y timestamps epoch UTC reales
+  en las mediciones (`nowEpoch()` con fallback a uptime).
+
 ## [0.54.0] - 2026-10-03
 
 ### Added
@@ -426,6 +433,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.55.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.55.0
 [0.54.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.54.0
 [0.53.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.53.0
 [0.52.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.52.0

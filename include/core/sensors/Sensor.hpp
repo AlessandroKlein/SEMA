@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "core/Measurement.hpp"
+#include "core/Time.hpp"
 
 // =============================================================================
 // SEMA — Interfaz de un driver de sensor

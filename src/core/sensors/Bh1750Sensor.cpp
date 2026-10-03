@@ -34,7 +34,7 @@ uint8_t Bh1750Sensor::measure(Measurement out[], uint8_t max) {
   out[0].measurement = "light";
   out[0].unit = "lux";
   out[0].sequence = ++sequence_;
-  out[0].timestamp = millis() / 1000;
+  out[0].timestamp = nowEpoch();
 
   if (!ok_) {
     out[0].value = 0.0f;

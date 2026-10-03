@@ -48,7 +48,7 @@ uint8_t PcntSensor::measure(Measurement out[], uint8_t max) {
   pcnt_counter_clear(PCNT_UNIT_0);
 
   const float value = count * scale_;
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
 
   out[0].sensorId = id_;
   out[0].channelId = channel_;

@@ -35,7 +35,7 @@ uint8_t Scd30Sensor::measure(Measurement out[], uint8_t max) {
   const float co2 = scd30.CO2;
   const float t = scd30.temperature;
   const float h = scd30.relative_humidity;
-  const uint32_t ts = millis() / 1000;
+  const uint32_t ts = nowEpoch();
 
   uint8_t n = 0;
 

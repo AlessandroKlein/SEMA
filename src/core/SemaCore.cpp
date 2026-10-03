@@ -141,6 +141,9 @@ void SemaCore::setup() {
               config_.get().network.password,
               config_.get().network.hostname);
 
+  // Sincronización NTP (D-0044): reloj UTC; nowEpoch() cae a uptime hasta sincronizar.
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+
   http_.begin(*this);
 
   // Publicadores (D-0010): webhook HTTP y MQTT, configurados desde la config.
