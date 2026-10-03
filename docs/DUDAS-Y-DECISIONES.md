@@ -1,8 +1,8 @@
 # Dudas y decisiones — SEMA
 
-> **Tipo:** Convención | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.4.0
+> **Tipo:** Convención | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.5.0
 
-Registro de decisiones de arquitectura (ADR) y dudas pendientes. Este documento
+Registro de decisiones de arquitectura (ADR) y resolución de dudas. Este documento
 es el **contrato arquitectónico** previo al desarrollo del Core de SEMA.
 Formato basado en `ESTANDAR-DOCUMENTACION.md` §6.
 
@@ -52,11 +52,26 @@ Formato basado en `ESTANDAR-DOCUMENTACION.md` §6.
 | D-0038 | Compatibilidad ESP32 single-core y multicore | Cerrada |
 | D-0039 | Abstracción RT (no acoplar SEMA a FreeRTOS) | Cerrada |
 | D-0040 | Configuración avanzada de Tasks solo en Expert Mode | Cerrada |
-| D-0041 | Endpoints REST mínimos de Fase 1 (`/api/v1/*`) | Cerrada |
-| D-0042 | JSON Schema de configuración `schema=1` | Cerrada |
-| D-0043 | Modelo Canónico de Mediciones (estructura exacta) | Cerrada |
-| D-0044 | Estructura del Event Bus | Cerrada |
-| D-0045 | Esquema de almacenamiento local (Storage API) | Cerrada |
+| D-0041 | REST API `/api/v1` y WebSocket | Cerrada |
+| D-0042 | JSON Schema de configuración v1 | Cerrada |
+| D-0043 | Política de selección de drivers | Cerrada |
+| D-0044 | Canonical Data Model definitivo | Cerrada |
+| D-0045 | Event Bus tipado | Cerrada |
+| D-0046 | Storage API y backends | Cerrada |
+| D-0047 | Protocolo estación ↔ Servidor Central | Cerrada |
+| D-0048 | Autenticación RBAC + API Keys | Cerrada |
+| D-0049 | Política OTA y rollback | Cerrada |
+| D-0050 | Board/Chip Profiles oficiales | Cerrada |
+| D-0051 | Capability Matrix | Cerrada |
+| D-0052 | Perfiles de FreeRTOS | Cerrada |
+| D-0053 | Task Affinity `AUTO` | Cerrada |
+| D-0054 | Perfiles de consumo energético | Cerrada |
+| D-0055 | Framework de calibración | Cerrada |
+| D-0056 | Quality Flags | Cerrada |
+| D-0057 | Política de retención histórica | Cerrada |
+| D-0058 | Descubrimiento de sensores | Cerrada |
+| D-0059 | Motor de reglas y alarmas | Cerrada |
+| D-0060 | Interfaz de módulos externos | Cerrada |
 
 ---
 
@@ -144,11 +159,8 @@ Esto es especialmente relevante para **FreeRTOS/SMP/Task Pinning**: SEMA usa
 ### 3.3 Datos y sensores
 
 - **D-0007 — Modelo Canónico de Mediciones.** Una única representación de la
-  medición (`timestamp`, `sensor_id`, `magnitud`, `valor`, `unidad`, `calidad`)
-  compartida por adquisición, storage, API y publishers.
-- **D-0026 — Quality Flags.** Toda medición lleva estado: `VALID`, `INVALID`,
-  `STALE`, `TIMEOUT`, `OUT_OF_RANGE`, `CALIBRATION_ERROR`,
-  `COMMUNICATION_ERROR`, `SENSOR_DISCONNECTED`.
+  medición compartida por adquisición, storage, API y publishers.
+- **D-0026 — Quality Flags.** Toda medición lleva estado (ver D-0056).
 - **D-0025 — Calibración independiente del driver.** Offset, gain, multipunto,
   mínimo/máximo y filtro viven en la configuración del sensor, no en el driver.
 - **D-0032 — Almacenamiento por capas.** Configuración (NVS), histórico, eventos
@@ -192,99 +204,76 @@ Esto es especialmente relevante para **FreeRTOS/SMP/Task Pinning**: SEMA usa
 - **D-0040 — Tasks solo en Expert Mode.** El usuario normal trabaja con magnitudes;
   la configuración de tasks/prioridades queda en modo experto.
 
-### 3.6 Definiciones de implementación (cierran Q-0001, Q-0002, Q-0004, Q-0005, Q-0006)
+### 3.6 Resolución de dudas (D-0041…D-0060)
 
-#### D-0041 — Endpoints REST mínimos de Fase 1 (`README.md` §54, §106-110, §160-162)
-
-```text
-GET  /api/v1/status        resumen general
-GET  /api/v1/health        salud (uptime, heap, wifi, sensores)
-GET  /api/v1/system        identidad, firmware, versiones
-GET  /api/v1/config        configuración actual (schema=1)
-GET  /api/v1/diagnostics   diagnóstico (reset reason, tasks, buses, storage, power)
-
-PUT  /api/v1/config        aplicar configuración (transaccional, autenticado)
-POST /api/v1/restart       reinicio (autenticado)
-```
-
-Los endpoints `sensors`, `weather`, `energy`, `alarms`, `events` e `history` se
-habilitan a partir de la Fase 2 (`README.md` §106-110).
-
-#### D-0042 — JSON Schema de configuración `schema=1` (`README.md` §51, §58)
-
-```json
-{
-  "schema_version": 1,
-  "station":  { "id": "SEMA-001", "name": "Estación Norte" },
-  "network":  { "mode": "STA", "ssid": "", "hostname": "sema-001", "mdns": true },
-  "system":   { "timezone": "America/Argentina/Buenos_Aires", "log_level": "INFO" },
-  "storage":  { "backend": "littlefs", "retention_days": 30 },
-  "hardware": {},
-  "buses":    {},
-  "sensors":  [],
-  "energy":   {},
-  "services": {},
-  "modules":  {}
-}
-```
-
-En Fase 1 se implementan `station`, `network`, `system` y `storage`; el resto son
-placeholders que se completan en fases posteriores. El esquema evoluciona solo
-mediante `schema_version` (D-0023, `docs/VERSIONADO.md` §7).
-
-#### D-0043 — Modelo Canónico de Mediciones (`README.md` §41, §109, §173)
-
-```json
-{
-  "station_id": "SEMA-001",
-  "sensor_id": "TEMP_EXT",
-  "measurement": "temperature",
-  "value": 24.7,
-  "unit": "degC",
-  "timestamp": "2026-09-30T15:00:00Z",
-  "quality": "VALID",
-  "source": { "sensor": "SHT40", "interface": "I2C", "bus": 1, "address": "0x44" }
-}
-```
-
-- `station_id` / `sensor_id` → identidad estable (D-0028).
-- `measurement` → magnitud (`temperature`, `humidity`, `pressure`, …).
-- `unit` → unidad canónica (`degC`, `percent`, `hPa`, `m/s`, `mm`, `W/m2`, `lux`, `ppm`, `V`).
-- `timestamp` → ISO 8601 UTC.
-- `quality` → Quality Flags (D-0026).
-- `source` → opcional, trazabilidad del sensor.
-
-#### D-0044 — Estructura del Event Bus (`README.md` §204-205, §111)
-
-```cpp
-enum class EventType : uint8_t {
-  Sensor, Rain, Lightning, Battery, Network, Alarm, System, Wake, Sleep
-};
-
-struct Event {
-  EventType type;
-  uint32_t timestampMs;  // millis() monotónico
-  const char* source;    // id del sensor/módulo
-  int32_t value;         // payload
-};
-```
-
-Eventos meteorológicos concretos (`README.md` §111): `RAIN_START`, `RAIN_STOP`,
-`LIGHTNING`, `HIGH_WIND`, `HEAVY_RAIN`, `FROST`, `HEAT`, `LOW_BATTERY`,
-`SENSOR_ERROR`. Transporte `publish/subscribe` (D-0008).
-
-#### D-0045 — Esquema de almacenamiento local (`README.md` §40-41, §173)
-
-```text
-Storage API
- ├── NVS        → configuración (schema=1), identidad, contadores
- ├── LittleFS   → histórico (retention), eventos, logs
- ├── SD         → histórico extendido / exportación (opcional)
- └── External   → (futuro)
-```
-
-Registro histórico (`README.md` §41): `timestamp, sensor_id, measurement, value,
-unit, quality, state`. Retención configurable (default 30 días; Q-0017).
+- **D-0041 — REST API `/api/v1` y WebSocket.** API HTTP/REST versionada en
+  `/api/v1` con `status`, `health`, `capabilities`, `measurements`, `sensors`,
+  `config`, `events`, `diagnostics`, `network` y `runtime`; WebSocket (`/ws`)
+  para datos y eventos en tiempo real. Refina D-0006 (`README.md` §106-110, §226).
+- **D-0042 — JSON Schema de configuración v1.** Esquema jerárquico versionado
+  (`schema_version`) que separa identidad, placa, red, tiempo, sensores, canales,
+  buses, almacenamiento, publishers, energía, seguridad, módulos y runtime, con
+  validación antes de aplicar (`README.md` §51, §58).
+- **D-0043 — Política de selección de drivers.** Preferir drivers ESP-IDF
+  oficiales cuando existan; sensores externos con drivers mantenidos encapsulados
+  detrás de la interfaz SEMA. Ninguna biblioteca externa contamina el Core.
+- **D-0044 — Canonical Data Model definitivo.** Modelo único de medición con
+  `timestamp`, `sensor_id`, `channel_id`, `measurement`, `value`, `unit`,
+  `quality`, `sequence` y metadatos opcionales (`README.md` §41, §109, §173).
+- **D-0045 — Event Bus tipado.** Eventos con `event_id`, `timestamp`, `source`,
+  `type`, `severity`, `payload`, `correlation_id` y destino opcional; funciona
+  entre tasks sin bloquear la adquisición (`README.md` §204-205, §111).
+- **D-0046 — Storage API y backends.** NVS para configuración, archivos para
+  configuración/logs, backend histórico intercambiable Flash/LittleFS/SD. La
+  disponibilidad de SD nunca es requisito (`README.md` §40-41, §173).
+- **D-0047 — Protocolo estación ↔ Servidor Central.** API HTTPS/REST +
+  sincronización incremental con `device_id`, secuencias, timestamps y Store &
+  Forward; el servidor no controla directamente el hardware crítico
+  (`README.md` §240-243, §250).
+- **D-0048 — Autenticación RBAC + API Keys.** RBAC + capacidades con roles
+  administrador, operador y consulta; API mediante Bearer/API Key revocable;
+  funciones críticas con permisos explícitos (`README.md` §72, §163-167).
+- **D-0049 — Política OTA y rollback.** OTA con particiones redundantes +
+  validación + rollback automático (mecanismo de ESP-IDF); la actualización se
+  verifica antes de marcar el firmware como válido (`README.md` §71, §199).
+- **D-0050 — Board/Chip Profiles oficiales.** Primera matriz: ESP32-WROOM-32E/32UE,
+  ESP32-S3, ESP32-C6, ESP32-C5 y ESP32-P4; arquitectura abierta a nuevas variantes,
+  con compatibilidad declarada por perfil (`README.md` §252-257).
+- **D-0051 — Capability Matrix.** Matriz `Board/Chip Capability` con GPIO, ADC,
+  PCNT, PWM/MCPWM, UART, I²C, SPI, TWAI/CAN, Wi-Fi, Bluetooth, 802.15.4, PSRAM,
+  RTC GPIO, sleep/wakeup, flash y restricciones de pines. **PCNT es una capacidad
+  explícita** (útil para pluviómetros/anemómetros; p. ej. ESP32-C5 dispone de PCNT
+  con filtros de glitch).
+- **D-0052 — Perfiles de FreeRTOS.** Perfiles de runtime, no prioridades libres:
+  críticas → alta; adquisición → media/alta; comunicaciones → media; UI/logging →
+  baja. Valores ajustables solo en Expert Mode (D-0040).
+- **D-0053 — Task Affinity `AUTO`.** Ninguna task se fija por defecto
+  (`AUTO`/`tskNO_AFFINITY`); pinning solo con justificación (hardware, ISR,
+  latencia o benchmark). ESP-IDF FreeRTOS aporta SMP multicore; SEMA abstrae la
+  diferencia para funcionar en single-core y multicore (D-0013, D-0038).
+- **D-0054 — Perfiles de consumo energético.** Performance, Normal, Low Power y
+  Ultra Low Power; cada uno define frecuencia de lectura, conectividad, sleep y
+  fuentes de wake-up (lluvia, RTC, GPIO/INT, timers) según capacidades
+  (`README.md` §137, §146-147).
+- **D-0055 — Framework de calibración.** Independiente del driver: `offset`,
+  `gain`, calibración multipunto, curva/polinómica, límites y filtros; se almacena
+  junto al canal lógico, no en el código del sensor (`README.md` §43, §193).
+- **D-0056 — Quality Flags.** `VALID`, `INVALID`, `STALE`, `TIMEOUT`,
+  `OUT_OF_RANGE`, `CALIBRATION_ERROR`, `COMMUNICATION_ERROR`,
+  `SENSOR_DISCONNECTED`; se permiten flags adicionales sin romper compatibilidad
+  (`README.md` §42, §84).
+- **D-0057 — Política de retención histórica.** Retención por niveles: alta
+  resolución a corto plazo, datos agregados a largo plazo, eventos/logs según
+  capacidad; configurable y dependiente del almacenamiento disponible.
+- **D-0058 — Descubrimiento de sensores.** Discovery por capacidades/protocolo:
+  I²C/1-Wire/Modbus ofrecen descubrimiento cuando el protocolo lo permite;
+  analógicos/GPIO requieren configuración explícita (`README.md` §44, §210).
+- **D-0059 — Motor de reglas y alarmas.** Motor basado en eventos y condiciones
+  (`>`, `<`, `>=`, `<=`, cambio, ausencia, duración, combinación lógica); acciones:
+  evento, alarma, webhook, publisher, registro y acción local (`README.md` §63, §87).
+- **D-0060 — Interfaz de módulos externos.** Interfaz común de módulos/capabilities
+  con lifecycle `AVAILABLE → INSTALLED → CONFIGURED → ENABLED → RUNNING`; cada
+  módulo comunica sus capacidades y recursos al Core (`README.md` §52-53).
 
 ---
 
@@ -312,30 +301,30 @@ núcleo meteorológico.
 
 ---
 
-## 5. Dudas abiertas
+## 5. Resolución de dudas abiertas
 
 | # | Duda | Resolución |
 |---|------|-----------|
-| Q-0001 | Definir endpoints REST mínimos de Fase 1 | → D-0041 |
-| Q-0002 | Definir JSON Schema de configuración `schema=1` | → D-0042 |
-| Q-0003 | Seleccionar bibliotecas/drivers definitivos por sensor | abierta |
-| Q-0004 | Definir estructura exacta del Canonical Data Model | → D-0043 |
-| Q-0005 | Definir estructura del Event Bus | → D-0044 |
-| Q-0006 | Definir esquema de almacenamiento local | → D-0045 |
-| Q-0007 | Definir protocolo estación ↔ Servidor Central | abierta |
-| Q-0008 | Definir autenticación API y roles | abierta |
-| Q-0009 | Definir política definitiva de OTA y rollback | abierta |
-| Q-0010 | Definir perfiles oficiales de placas ESP32 soportadas | abierta |
-| Q-0011 | Definir matriz de capacidades de GPIO/periféricos por chip | abierta |
-| Q-0012 | Definir perfiles de FreeRTOS y prioridades de Tasks | abierta |
-| Q-0013 | Definir qué Tasks pueden usar Task Pinning | abierta |
-| Q-0014 | Definir política de Deep Sleep por perfil energético | abierta |
-| Q-0015 | Definir esquema de calibración | abierta |
-| Q-0016 | Definir Quality Flags | abierta |
-| Q-0017 | Definir retención de históricos | abierta |
-| Q-0018 | Definir mecanismo de descubrimiento de sensores | abierta |
-| Q-0019 | Definir sistema de alarmas/reglas | abierta |
-| Q-0020 | Definir protocolo de comunicación de módulos externos | abierta |
+| Q-0001 | Endpoints REST mínimos de Fase 1 | → D-0041 |
+| Q-0002 | JSON Schema de configuración `schema=1` | → D-0042 |
+| Q-0003 | Seleccionar bibliotecas/drivers por sensor | → D-0043 |
+| Q-0004 | Estructura exacta del Canonical Data Model | → D-0044 |
+| Q-0005 | Estructura del Event Bus | → D-0045 |
+| Q-0006 | Esquema de almacenamiento local | → D-0046 |
+| Q-0007 | Protocolo estación ↔ Servidor Central | → D-0047 |
+| Q-0008 | Autenticación API y roles | → D-0048 |
+| Q-0009 | Política definitiva de OTA y rollback | → D-0049 |
+| Q-0010 | Perfiles oficiales de placas ESP32 | → D-0050 |
+| Q-0011 | Matriz de capacidades por chip | → D-0051 |
+| Q-0012 | Perfiles de FreeRTOS y prioridades | → D-0052 |
+| Q-0013 | Qué Tasks pueden usar Task Pinning | → D-0053 |
+| Q-0014 | Política de Deep Sleep por perfil | → D-0054 |
+| Q-0015 | Esquema de calibración | → D-0055 |
+| Q-0016 | Quality Flags | → D-0056 |
+| Q-0017 | Retención de históricos | → D-0057 |
+| Q-0018 | Descubrimiento de sensores | → D-0058 |
+| Q-0019 | Sistema de alarmas/reglas | → D-0059 |
+| Q-0020 | Protocolo de comunicación de módulos externos | → D-0060 |
 
 ---
 

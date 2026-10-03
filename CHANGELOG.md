@@ -6,6 +6,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.5.0] - 2026-10-03
+
+### Changed
+
+- `docs/DUDAS-Y-DECISIONES.md`: las 20 dudas (Q-0001…Q-0020) resueltas y
+  convertidas en decisiones D-0041…D-0060. La sección 5 pasa a ser
+  "Resolución de dudas abiertas".
+- Contrato arquitectónico completo: 60 decisiones cerradas (D-0001…D-0060).
+
 ## [0.4.0] - 2026-10-03
 
 ### Added
@@ -56,6 +65,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.5.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.5.0
 [0.4.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.4.0
 [0.3.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.3.0
 [0.2.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.2.0
