@@ -91,6 +91,7 @@ Consecuencias prácticas:
 | BH1750 | luminosidad (lux) | I²C | 0x23 |
 | DS18B20 | temperatura | 1-Wire | GPIO 4 |
 | ADC (genérico) | tensión/otro | ADC | GPIO configurable |
+| PCNT (genérico) | lluvia/viento (pulsos) | GPIO (PCNT) | pin configurable |
 
 ---
 

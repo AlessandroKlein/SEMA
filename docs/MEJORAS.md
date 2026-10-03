@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.46.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.47.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -33,7 +33,7 @@ MCP23017 · 74HC595 · 74HC165 · ADS1115
 ```text
 Viento · Lluvia · Radiación · UV · Rayos
 ```
-⬜ pendiente (wake-up por lluvia ya listo, ver Fase 8).
+🔄 (v0.47.0): pluviómetro/anemómetro por PCNT (conteo de pulsos).
 
 ### Fase 5 — Calidad ambiental
 ```text

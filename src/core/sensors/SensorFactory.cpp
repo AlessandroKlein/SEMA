@@ -6,6 +6,7 @@
 #include "core/sensors/Bme280Sensor.hpp"
 #include "core/sensors/Bmp280Sensor.hpp"
 #include "core/sensors/Ds18b20Sensor.hpp"
+#include "core/sensors/PcntSensor.hpp"
 #include "core/sensors/Sht31Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
 
@@ -38,6 +39,10 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   if (spec.model == "ADC") {
     return new AdcSensor(spec.id.c_str(), spec.pin, spec.channel.c_str(),
                          spec.unit.c_str(), spec.scale, spec.offset);
+  }
+  if (spec.model == "PCNT") {
+    return new PcntSensor(spec.id.c_str(), spec.pin, spec.channel.c_str(),
+                          spec.unit.c_str(), spec.scale);
   }
   return nullptr;
 }

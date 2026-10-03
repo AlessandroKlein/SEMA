@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.47.0] - 2026-10-03
+
+### Added
+
+- Sensor `PcntSensor` (conteo de pulsos por PCNT, D-0051/§21): pluviómetro,
+  anemómetro, etc. Integrado en la factoría (`model: "PCNT"`).
+
 ## [0.46.0] - 2026-10-03
 
 ### Added
@@ -372,6 +379,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.47.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.47.0
 [0.46.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.46.0
 [0.45.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.45.0
 [0.44.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.44.0
