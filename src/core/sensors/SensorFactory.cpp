@@ -7,6 +7,7 @@
 #include "core/sensors/Bmp280Sensor.hpp"
 #include "core/sensors/Ds18b20Sensor.hpp"
 #include "core/sensors/PcntSensor.hpp"
+#include "core/sensors/Scd30Sensor.hpp"
 #include "core/sensors/Sht31Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
 #include "core/sensors/Veml6075Sensor.hpp"
@@ -47,6 +48,9 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   }
   if (spec.model == "VEML6075") {
     return new Veml6075Sensor(spec.id.c_str(), spec.sda, spec.scl);
+  }
+  if (spec.model == "SCD30") {
+    return new Scd30Sensor(spec.id.c_str(), spec.sda, spec.scl);
   }
   return nullptr;
 }

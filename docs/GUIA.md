@@ -93,6 +93,7 @@ Consecuencias prácticas:
 | ADC (genérico) | tensión/otro | ADC | GPIO configurable |
 | PCNT (genérico) | lluvia/viento (pulsos) | GPIO (PCNT) | pin configurable |
 | VEML6075 | UVA/UVB/índice UV | I²C | 0x10 |
+| SCD30 | CO₂, temperatura, humedad | I²C | 0x61 |
 
 ---
 

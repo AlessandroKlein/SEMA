@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.49.0] - 2026-10-03
+
+### Added
+
+- Driver `Scd30Sensor` (CO₂, temperatura y humedad) sobre I²C (Fase 5).
+
 ## [0.48.0] - 2026-10-03
 
 ### Added
@@ -385,6 +391,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.49.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.49.0
 [0.48.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.48.0
 [0.47.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.47.0
 [0.46.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.46.0

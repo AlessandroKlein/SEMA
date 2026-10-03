@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.48.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.49.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -39,7 +39,7 @@ Viento · Lluvia · Radiación · UV · Rayos
 ```text
 CO₂ · PM · CO
 ```
-⬜ pendiente.
+🔄 (v0.49.0): CO₂ (SCD30).
 
 ### Fase 6 — Industrial
 ```text
