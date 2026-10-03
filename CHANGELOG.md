@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.20.0] - 2026-10-03
+
+### Added
+
+- Publicador MQTT (D-0010/§56): `MqttPublisher` que publica el Modelo Canónico
+  como JSON en un topic. Dependencia PubSubClient.
+
 ## [0.19.0] - 2026-10-03
 
 ### Added
@@ -182,6 +189,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.20.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.20.0
 [0.19.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.19.0
 [0.18.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.18.0
 [0.17.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.17.0

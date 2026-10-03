@@ -4,6 +4,7 @@
 #include <Wire.h>
 
 #include "core/publishers/HttpPublisher.hpp"
+#include "core/publishers/MqttPublisher.hpp"
 #include "core/sensors/Bme280Sensor.hpp"
 #include "core/sensors/Ds18b20Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
@@ -95,9 +96,11 @@ void SemaCore::setup() {
 
   http_.begin(*this);
 
-  // Publicadores (D-0010): webhook genérico (URL vacía → deshabilitado).
+  // Publicadores (D-0010): webhook HTTP y MQTT (host/URL vacíos → deshabilitados).
   static HttpPublisher webhook("webhook", "");
+  static MqttPublisher mqtt("mqtt", "", 1883, "sema/measurement");
   publishers_.registerPublisher(&webhook);
+  publishers_.registerPublisher(&mqtt);
 
   // Regla de ejemplo (D-0059): alarma si la temperatura exterior supera 40 °C.
   rules_.addRule({"high_temp", "EXT", "temperature", RuleOp::Gt, 40.0f});
