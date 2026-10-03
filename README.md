@@ -14,6 +14,12 @@ Sistema modular de adquisición, procesamiento, almacenamiento, visualización y
 | Código del proyecto | `git@github.com:AlessandroKlein/SEMA.git` |
 | Documentación / wiki | `git@github.com:AlessandroKlein/Docs.git` |
 
+## Guía rápida
+
+¿No conocés el proyecto? Empezá por la **[Guía de inicio](docs/GUIA.md)**: concepto,
+hardware, compilación, configuración, API y estructura del código en un solo
+documento, pensado para leerse sin conocimientos previos.
+
 ---
 
 # 1. Descripción general
