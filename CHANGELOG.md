@@ -6,6 +6,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.10.0] - 2026-10-03
+
+### Added
+
+- Histórico persistente (D-0046/D-0057): `HistoryStore` JSONL sobre LittleFS.
+- Tabla de particiones propia (`partitions.csv`) con partición `spiffs` de datos.
+- Las mediciones se guardan tras cada lectura; `/api/v1/diagnostics` expone el
+  conteo de entradas del histórico.
+
 ## [0.9.0] - 2026-10-03
 
 ### Added
@@ -106,6 +115,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.10.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.10.0
 [0.9.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.9.0
 [0.8.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.8.0
 [0.7.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.7.0

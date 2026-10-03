@@ -9,6 +9,7 @@
 #include "core/Scheduler.hpp"
 #include "core/Version.hpp"
 #include "core/network/WiFiManager.hpp"
+#include "core/storage/HistoryStore.hpp"
 #include "core/storage/NvsStore.hpp"
 #include "core/web/HttpServer.hpp"
 
@@ -34,6 +35,7 @@ public:
   CapabilityManager& capabilities() { return CapabilityManager::instance(); }
   Scheduler& scheduler() { return scheduler_; }
   SensorManager& sensors() { return sensors_; }
+  HistoryStore& history() { return history_; }
 
 private:
   SemaCore();
@@ -43,6 +45,7 @@ private:
   EventBus events_;
   ConfigManager config_;
   SensorManager sensors_;
+  HistoryStore history_;
   Scheduler scheduler_;
   WiFiManager wifi_;
   HttpServer http_;

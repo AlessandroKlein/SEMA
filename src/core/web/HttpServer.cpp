@@ -76,6 +76,8 @@ void HttpServer::onDiagnostics() {
   doc["uptime_s"] = millis() / 1000;
   doc["free_heap"] = ESP.getFreeHeap();
   doc["reset_reason"] = static_cast<int>(esp_reset_reason());
+  doc["history"]["entries"] = core_->history().count();
+  doc["history"]["max"] = core_->history().maxEntries();
   doc["tasks"] = 0;
   String out;
   serializeJson(doc, out);

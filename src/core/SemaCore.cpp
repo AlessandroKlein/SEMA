@@ -18,6 +18,7 @@ void SemaCore::setup() {
   delay(200);
 
   store_.begin("sema");
+  history_.begin();
 
   // Perfil base ESP32 clásico (D-0050/D-0051). En una iteración posterior esto se
   // carga desde el Board/Chip Profile en lugar de declararse aquí.
@@ -72,6 +73,9 @@ void SemaCore::setup() {
 
   scheduler_.add("sensors.read", 10000, [this]() {
     sensors_.readAll();
+    for (const Measurement& m : sensors_.measurements()) {
+      history_.append(m);
+    }
   });
 
   modules_.enableAll();
