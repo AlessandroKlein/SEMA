@@ -33,8 +33,9 @@ public:
   EnergyProfile profile() const { return profile_; }
   void setProfile(EnergyProfile p) { profile_ = p; }
 
-  void sleep(uint64_t seconds);   // deep sleep con wake por timer RTC
-  uint32_t wakeReason() const;    // esp_sleep_get_wakeup_cause()
+  void sleep(uint64_t seconds);          // deep sleep con wake por timer RTC
+  void enableRainWakeup(uint8_t pin);    // wake por GPIO de lluvia (D-0022)
+  uint32_t wakeReason() const;           // esp_sleep_get_wakeup_cause()
 
 private:
   PowerManager() = default;

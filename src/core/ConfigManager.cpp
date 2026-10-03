@@ -88,6 +88,7 @@ bool ConfigManager::serialize(String& out) const {
   doc["storage"]["backend"] = config_.storage.backend;
   doc["storage"]["retention_days"] = config_.storage.retentionDays;
   doc["security"]["api_key"] = config_.security.apiKey;
+  doc["energy"]["rain_pin"] = config_.energy.rainPin;
   serializeJson(doc, out);
   return true;
 }
@@ -111,6 +112,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.storage.backend = doc["storage"]["backend"] | "littlefs";
   c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
   c.security.apiKey = doc["security"]["api_key"] | "";
+  c.energy.rainPin = doc["energy"]["rain_pin"] | 0;
   return true;
 }
 

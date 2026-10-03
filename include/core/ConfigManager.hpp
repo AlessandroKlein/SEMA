@@ -40,6 +40,10 @@ struct SecurityConfig {
   String apiKey;    // clave de API (D-0048); vacía = sin autenticación
 };
 
+struct EnergyConfig {
+  uint8_t rainPin = 0;  // GPIO del pluviómetro (D-0022); 0 = deshabilitado
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -48,6 +52,7 @@ struct Config {
   SystemConfig system;
   StorageConfig storage;
   SecurityConfig security;
+  EnergyConfig energy;
 };
 
 class ConfigManager {
