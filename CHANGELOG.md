@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.7.0] - 2026-10-03
+
+### Added
+
+- `include/core/Measurement.hpp`: Modelo Canónico de Mediciones (D-0044) con
+  Quality Flags (D-0056).
+- Event Bus tipado (D-0045): `Event` con `id`, `severity`, `correlation_id` y
+  `target`; enum `Severity`.
+- `docs/IMPLEMENTACION.md` §13: especificación técnica de D-0041, D-0042, D-0044,
+  D-0045 y D-0046.
+
 ## [0.6.0] - 2026-10-03
 
 ### Added
@@ -76,6 +87,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.7.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.7.0
 [0.6.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.6.0
 [0.5.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.5.0
 [0.4.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.4.0

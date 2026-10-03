@@ -1,6 +1,6 @@
 # Arquitectura e implementación — SEMA
 
-> **Tipo:** Concepto | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.6.0
+> **Tipo:** Concepto | **Estado:** Planificación | **Fecha:** 2026-10-03 | **Versión:** 0.7.0
 
 Consolida la arquitectura de SEMA a partir de la especificación del `README.md`.
 Es la referencia para implementar el firmware de forma modular. El estado de qué
@@ -251,3 +251,108 @@ watchdog y documentación. Los módulos aún no implementados quedan en `AVAILAB
 
 Las 9 fases de desarrollo (`README.md` §104) y su estado están en
 [`MEJORAS.md`](MEJORAS.md).
+
+---
+
+## 13. Especificación técnica de la base del Core
+
+Definiciones técnicas de las cinco piezas base (D-0041, D-0042, D-0044, D-0045,
+D-0046), derivadas del contrato de [`DUDAS-Y-DECISIONES.md`](DUDAS-Y-DECISIONES.md).
+
+### 13.1 JSON Schema de configuración v1 (D-0042)
+
+```json
+{
+  "schema_version": 1,
+  "station":  { "id": "SEMA-001", "name": "Estación Norte" },
+  "board":    { "profile": "esp32" },
+  "network":  { "mode": "STA", "ssid": "", "hostname": "sema-001", "mdns": true },
+  "time":     { "timezone": "America/Argentina/Buenos_Aires", "ntp": true },
+  "sensors":  [],
+  "channels": [],
+  "buses":    {},
+  "storage":  { "backend": "littlefs", "retention_days": 30 },
+  "publishers": {},
+  "energy":   {},
+  "security": { "log_level": "INFO" },
+  "modules":  {},
+  "runtime":  {}
+}
+```
+
+En Fase 1 se implementan `station`, `network`, `time`, `storage` y `security`;
+el resto son placeholders que se completan en fases posteriores.
+
+### 13.2 Canonical Data Model (D-0044)
+
+```cpp
+// include/core/Measurement.hpp
+enum class Quality : uint8_t {
+  Valid, Invalid, Stale, Timeout, OutOfRange,
+  CalibrationError, CommunicationError, SensorDisconnected
+};
+
+struct Measurement {
+  String stationId, sensorId, channelId, measurement, unit;
+  float value;
+  Quality quality;
+  uint32_t sequence, timestamp;
+};
+```
+
+JSON equivalente (`README.md` §173):
+
+```json
+{
+  "station_id": "SEMA-001", "sensor_id": "TEMP_EXT",
+  "channel_id": "1", "measurement": "temperature",
+  "value": 24.7, "unit": "degC", "quality": "VALID",
+  "sequence": 1234, "timestamp": 1790000000
+}
+```
+
+### 13.3 Event Bus (D-0045)
+
+```cpp
+// include/core/EventBus.hpp
+enum class EventType : uint8_t {
+  Sensor, Rain, Lightning, Battery, Network, Alarm, System, Wake, Sleep
+};
+enum class Severity : uint8_t {
+  Debug, Info, Notice, Warning, Error, Critical
+};
+
+struct Event {
+  uint32_t id, timestampMs;
+  const char* source, *correlationId, *target;
+  EventType type;
+  Severity severity;
+  int32_t value;   // payload numérico simple
+};
+```
+
+### 13.4 Storage API (D-0046)
+
+```text
+Storage API
+ ├── NVS        → configuración, identidad, contadores
+ ├── Flash/LittleFS/SD → histórico, eventos, logs
+```
+
+Interfaz mínima implementada: `include/core/storage/Storage.hpp` (`begin`,
+`getString/putString`, `getUInt/putUInt`, `clear`) + `NvsStore` (Preferences).
+
+### 13.5 REST API `/api/v1` (D-0041)
+
+```text
+GET  /api/v1/status        resumen general
+GET  /api/v1/health        salud (uptime, heap, wifi, sensores)
+GET  /api/v1/system        identidad, firmware, versiones
+GET  /api/v1/config        configuración (schema=1)
+GET  /api/v1/diagnostics   diagnóstico (reset reason, tasks, buses, storage, power)
+
+PUT  /api/v1/config        aplicar configuración (transaccional, autenticado)
+POST /api/v1/restart       reinicio (autenticado)
+```
+
+WebSocket en `/ws` para datos y eventos en tiempo real.

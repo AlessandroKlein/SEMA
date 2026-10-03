@@ -3,6 +3,7 @@
 #include "core/CapabilityManager.hpp"
 #include "core/ConfigManager.hpp"
 #include "core/EventBus.hpp"
+#include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
 #include "core/Version.hpp"
 #include "core/storage/NvsStore.hpp"
