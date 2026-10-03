@@ -72,6 +72,18 @@ void SemaCore::setup() {
   sensors_.registerSensor(&sht40);
   sensors_.beginAll();
 
+  // Calibración de ejemplo (D-0055): límites de temperatura. En una iteración
+  // posterior estos valores vendrán de la configuración (schema=1).
+  Calibration tempCal;
+  tempCal.enabled = true;
+  tempCal.gain = 1.0f;
+  tempCal.offset = 0.0f;
+  tempCal.hasRange = true;
+  tempCal.min = -40.0f;
+  tempCal.max = 85.0f;
+  sensors_.setCalibration("EXT:temperature", tempCal);
+  sensors_.setCalibration("INT:temperature", tempCal);
+
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
               config_.get().network.password,

@@ -14,6 +14,10 @@ void SensorManager::beginAll() {
   }
 }
 
+void SensorManager::setCalibration(const String& key, const Calibration& c) {
+  calibrations_[key] = c;
+}
+
 void SensorManager::readAll() {
   measurements_.clear();
 
@@ -24,6 +28,11 @@ void SensorManager::readAll() {
     }
     const uint8_t n = sensor->measure(buffer, 4);
     for (uint8_t i = 0; i < n; ++i) {
+      const String key = buffer[i].sensorId + ":" + buffer[i].channelId;
+      auto it = calibrations_.find(key);
+      if (it != calibrations_.end()) {
+        applyCalibration(buffer[i], it->second);
+      }
       measurements_.push_back(buffer[i]);
     }
   }

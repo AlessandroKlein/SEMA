@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.15.0] - 2026-10-03
+
+### Added
+
+- Calibración y validación de rango (D-0055/§84): `Calibration` + `applyCalibration`.
+- `SensorManager::setCalibration()` por canal; las mediciones fuera de rango se
+  marcan `OUT_OF_RANGE` (D-0056).
+
 ## [0.14.0] - 2026-10-03
 
 ### Added
@@ -143,6 +151,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.15.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.15.0
 [0.14.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.14.0
 [0.13.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.13.0
 [0.12.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.12.0

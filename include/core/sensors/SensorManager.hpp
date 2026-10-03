@@ -1,7 +1,9 @@
 #pragma once
 
+#include <map>
 #include <vector>
 
+#include "core/Calibration.hpp"
 #include "core/Measurement.hpp"
 #include "core/sensors/Sensor.hpp"
 
@@ -19,6 +21,9 @@ public:
   void beginAll();
   void readAll();
 
+  // Calibración por canal ("sensorId:channelId"), D-0055.
+  void setCalibration(const String& key, const Calibration& c);
+
   size_t count() const { return sensors_.size(); }
   size_t onlineCount() const;
   const std::vector<Measurement>& measurements() const { return measurements_; }
@@ -26,6 +31,7 @@ public:
 private:
   std::vector<Sensor*> sensors_;
   std::vector<Measurement> measurements_;
+  std::map<String, Calibration> calibrations_;
 };
 
 }  // namespace sema
