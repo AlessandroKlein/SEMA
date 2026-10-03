@@ -11,6 +11,7 @@ namespace sema {
 void HttpServer::begin(SemaCore& core) {
   core_ = &core;
 
+  server_.on("/", HTTP_GET, [this]() { onRoot(); });
   server_.on("/api/v1/status", HTTP_GET, [this]() { onStatus(); });
   server_.on("/api/v1/health", HTTP_GET, [this]() { onHealth(); });
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
@@ -61,6 +62,52 @@ void HttpServer::broadcastMeasurements(const std::vector<Measurement>& measureme
   String out;
   serializeJson(doc, out);
   ws_.broadcastTXT(out.c_str());
+}
+
+void HttpServer::onRoot() {
+  static const char kIndexHtml[] PROGMEM = R"html(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEMA</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:1rem;background:#0d1117;color:#e6edf3}
+h1{margin:0 0 .25rem}h2{margin:1.25rem 0 .5rem}
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #30363d;padding:.4rem .6rem;text-align:left}
+.muted{color:#8b949e}
+</style>
+</head>
+<body>
+<h1>SEMA</h1>
+<div id="status" class="muted">Cargando…</div>
+<h2>Sensores</h2>
+<table><thead><tr><th>Sensor</th><th>Canal</th><th>Valor</th><th>Unidad</th><th>Calidad</th></tr></thead>
+<tbody id="rows"><tr><td colspan="5" class="muted">Cargando…</td></tr></tbody></table>
+<script>
+async function refresh(){
+  try{
+    const s=await(await fetch('/api/v1/status')).json();
+    document.getElementById('status').textContent=s.name+' ('+s.station+') — v'+s.firmware+' — '+s.uptime_s+' s';
+  }catch(e){document.getElementById('status').textContent='Sin conexión';}
+  try{
+    const r=await(await fetch('/api/v1/sensors')).json();
+    let h='';
+    for(const m of r.measurements){
+      h+='<tr><td>'+m.sensor_id+'</td><td>'+m.channel_id+'</td><td>'+m.value+'</td><td>'+m.unit+'</td><td>'+m.quality+'</td></tr>';
+    }
+    document.getElementById('rows').innerHTML=h||'<tr><td colspan="5" class="muted">Sin datos</td></tr>';
+  }catch(e){}
+}
+refresh();
+setInterval(refresh,5000);
+</script>
+</body>
+</html>
+)html";
+  server_.send(200, "text/html", kIndexHtml);
 }
 
 void HttpServer::onStatus() {

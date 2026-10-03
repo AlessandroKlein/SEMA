@@ -23,6 +23,7 @@ public:
   void broadcastMeasurements(const std::vector<Measurement>& measurements);
 
 private:
+  void onRoot();
   void onStatus();
   void onHealth();
   void onSystem();
