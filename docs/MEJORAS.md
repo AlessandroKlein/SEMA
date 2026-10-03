@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.50.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.51.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -82,7 +82,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Sistema de sensores | ✅ |
 | Catálogo de sensores | ✅ (configurable vía factoría) |
 | Detección I²C | ✅ |
-| Detección 1-Wire | ⬜ (driver DS18B20; sin auto-detección) |
+| Detección 1-Wire | ✅ (multi-dispositivo en el bus) |
 | Configuración GPIO | ⬜ |
 | Configuración ADC | ✅ (AdcSensor configurable vía `sensors[]`) |
 | MCP23017 / 74HC595 / 74HC165 | ⬜ |

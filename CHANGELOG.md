@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.51.0] - 2026-10-03
+
+### Added
+
+- Detección 1-Wire (`README.md` §12): `Ds18b20Sensor` lee todos los DS18B20 del
+  bus (multi-dispositivo, ids `SOIL`, `SOIL_1`, …).
+
 ## [0.50.0] - 2026-10-03
 
 ### Added
@@ -398,6 +405,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.51.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.51.0
 [0.50.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.50.0
 [0.49.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.49.0
 [0.48.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.48.0

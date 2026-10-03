@@ -20,7 +20,7 @@ bool Ds18b20Sensor::begin() {
   oneWire_ = new OneWire(pin_);
   ds_ = new DallasTemperature(oneWire_);
   ds_->begin();
-  // TODO(README §12): soportar varios DS18B20 por bus (ROM 28-XXXXXXXXXXXX).
+  // Auto-detección (README §12): lee todos los DS18B20 presentes en el bus.
   ok_ = ds_->getDeviceCount() > 0;
   return ok_;
 }
@@ -33,20 +33,24 @@ uint8_t Ds18b20Sensor::measure(Measurement out[], uint8_t max) {
   }
 
   ds_->requestTemperatures();  // ~750 ms en resolución por defecto
-  const float t = ds_->getTempCByIndex(0);
+  const uint8_t count = ds_->getDeviceCount();
+  const uint8_t n = count < max ? count : max;
   // TODO(D-0044): sustituir por epoch UTC real vía NTP/RTC.
   const uint32_t ts = millis() / 1000;
 
-  out[0].sensorId = id_;
-  out[0].channelId = "temperature";
-  out[0].measurement = "temperature";
-  out[0].value = t;
-  out[0].unit = "degC";
-  out[0].quality = (t == DEVICE_DISCONNECTED_C) ? Quality::SensorDisconnected
-                                                : Quality::Valid;
-  out[0].sequence = ++sequence_;
-  out[0].timestamp = ts;
-  return 1;
+  for (uint8_t i = 0; i < n; ++i) {
+    const float t = ds_->getTempCByIndex(i);
+    out[i].sensorId = (i == 0) ? id_ : (String(id_) + "_" + String((int)i));
+    out[i].channelId = "temperature";
+    out[i].measurement = "temperature";
+    out[i].value = t;
+    out[i].unit = "degC";
+    out[i].quality = (t == DEVICE_DISCONNECTED_C) ? Quality::SensorDisconnected
+                                                  : Quality::Valid;
+    out[i].sequence = ++sequence_;
+    out[i].timestamp = ts;
+  }
+  return n;
 }
 
 }  // namespace sema
