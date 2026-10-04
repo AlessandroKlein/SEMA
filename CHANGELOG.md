@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.4.0] - 2026-10-04
+
+### Added
+
+- Gráfico de temperatura en el dashboard (canvas, últimas 100 muestras).
+
 ## [1.3.0] - 2026-10-04
 
 ### Added
@@ -482,6 +488,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.4.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.4.0
 [1.3.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.3.0
 [1.2.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.2.0
 [1.1.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.1.0

@@ -135,6 +135,7 @@ td,th{border:1px solid #30363d;padding:.4rem .6rem;text-align:left}
 <table><thead><tr><th>Sensor</th><th>Canal</th><th>Valor</th><th>Unidad</th><th>Calidad</th></tr></thead>
 <tbody id="rows"><tr><td colspan="5" class="muted">Cargando…</td></tr></tbody></table>
 <h2>Histórico</h2>
+<canvas id="chart" width="600" height="160" style="max-width:100%;border:1px solid #30363d;border-radius:4px;margin-bottom:.5rem"></canvas>
 <table><thead><tr><th>Fecha</th><th>Sensor</th><th>Canal</th><th>Valor</th></tr></thead>
 <tbody id="hist"><tr><td colspan="4" class="muted">Cargando…</td></tr></tbody></table>
 <script>
@@ -152,16 +153,41 @@ async function refresh(){
     document.getElementById('rows').innerHTML=h||'<tr><td colspan="5" class="muted">Sin datos</td></tr>';
   }catch(e){}
 }
+function drawChart(vals){
+  const cv=document.getElementById('chart');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  if(vals.length<2)return;
+  const w=cv.width,h=cv.height,pad=16;
+  const min=Math.min.apply(null,vals),max=Math.max.apply(null,vals);
+  const range=(max-min)||1;
+  ctx.strokeStyle='#30363d';
+  ctx.beginPath();
+  for(let i=0;i<=3;i++){const y=pad+(h-2*pad)*i/3;ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);}
+  ctx.stroke();
+  ctx.strokeStyle='#58a6ff';ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let i=0;i<vals.length;i++){
+    const x=pad+(w-2*pad)*i/(vals.length-1);
+    const y=pad+(h-2*pad)*(1-(vals[i]-min)/range);
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  }
+  ctx.stroke();
+}
 async function loadHistory(){
   try{
-    const r=await(await fetch('/api/v1/history?limit=20')).json();
+    const r=await(await fetch('/api/v1/history?limit=100')).json();
+    const items=r.history||[];
     let h='';
-    for(const m of r.history){
+    for(const m of items.slice(-20)){
       const d=new Date(m.ts*1000);
       const t=(m.ts>1000000000)?d.toLocaleString():('uptime '+m.ts+' s');
       h+='<tr><td>'+t+'</td><td>'+m.sensor+'</td><td>'+m.channel+'</td><td>'+m.value+' '+m.unit+'</td></tr>';
     }
     document.getElementById('hist').innerHTML=h||'<tr><td colspan="4" class="muted">Sin datos</td></tr>';
+    const temps=items.filter(m=>m.channel==='temperature').map(m=>m.value);
+    drawChart(temps);
   }catch(e){}
 }
 loadHistory();
