@@ -20,6 +20,7 @@ Sistema modular de adquisición, procesamiento, almacenamiento, visualización y
 hardware, compilación, configuración, API y estructura del código en un solo
 documento, pensado para leerse sin conocimientos previos. Para retomar el trabajo,
 ver **[Continuación](docs/CONTINUACION.md)** (estado actual + pendientes + flujo).
+Las ideas opcionales están en **[Futuro](docs/FUTURO.md)**.
 
 ---
 

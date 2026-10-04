@@ -430,3 +430,4 @@ código → pio run (compilar) → bump de versión → CHANGELOG → commit
 - [`IMPLEMENTACION.md`](IMPLEMENTACION.md) — especificación técnica.
 - [`MEJORAS.md`](MEJORAS.md) — roadmap y Definition of Done.
 - [`CONTINUACION.md`](CONTINUACION.md) — estado actual, pendientes y flujo para retomar.
+- [`FUTURO.md`](FUTURO.md) — ideas opcionales y futuras.

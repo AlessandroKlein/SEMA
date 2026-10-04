@@ -119,3 +119,4 @@ Para validar el estado actual antes de continuar:
 - [`GUIA.md`](GUIA.md) — guía de inicio (concepto, hardware, config, API, código).
 - [`MEJORAS.md`](MEJORAS.md) — DoD (§103) y roadmap por fases.
 - [`DUDAS-Y-DECISIONES.md`](DUDAS-Y-DECISIONES.md) — decisiones D-0001…D-0060.
+- [`FUTURO.md`](FUTURO.md) — ideas opcionales y futuras (backlog).
