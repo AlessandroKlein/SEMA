@@ -19,6 +19,7 @@ void EventLog::begin(const char* path) {
     return;
   }
 
+  fileCount_ = 0;
   File f = LittleFS.open(path_, "r");
   if (f) {
     while (f.available()) {
@@ -27,6 +28,7 @@ void EventLog::begin(const char* path) {
       if (line.length() == 0) {
         continue;
       }
+      ++fileCount_;
       Event e;
       if (parseEvent(line, e)) {
         events_.push_back(e);
@@ -37,6 +39,36 @@ void EventLog::begin(const char* path) {
     }
     f.close();
   }
+}
+
+bool EventLog::rotate() {
+  // D-0057: conserva las últimas maxEntries_ líneas y reescribe el archivo.
+  std::deque<String> lines;
+  File f = LittleFS.open(path_, "r");
+  if (f) {
+    while (f.available()) {
+      String line = f.readStringUntil('\n');
+      line.trim();
+      if (line.length() > 0) {
+        lines.push_back(line);
+        if (lines.size() > maxEntries_) {
+          lines.pop_front();
+        }
+      }
+    }
+    f.close();
+  }
+
+  File w = LittleFS.open(path_, "w");  // trunca
+  if (!w) {
+    return false;
+  }
+  for (const String& line : lines) {
+    w.println(line);
+  }
+  w.close();
+  fileCount_ = lines.size();
+  return true;
 }
 
 void EventLog::onEvent(const Event& e) {
@@ -55,11 +87,16 @@ void EventLog::onEvent(const Event& e) {
   String line;
   serializeJson(doc, line);
 
-  // TODO(D-0057): rotación del archivo (por tamaño/cantidad).
+  // Rotación (D-0057): si el archivo supera 2× el límite, conserva los últimos.
+  if (fileCount_ >= maxEntries_ * 2) {
+    rotate();
+  }
+
   File f = LittleFS.open(path_, "a");
   if (f) {
     f.println(line);
     f.close();
+    ++fileCount_;
   }
 }
 

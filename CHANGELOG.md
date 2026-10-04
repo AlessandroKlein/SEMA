@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.1.0] - 2026-10-04
+
+### Added
+
+- Rotación del `EventLog` (D-0057): el archivo de eventos conserva los últimos N al
+  superar 2× el límite, en lugar de crecer sin límite.
+
 ## [1.0.0] - 2026-10-04
 
 ### Primera versión estable
@@ -461,6 +468,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.1.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.1.0
 [1.0.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.0.0
 [0.56.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.56.0
 [0.55.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.55.0

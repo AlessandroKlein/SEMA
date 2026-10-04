@@ -22,10 +22,12 @@ public:
 private:
   void onEvent(const Event& e);
   bool parseEvent(const String& line, Event& e);
+  bool rotate();
 
   std::deque<Event> events_;
   size_t maxEntries_;
   String path_;
+  size_t fileCount_ = 0;
 };
 
 }  // namespace sema
