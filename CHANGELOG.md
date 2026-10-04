@@ -6,6 +6,27 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.0.0] - 2026-10-04
+
+### Primera versión estable
+
+Base completa de SEMA, lista para su alcance principal:
+
+- **Core modular**: `SemaCore`, `EventBus`, `ConfigManager` (schema=1), Storage
+  (NVS + LittleFS), `Scheduler`, `CapabilityManager`, `Watchdog`, `HealthMonitor`,
+  `PowerManager`.
+- **Sensores (12 tipos / 5 interfaces)**: I²C (BME280, BMP280, SHT40, SHT31, AHT20,
+  BH1750, VEML6075, SCD30), 1-Wire (DS18B20 multi-dispositivo), ADC, PCNT
+  (lluvia/viento), UART (PMS5003). Catálogo configurable por factoría (D-0042) y
+  Board Profile (D-0050) para PCBs.
+- **Datos**: flujo MEDIR→VALIDAR→PROCESAR→ALMACENAR→PUBLICAR, derivadas (punto de
+  rocío, índice de calor, presión de vapor, humedad absoluta), histórico con
+  rotación y NTP/RTC (epoch UTC).
+- **Web/API**: dashboard con login por sesión, REST `/api/v1` completa, WebSocket,
+  eventos/alarmas persistentes.
+- **Operación**: OTA con rollback, mDNS, reconexión WiFi, energía (deep sleep +
+  wake), backup/restore, diagnóstico y Health Monitor.
+
 ## [0.56.0] - 2026-10-03
 
 ### Added
@@ -440,6 +461,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.0.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.0.0
 [0.56.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.56.0
 [0.55.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.55.0
 [0.54.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.54.0
