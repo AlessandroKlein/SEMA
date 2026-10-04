@@ -35,11 +35,14 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 - **API REST completa** (`/api/v1/*`): status, health, system, config (GET/PUT),
   sensors (catálogo+mediciones), history, alarms, events, capabilities, network,
   energy, diagnostics, backup (GET/POST), restart (POST), ota (POST).
-- **Dashboard web** en `/` + **WebSocket** `/ws` (puerto 81).
-- **Eventos/alarmas persistentes** (`EventLog` en LittleFS) + reglas configurables.
+- **Dashboard web** en `/`: estado, histórico, gráfico de temperatura, edición de
+  config y login/logout + **WebSocket** `/ws` (puerto 81).
+- **Eventos/alarmas persistentes** (`EventLog` en LittleFS, con rotación) + reglas y
+  calibración configurables (hot reload sin reinicio).
 - **Configuración web con auth**: `api_key` (web local) y `server_key` (Servidor Central).
   Todo configurable: `sensors[]`, `publishers`, `rules[]`, `calibrations[]`.
-- **OTA con rollback** (particiones A/B), **mDNS**, **reconexión WiFi** con backoff,
+- **NTP/RTC** (epoch UTC), **Board Profile** (pines fijos para PCB), **OTA con
+  rollback** (particiones A/B), **mDNS**, **reconexión WiFi** con backoff,
   **deep sleep + wake por lluvia**, **backup/restore**, **diagnóstico enriquecido**.
 
 ---
