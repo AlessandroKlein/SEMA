@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.55.0
+> **Tipo:** Roadmap | **Estado:** En desarrollo | **Fecha:** 2026-10-03 | **Versión:** 0.56.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -97,7 +97,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Validación de configuración | ✅ |
 | Backup / Importación / Exportación | ✅ (GET/POST `/backup`) |
 | OTA | ✅ |
-| Seguridad | 🔄 (api_key web + server_key del Central) |
+| Seguridad | 🔄 (api_key + server_key + login web) |
 | Watchdog | ✅ |
 | Documentación | ✅ |
 

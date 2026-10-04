@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [0.56.0] - 2026-10-03
+
+### Added
+
+- Login web con sesión (cookie): página de acceso para el dashboard y protección
+  de `GET /config` y `GET /backup` (claves). Sin claves configuradas queda abierto.
+
 ## [0.55.0] - 2026-10-03
 
 ### Added
@@ -433,6 +440,7 @@ Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[0.56.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.56.0
 [0.55.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.55.0
 [0.54.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.54.0
 [0.53.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.53.0

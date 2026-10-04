@@ -157,6 +157,10 @@ http://sema-001.local/
 Verás el **nombre de la estación, versión, uptime y las mediciones en vivo**
 (se actualizan cada 5 segundos).
 
+Si configuraste `security.api_key` o `security.server_key`, el dashboard pide
+**login** (página de acceso con la clave). Sin claves, queda abierto para la
+primera configuración.
+
 ### Por consola (Serial 115200)
 
 Al arrancar imprime, entre otras cosas:

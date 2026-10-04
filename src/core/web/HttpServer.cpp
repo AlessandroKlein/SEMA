@@ -8,6 +8,33 @@
 
 namespace sema {
 
+namespace {
+// Página de login (formulario de acceso al dashboard).
+const char kLoginHtml[] PROGMEM = R"html(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEMA — Acceso</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0d1117;color:#e6edf3;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+form{background:#161b22;padding:2rem;border-radius:8px;text-align:center}
+input{display:block;width:100%;box-sizing:border-box;padding:.5rem;margin:.6rem 0;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#e6edf3}
+button{width:100%;padding:.5rem;border:0;border-radius:4px;background:#1f6feb;color:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+<form method="POST" action="/login">
+<h1>SEMA</h1>
+<input type="password" name="password" placeholder="Clave de acceso" autofocus>
+<button type="submit">Entrar</button>
+</form>
+</body>
+</html>
+)html";
+}  // namespace
+
 void HttpServer::begin(SemaCore& core) {
   core_ = &core;
 
@@ -19,6 +46,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
   server_.on("/api/v1/backup", HTTP_GET, [this]() { onBackup(); });
   server_.on("/api/v1/backup", HTTP_POST, [this]() { onConfigPut(); });
+  server_.on("/login", HTTP_POST, [this]() { onLoginPost(); });
+  server_.on("/logout", HTTP_GET, [this]() { onLogout(); });
   server_.on("/api/v1/restart", HTTP_POST, [this]() { onRestart(); });
   server_.on("/api/v1/ota", HTTP_POST, [this]() { onOta(); }, [this]() { onOtaUpload(); });
   server_.on("/api/v1/capabilities", HTTP_GET, [this]() { onCapabilities(); });
@@ -31,8 +60,16 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
   server_.onNotFound([this]() { onNotFound(); });
 
-  static const char* kHeaders[] = {"X-API-Key"};
-  server_.collectHeaders(kHeaders, 1);
+  // Token de sesión aleatorio (login web).
+  uint32_t r1 = esp_random();
+  uint32_t r2 = esp_random();
+  char token[24];
+  snprintf(token, sizeof(token), "%08lx%08lx", static_cast<unsigned long>(r1),
+           static_cast<unsigned long>(r2));
+  sessionToken_ = token;
+
+  static const char* kHeaders[] = {"X-API-Key", "Cookie"};
+  server_.collectHeaders(kHeaders, 2);
 
   server_.begin();
   ws_.begin();
@@ -67,6 +104,15 @@ void HttpServer::broadcastMeasurements(const std::vector<Measurement>& measureme
 }
 
 void HttpServer::onRoot() {
+  // Protección del dashboard (login por sesión); sin claves configuradas queda
+  // abierto para la primera configuración.
+  const SecurityConfig& sec = core_->config().get().security;
+  const bool noKeys = sec.apiKey.length() == 0 && sec.serverKey.length() == 0;
+  if (!noKeys && !sessionAuthorized()) {
+    server_.send(200, "text/html", kLoginHtml);
+    return;
+  }
+
   static const char kIndexHtml[] PROGMEM = R"html(
 <!DOCTYPE html>
 <html lang="es">
@@ -112,6 +158,34 @@ setInterval(refresh,5000);
   server_.send(200, "text/html", kIndexHtml);
 }
 
+bool HttpServer::sessionAuthorized() {
+  if (!server_.hasHeader("Cookie")) {
+    return false;
+  }
+  const String cookie = server_.header("Cookie");
+  return cookie.indexOf("sema_auth=" + sessionToken_) >= 0;
+}
+
+void HttpServer::onLoginPost() {
+  const String password = server_.arg("password");
+  const SecurityConfig& sec = core_->config().get().security;
+  const bool ok = (sec.apiKey.length() > 0 && password == sec.apiKey) ||
+                  (sec.serverKey.length() > 0 && password == sec.serverKey);
+  if (ok) {
+    server_.sendHeader("Set-Cookie", "sema_auth=" + sessionToken_ + "; Path=/; HttpOnly");
+    server_.sendHeader("Location", "/");
+    server_.send(302, "text/plain", "");
+  } else {
+    server_.send(401, "text/html", kLoginHtml);
+  }
+}
+
+void HttpServer::onLogout() {
+  server_.sendHeader("Set-Cookie", "sema_auth=; Path=/; Max-Age=0");
+  server_.sendHeader("Location", "/");
+  server_.send(302, "text/plain", "");
+}
+
 void HttpServer::onStatus() {
   DynamicJsonDocument doc(256);
   doc["station"] = core_->config().get().station.id;
@@ -138,6 +212,10 @@ void HttpServer::onHealth() {
 }
 
 void HttpServer::onBackup() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
   // Respaldo autodescriptivo: configuración completa + metadatos (D-0044/D-0046).
   // Los campos "backup_*"/"firmware"/"timestamp" se ignoran al restaurar.
   String cfg;
@@ -173,6 +251,11 @@ void HttpServer::onSystem() {
 }
 
 void HttpServer::onConfig() {
+  // La config expone claves (api_key/server_key): requiere autenticación.
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
   String out;
   if (core_->config().toJson(out)) {
     server_.send(200, "application/json", out);

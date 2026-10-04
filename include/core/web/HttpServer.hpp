@@ -30,6 +30,8 @@ private:
   void onConfig();
   void onConfigPut();
   void onBackup();
+  void onLoginPost();
+  void onLogout();
   void onRestart();
   void onOta();
   void onOtaUpload();
@@ -44,11 +46,13 @@ private:
   void onNotFound();
 
   bool authorized();
+  bool sessionAuthorized();
 
   ::WebServer server_;
   ::WebSocketsServer ws_{81};
   SemaCore* core_ = nullptr;
   bool otaAuthorized_ = false;
+  String sessionToken_;
 };
 
 }  // namespace sema
