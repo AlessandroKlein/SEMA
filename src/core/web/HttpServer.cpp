@@ -134,6 +134,9 @@ td,th{border:1px solid #30363d;padding:.4rem .6rem;text-align:left}
 <h2>Sensores</h2>
 <table><thead><tr><th>Sensor</th><th>Canal</th><th>Valor</th><th>Unidad</th><th>Calidad</th></tr></thead>
 <tbody id="rows"><tr><td colspan="5" class="muted">Cargando…</td></tr></tbody></table>
+<h2>Histórico</h2>
+<table><thead><tr><th>Fecha</th><th>Sensor</th><th>Canal</th><th>Valor</th></tr></thead>
+<tbody id="hist"><tr><td colspan="4" class="muted">Cargando…</td></tr></tbody></table>
 <script>
 async function refresh(){
   try{
@@ -149,6 +152,20 @@ async function refresh(){
     document.getElementById('rows').innerHTML=h||'<tr><td colspan="5" class="muted">Sin datos</td></tr>';
   }catch(e){}
 }
+async function loadHistory(){
+  try{
+    const r=await(await fetch('/api/v1/history?limit=20')).json();
+    let h='';
+    for(const m of r.history){
+      const d=new Date(m.ts*1000);
+      const t=(m.ts>1000000000)?d.toLocaleString():('uptime '+m.ts+' s');
+      h+='<tr><td>'+t+'</td><td>'+m.sensor+'</td><td>'+m.channel+'</td><td>'+m.value+' '+m.unit+'</td></tr>';
+    }
+    document.getElementById('hist').innerHTML=h||'<tr><td colspan="4" class="muted">Sin datos</td></tr>';
+  }catch(e){}
+}
+loadHistory();
+setInterval(loadHistory,10000);
 refresh();
 setInterval(refresh,5000);
 </script>

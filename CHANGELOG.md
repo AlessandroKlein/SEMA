@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.3.0] - 2026-10-04
+
+### Added
+
+- Dashboard avanzado: sección de histórico en la web (últimas 20 mediciones con
+  fecha/hora).
+
 ## [1.2.0] - 2026-10-04
 
 ### Added
@@ -475,6 +482,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.3.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.3.0
 [1.2.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.2.0
 [1.1.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.1.0
 [1.0.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.0.0
