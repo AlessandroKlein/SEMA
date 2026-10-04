@@ -32,6 +32,7 @@ public:
 
   // Calibración por canal ("sensorId:channelId"), D-0055.
   void setCalibration(const String& key, const Calibration& c);
+  void clearCalibrations() { calibrations_.clear(); }
 
   size_t count() const { return sensors_.size(); }
   size_t onlineCount() const;

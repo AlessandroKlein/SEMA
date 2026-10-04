@@ -1,6 +1,6 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-10-03 | **Firmware:** v1.1.0 | **Releases:** 57
+> **Tipo:** Guía de continuación | **Fecha:** 2026-10-03 | **Firmware:** v1.2.0 | **Releases:** 58
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.
@@ -50,7 +50,7 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 
 | Prioridad | Ítem | Nota |
 |:---------:|------|------|
-| 1 | **Re-aplicar config sin reinicio** | `PUT /config` que cambie sensores/reglas/publicadores hoy exige reboot |
+| 1 | **Hot reload de sensores/publicadores** | Reglas y calibración ya se re-aplican; falta sensores y publicadores |
 | 2 | **Dashboard avanzado** | Gráficos, histórico en la web, edición de config desde la UI |
 | 3 | **TLS/HTTPS + rate limiting** (opcional) | Seguridad adicional |
 | 4 | **Configuración GPIO standalone** | Entradas/salidas digitales independientes de sensores |

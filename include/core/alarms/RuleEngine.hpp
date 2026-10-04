@@ -20,6 +20,7 @@ public:
   explicit RuleEngine(EventBus& bus);
 
   void addRule(const Rule& rule);
+  void clear() { rules_.clear(); }
   void evaluate(const std::vector<Measurement>& measurements);
 
 private:

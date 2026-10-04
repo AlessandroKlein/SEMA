@@ -112,29 +112,7 @@ void SemaCore::setup() {
   }
   sensors_.beginAll();
 
-  // Calibración (D-0055): configurable; si no hay, se usa una por defecto.
-  if (config_.get().calibrations.empty()) {
-    Calibration tempCal;
-    tempCal.enabled = true;
-    tempCal.gain = 1.0f;
-    tempCal.offset = 0.0f;
-    tempCal.hasRange = true;
-    tempCal.min = -40.0f;
-    tempCal.max = 85.0f;
-    sensors_.setCalibration("EXT:temperature", tempCal);
-    sensors_.setCalibration("INT:temperature", tempCal);
-  } else {
-    for (const CalibrationSpec& spec : config_.get().calibrations) {
-      Calibration cal;
-      cal.enabled = true;
-      cal.gain = spec.gain;
-      cal.offset = spec.offset;
-      cal.hasRange = spec.hasRange;
-      cal.min = spec.min;
-      cal.max = spec.max;
-      sensors_.setCalibration(spec.sensorId + ":" + spec.channelId, cal);
-    }
-  }
+  applyCalibrations();
 
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
@@ -154,20 +132,7 @@ void SemaCore::setup() {
   publishers_.registerPublisher(&webhook);
   publishers_.registerPublisher(&mqtt);
 
-  // Reglas de alarma (D-0059): configurables; si no hay, se usa una por defecto.
-  if (config_.get().rules.empty()) {
-    rules_.addRule({"high_temp", "EXT", "temperature", RuleOp::Gt, 40.0f});
-  } else {
-    for (const RuleSpec& spec : config_.get().rules) {
-      Rule r;
-      r.id = spec.name;
-      r.sensorId = spec.sensorId;
-      r.channelId = spec.channelId;
-      r.op = parseRuleOp(spec.op.c_str());
-      r.threshold = spec.value;
-      rules_.addRule(r);
-    }
-  }
+  applyRules();
 
   // Suscriptor de alarmas (D-0045): por ahora registra en serial.
   events_.subscribe(EventType::Alarm, [](const Event& e) {
@@ -214,6 +179,49 @@ void SemaCore::setup() {
     Serial.printf("mDNS: http://%s.local/\n", config_.get().network.hostname.c_str());
   }
   Serial.printf("Módulos registrados: %u\n", static_cast<unsigned>(modules_.count()));
+}
+
+void SemaCore::applyCalibrations() {
+  sensors_.clearCalibrations();
+  if (config_.get().calibrations.empty()) {
+    Calibration tempCal;
+    tempCal.enabled = true;
+    tempCal.gain = 1.0f;
+    tempCal.offset = 0.0f;
+    tempCal.hasRange = true;
+    tempCal.min = -40.0f;
+    tempCal.max = 85.0f;
+    sensors_.setCalibration("EXT:temperature", tempCal);
+    sensors_.setCalibration("INT:temperature", tempCal);
+  } else {
+    for (const CalibrationSpec& spec : config_.get().calibrations) {
+      Calibration cal;
+      cal.enabled = true;
+      cal.gain = spec.gain;
+      cal.offset = spec.offset;
+      cal.hasRange = spec.hasRange;
+      cal.min = spec.min;
+      cal.max = spec.max;
+      sensors_.setCalibration(spec.sensorId + ":" + spec.channelId, cal);
+    }
+  }
+}
+
+void SemaCore::applyRules() {
+  rules_.clear();
+  if (config_.get().rules.empty()) {
+    rules_.addRule({"high_temp", "EXT", "temperature", RuleOp::Gt, 40.0f});
+  } else {
+    for (const RuleSpec& spec : config_.get().rules) {
+      Rule r;
+      r.id = spec.name;
+      r.sensorId = spec.sensorId;
+      r.channelId = spec.channelId;
+      r.op = parseRuleOp(spec.op.c_str());
+      r.threshold = spec.value;
+      rules_.addRule(r);
+    }
+  }
 }
 
 void SemaCore::loop() {

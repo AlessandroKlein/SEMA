@@ -300,6 +300,9 @@ void HttpServer::onConfigPut() {
   }
   const String body = server_.arg("plain");
   if (core_->config().applyJson(body)) {
+    // Re-aplica la config no hardware-dependiente sin reiniciar.
+    core_->applyRules();
+    core_->applyCalibrations();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");

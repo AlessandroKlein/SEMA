@@ -36,6 +36,10 @@ public:
   void setup();
   void loop();
 
+  // Re-aplican configuración no hardware-dependiente (sin reinicio).
+  void applyRules();
+  void applyCalibrations();
+
   ModuleRegistry& modules() { return modules_; }
   EventBus& events() { return events_; }
   ConfigManager& config() { return config_; }

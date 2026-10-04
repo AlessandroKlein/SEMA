@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.2.0] - 2026-10-04
+
+### Added
+
+- Re-aplicar configuración sin reinicio: reglas y calibración se re-aplican al
+  hacer `PUT /config` (sensores/publicadores aún requieren reinicio).
+
 ## [1.1.0] - 2026-10-04
 
 ### Added
@@ -468,6 +475,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.2.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.2.0
 [1.1.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.1.0
 [1.0.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.0.0
 [0.56.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v0.56.0
