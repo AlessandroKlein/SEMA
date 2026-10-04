@@ -1,6 +1,6 @@
 # Mejoras opcionales y futuras — SEMA
 
-> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.4.0
+> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.5.0
 
 Registro de ítems **opcionales** (no forman parte de la Definition of Done §103).
 Sirve para tener todo anotado por si en el futuro se quiere implementar. Organizado
@@ -22,7 +22,6 @@ por área; cada ítem es una idea, no un compromiso.
 
 | Ítem | Nota |
 |------|------|
-| Edición de config desde la UI | Formularios en vez de JSON crudo |
 | Páginas por sección | Sensores, red, alarmas, energía, OTA |
 | Multi-idioma (es/en) | Selección de idioma en la web |
 | Tema claro/oscuro persistente | Guardar preferencia |

@@ -126,6 +126,8 @@ h1{margin:0 0 .25rem}h2{margin:1.25rem 0 .5rem}
 table{border-collapse:collapse;width:100%}
 td,th{border:1px solid #30363d;padding:.4rem .6rem;text-align:left}
 .muted{color:#8b949e}
+input{display:block;width:100%;box-sizing:border-box;padding:.4rem;margin:.3rem 0;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#e6edf3}
+button{width:100%;padding:.5rem;border:0;border-radius:4px;background:#1f6feb;color:#fff;cursor:pointer;margin-top:.4rem}
 </style>
 </head>
 <body>
@@ -138,6 +140,17 @@ td,th{border:1px solid #30363d;padding:.4rem .6rem;text-align:left}
 <canvas id="chart" width="600" height="160" style="max-width:100%;border:1px solid #30363d;border-radius:4px;margin-bottom:.5rem"></canvas>
 <table><thead><tr><th>Fecha</th><th>Sensor</th><th>Canal</th><th>Valor</th></tr></thead>
 <tbody id="hist"><tr><td colspan="4" class="muted">Cargando…</td></tr></tbody></table>
+<h2>Configuración</h2>
+<form onsubmit="saveConfig();return false;">
+<input id="cfg_name" placeholder="Nombre de la estación">
+<input id="cfg_ssid" placeholder="WiFi SSID">
+<input id="cfg_pass" type="password" placeholder="WiFi contraseña">
+<input id="cfg_host" placeholder="Hostname (mDNS)">
+<input id="cfg_apikey" type="password" placeholder="API key (web)">
+<input id="cfg_serverkey" type="password" placeholder="Server key (Central)">
+<button type="submit">Guardar</button>
+</form>
+<a href="/logout" style="display:inline-block;margin-top:1rem;color:#8b949e">Cerrar sesión</a>
 <script>
 async function refresh(){
   try{
@@ -192,6 +205,32 @@ async function loadHistory(){
 }
 loadHistory();
 setInterval(loadHistory,10000);
+let cfg={};
+async function loadConfig(){
+  try{
+    const r=await(await fetch('/api/v1/config')).json();
+    cfg=r;
+    document.getElementById('cfg_name').value=r.station?r.station.name:'';
+    document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';
+    document.getElementById('cfg_pass').value=r.network?r.network.password:'';
+    document.getElementById('cfg_host').value=r.network?r.network.hostname:'';
+    document.getElementById('cfg_apikey').value=r.security?r.security.api_key:'';
+    document.getElementById('cfg_serverkey').value=r.security?r.security.server_key:'';
+  }catch(e){}
+}
+async function saveConfig(){
+  cfg.station=cfg.station||{};cfg.station.name=document.getElementById('cfg_name').value;
+  cfg.network=cfg.network||{};cfg.network.ssid=document.getElementById('cfg_ssid').value;
+  cfg.network.password=document.getElementById('cfg_pass').value;
+  cfg.network.hostname=document.getElementById('cfg_host').value;
+  cfg.security=cfg.security||{};cfg.security.api_key=document.getElementById('cfg_apikey').value;
+  cfg.security.server_key=document.getElementById('cfg_serverkey').value;
+  try{
+    const resp=await fetch('/api/v1/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+    alert(resp.ok?'Guardado':'Error al guardar');
+  }catch(e){alert('Error de red');}
+}
+loadConfig();
 refresh();
 setInterval(refresh,5000);
 </script>

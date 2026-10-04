@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** Estable | **Fecha:** 2026-10-03 | **Versión:** 1.4.0
+> **Tipo:** Roadmap | **Estado:** Estable | **Fecha:** 2026-10-03 | **Versión:** 1.5.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -77,7 +77,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Configuración persistente | ✅ |
 | Web local | ✅ |
 | API | ✅ |
-| Dashboard modular | 🔄 (página básica en `/`) |
+| Dashboard modular | ✅ (estado, histórico, gráfico y edición de config) |
 | Sistema de módulos | 🔄 (interfaz + registro; sin módulos reales) |
 | Sistema de sensores | ✅ |
 | Catálogo de sensores | ✅ (configurable vía factoría) |
