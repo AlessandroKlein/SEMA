@@ -4,7 +4,7 @@
 
 // Selección de variante por directivas del preprocesador (build_flags).
 //   BOARD_ESP32_WROOM → MAC Ethernet nativa + LAN8720A (RMII).
-//   BOARD_ESP32_S3    → sin MAC nativa, W5500 por SPI.
+//   BOARD_ESP32_S3    → sin MAC nativa, W5500 por SPI (pila separada).
 #if defined(BOARD_ESP32_WROOM)
 #include <ETH.h>
 #elif defined(BOARD_ESP32_S3)
