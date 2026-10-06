@@ -249,15 +249,29 @@ bool HttpServer::sessionAuthorized() {
 }
 
 void HttpServer::onLoginPost() {
+  const uint32_t now = millis();
+  // Rate limiting (D-0048): bloquea tras 5 intentos fallidos durante 60 s.
+  if (now < lockoutUntilMs_) {
+    server_.send(429, "text/plain", "Demasiados intentos. Reintentá más tarde.");
+    return;
+  }
+
   const String password = server_.arg("password");
   const SecurityConfig& sec = core_->config().get().security;
   const bool ok = (sec.apiKey.length() > 0 && password == sec.apiKey) ||
                   (sec.serverKey.length() > 0 && password == sec.serverKey);
   if (ok) {
+    failedLogins_ = 0;
+    lockoutUntilMs_ = 0;
     server_.sendHeader("Set-Cookie", "sema_auth=" + sessionToken_ + "; Path=/; HttpOnly");
     server_.sendHeader("Location", "/");
     server_.send(302, "text/plain", "");
   } else {
+    ++failedLogins_;
+    if (failedLogins_ >= 5) {
+      failedLogins_ = 0;
+      lockoutUntilMs_ = now + 60000;
+    }
     server_.send(401, "text/html", kLoginHtml);
   }
 }

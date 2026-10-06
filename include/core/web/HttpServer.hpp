@@ -53,6 +53,8 @@ private:
   SemaCore* core_ = nullptr;
   bool otaAuthorized_ = false;
   String sessionToken_;
+  uint32_t failedLogins_ = 0;
+  uint32_t lockoutUntilMs_ = 0;
 };
 
 }  // namespace sema
