@@ -2,9 +2,43 @@
 
 #include <ArduinoJson.h>
 
+#include "hw/HwProfile.hpp"
+
 namespace sema {
 
 static const char* kConfigKey = "config";
+
+// Si SEMA_PINS_FROM_FILE, fija los pines desde HwProfile.hpp (PCB) e ignora
+// los que vengan de la web.
+static void applyHwProfile(Config& c) {
+#if SEMA_PINS_FROM_FILE
+  c.can.txPin = SEMA_PIN_CAN_TX;
+  c.can.rxPin = SEMA_PIN_CAN_RX;
+
+  c.modbus.rxPin = SEMA_PIN_MODBUS_RX;
+  c.modbus.txPin = SEMA_PIN_MODBUS_TX;
+  c.modbus.deRePin = SEMA_PIN_MODBUS_DERE;
+
+  c.zigbee.rxPin = SEMA_PIN_ZIGBEE_RX;
+  c.zigbee.txPin = SEMA_PIN_ZIGBEE_TX;
+
+  c.lora.csPin = SEMA_CS_LORA;
+  c.lora.rstPin = SEMA_PIN_LORA_RST;
+  c.lora.dio1Pin = SEMA_PIN_LORA_DIO1;
+  c.lora.busyPin = SEMA_PIN_LORA_BUSY;
+
+  c.ethernet.mdcPin = SEMA_PIN_ETH_MDC;
+  c.ethernet.mdioPin = SEMA_PIN_ETH_MDIO;
+  c.ethernet.phyAddr = SEMA_PIN_ETH_PHY_ADDR;
+  c.ethernet.powerPin = SEMA_PIN_ETH_POWER;
+  c.ethernet.csPin = SEMA_CS_ETHERNET_W5500;
+  c.ethernet.rstPin = SEMA_PIN_ETH_W5500_RST;
+  c.ethernet.irqPin = SEMA_PIN_ETH_W5500_IRQ;
+  c.ethernet.sckPin = SEMA_SPI_SCK;
+  c.ethernet.misoPin = SEMA_SPI_MISO;
+  c.ethernet.mosiPin = SEMA_SPI_MOSI;
+#endif
+}
 
 ConfigManager::ConfigManager(KeyValueStore& store) : store_(store) {}
 
@@ -298,9 +332,10 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.ethernet.csPin = doc["ethernet"]["cs"] | 5;
   c.ethernet.rstPin = doc["ethernet"]["rst"] | -1;
   c.ethernet.irqPin = doc["ethernet"]["irq"] | 4;
-  c.ethernet.sckPin = doc["ethernet"]["sck"] | 12;
-  c.ethernet.misoPin = doc["ethernet"]["miso"] | 13;
-  c.ethernet.mosiPin = doc["ethernet"]["mosi"] | 11;
+  c.ethernet.sckPin = doc["ethernet"]["sck"] | 18;
+  c.ethernet.misoPin = doc["ethernet"]["miso"] | 19;
+  c.ethernet.mosiPin = doc["ethernet"]["mosi"] | 21;
+  applyHwProfile(c);
   return true;
 }
 

@@ -161,9 +161,9 @@ struct EthernetConfig {
   uint8_t csPin = 5;
   int rstPin = -1;     // -1 = sin pin de reset
   int irqPin = 4;      // -1 = sin IRQ (modo polling)
-  uint8_t sckPin = 12;
-  uint8_t misoPin = 13;
-  uint8_t mosiPin = 11;
+  uint8_t sckPin = 18;
+  uint8_t misoPin = 19;
+  uint8_t mosiPin = 21;
 };
 
 // Configuración completa (schema=1).

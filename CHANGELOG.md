@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.26.0] - 2026-10-06
+
+### Added
+
+- Perfil de hardware centralizado (`include/hw/HwProfile.hpp`) con `build_flags`: features (`SEMA_USE_*`), transceiver Modbus (`SEMA_MODBUS_ISOLATED`) y origen de pines (`SEMA_PINS_FROM_FILE`).
+
+### Changed
+
+- Compilación condicional de los buses; W5500 en periférico SPI dedicado (CS propio), separado del SPI de LoRa.
+
 ## [1.25.0] - 2026-10-06
 
 ### Changed
@@ -616,6 +626,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.26.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.26.0
 [1.25.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.25.0
 [1.24.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.24.0
 [1.23.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.23.0

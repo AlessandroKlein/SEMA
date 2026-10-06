@@ -1,5 +1,7 @@
 #pragma once
 
+#include "hw/HwProfile.hpp"
+
 #include <WebServer.h>
 #include <WebSocketsServer.h>
 #include <vector>
@@ -47,13 +49,21 @@ private:
   void onGpioWrite();
   void onShift();
   void onShiftWrite();
+#if SEMA_USE_MODBUS
   void onModbus();
+#endif
+#if SEMA_USE_CAN
   void onCan();
   void onCanWrite();
+#endif
+#if SEMA_USE_LORA
   void onLora();
   void onLoraWrite();
+#endif
+#if SEMA_USE_ZIGBEE
   void onZigbee();
   void onZigbeeWrite();
+#endif
   void onNotFound();
 
   bool authorized();

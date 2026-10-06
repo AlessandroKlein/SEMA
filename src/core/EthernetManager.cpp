@@ -2,6 +2,10 @@
 
 #include <Arduino.h>
 
+#include "hw/HwProfile.hpp"
+
+#if SEMA_USE_ETHERNET
+
 // Selección de variante por directivas del preprocesador (build_flags).
 //   BOARD_ESP32_WROOM → MAC Ethernet nativa + LAN8720A (RMII).
 //   BOARD_ESP32_S3    → sin MAC nativa, W5500 SPI vía driver ESP-IDF (esp_eth),
@@ -47,7 +51,8 @@ void EthernetManager::apply(const EthernetConfig& cfg) {
   buscfg.quadwp_io_num = -1;
   buscfg.quadhd_io_num = -1;
   buscfg.max_transfer_sz = 4000;
-  if (spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO) != ESP_OK) {
+  if (spi_bus_initialize(static_cast<spi_host_device_t>(SEMA_ETH_SPI_HOST),
+                         &buscfg, SPI_DMA_CH_AUTO) != ESP_OK) {
     return;
   }
 
@@ -60,7 +65,8 @@ void EthernetManager::apply(const EthernetConfig& cfg) {
   devcfg.spics_io_num = cfg_.csPin;
   devcfg.queue_size = 20;
   spi_device_handle_t spi_hdl = nullptr;
-  if (spi_bus_add_device(SPI2_HOST, &devcfg, &spi_hdl) != ESP_OK) {
+  if (spi_bus_add_device(static_cast<spi_host_device_t>(SEMA_ETH_SPI_HOST),
+                         &devcfg, &spi_hdl) != ESP_OK) {
     return;
   }
 
@@ -140,3 +146,4 @@ String EthernetManager::localIP() const {
 }
 
 }  // namespace sema
+#endif  // SEMA_USE_ETHERNET

@@ -1,6 +1,7 @@
 #include "core/SemaCore.hpp"
 
 #include <Arduino.h>
+#include <SPI.h>
 #include <Wire.h>
 
 #include "core/BoardProfile.hpp"
@@ -89,11 +90,27 @@ void SemaCore::setup() {
   applyCalibrations();
   gpio_.apply(config_.get().gpio);
   shift_.apply(config_.get().shiftRegister);
+
+  // Bus SPI compartido (W5500 + LoRa): inicializar una única vez.
+#if SEMA_USE_LORA || SEMA_USE_ETHERNET
+  SPI.begin(SEMA_SPI_SCK, SEMA_SPI_MISO, SEMA_SPI_MOSI);
+#endif
+
+#if SEMA_USE_MODBUS
   modbus_.apply(config_.get().modbus);
+#endif
+#if SEMA_USE_CAN
   can_.apply(config_.get().can);
+#endif
+#if SEMA_USE_LORA
   lora_.apply(config_.get().lora);
+#endif
+#if SEMA_USE_ZIGBEE
   zigbee_.apply(config_.get().zigbee);
+#endif
+#if SEMA_USE_ETHERNET
   ethernet_.apply(config_.get().ethernet);
+#endif
 
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
@@ -252,25 +269,35 @@ void SemaCore::applyShift() {
   shift_.apply(config_.get().shiftRegister);
 }
 
+#if SEMA_USE_MODBUS
 void SemaCore::applyModbus() {
   modbus_.apply(config_.get().modbus);
 }
+#endif
 
+#if SEMA_USE_CAN
 void SemaCore::applyCan() {
   can_.apply(config_.get().can);
 }
+#endif
 
+#if SEMA_USE_LORA
 void SemaCore::applyLora() {
   lora_.apply(config_.get().lora);
 }
+#endif
 
+#if SEMA_USE_ZIGBEE
 void SemaCore::applyZigbee() {
   zigbee_.apply(config_.get().zigbee);
 }
+#endif
 
+#if SEMA_USE_ETHERNET
 void SemaCore::applyEthernet() {
   ethernet_.apply(config_.get().ethernet);
 }
+#endif
 
 void SemaCore::applyPublishers() {
   webhook_.setUrl(config_.get().publishers.webhookUrl.c_str());
@@ -286,8 +313,12 @@ void SemaCore::loop() {
   modules_.loopAll();
   wifi_.loop();
   http_.loop();
+#if SEMA_USE_ZIGBEE
   zigbee_.loop();
+#endif
+#if SEMA_USE_ETHERNET
   ethernet_.loop();
+#endif
   scheduler_.run();
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "hw/HwProfile.hpp"
+
 #include "core/CapabilityManager.hpp"
 #include "core/ConfigManager.hpp"
 #include "core/alarms/RuleEngine.hpp"
@@ -7,11 +9,21 @@
 #include "core/EventBus.hpp"
 #include "core/GpioManager.hpp"
 #include "core/ShiftRegisterManager.hpp"
+#if SEMA_USE_MODBUS
 #include "core/ModbusManager.hpp"
+#endif
+#if SEMA_USE_CAN
 #include "core/CanManager.hpp"
+#endif
+#if SEMA_USE_LORA
 #include "core/LoraManager.hpp"
+#endif
+#if SEMA_USE_ZIGBEE
 #include "core/ZigbeeManager.hpp"
+#endif
+#if SEMA_USE_ETHERNET
 #include "core/EthernetManager.hpp"
+#endif
 #include "core/HealthMonitor.hpp"
 #include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
@@ -52,11 +64,21 @@ public:
   void applyPublishers();
   void applySensors();
   void applyShift();
+#if SEMA_USE_MODBUS
   void applyModbus();
+#endif
+#if SEMA_USE_CAN
   void applyCan();
+#endif
+#if SEMA_USE_LORA
   void applyLora();
+#endif
+#if SEMA_USE_ZIGBEE
   void applyZigbee();
+#endif
+#if SEMA_USE_ETHERNET
   void applyEthernet();
+#endif
 
   ModuleRegistry& modules() { return modules_; }
   EventBus& events() { return events_; }
@@ -74,11 +96,21 @@ public:
   EventLog& eventLog() { return eventLog_; }
   GpioManager& gpio() { return gpio_; }
   ShiftRegisterManager& shift() { return shift_; }
+#if SEMA_USE_MODBUS
   ModbusManager& modbus() { return modbus_; }
+#endif
+#if SEMA_USE_CAN
   CanManager& can() { return can_; }
+#endif
+#if SEMA_USE_LORA
   LoraManager& lora() { return lora_; }
+#endif
+#if SEMA_USE_ZIGBEE
   ZigbeeManager& zigbee() { return zigbee_; }
+#endif
+#if SEMA_USE_ETHERNET
   EthernetManager& ethernet() { return ethernet_; }
+#endif
   const std::vector<DetectedDevice>& detectedDevices() const { return detectedDevices_; }
 
 private:
@@ -97,11 +129,21 @@ private:
   EventLog eventLog_;
   GpioManager gpio_;
   ShiftRegisterManager shift_;
+#if SEMA_USE_MODBUS
   ModbusManager modbus_;
+#endif
+#if SEMA_USE_CAN
   CanManager can_;
+#endif
+#if SEMA_USE_LORA
   LoraManager lora_;
+#endif
+#if SEMA_USE_ZIGBEE
   ZigbeeManager zigbee_;
+#endif
+#if SEMA_USE_ETHERNET
   EthernetManager ethernet_;
+#endif
   Watchdog watchdog_;
   HealthMonitor health_;
   std::vector<DetectedDevice> detectedDevices_;

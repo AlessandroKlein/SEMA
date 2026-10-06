@@ -1,5 +1,8 @@
 #include "core/LoraManager.hpp"
 
+#include "hw/HwProfile.hpp"
+
+#if SEMA_USE_LORA
 #include <RadioLib.h>
 
 namespace sema {
@@ -55,3 +58,4 @@ uint8_t LoraManager::receive(uint8_t* data, uint8_t maxLen) {
 }
 
 }  // namespace sema
+#endif  // SEMA_USE_LORA

@@ -1,5 +1,8 @@
 #include "core/CanManager.hpp"
 
+#include "hw/HwProfile.hpp"
+
+#if SEMA_USE_CAN
 #include <Arduino.h>
 #include <driver/twai.h>
 #include <string.h>
@@ -66,3 +69,4 @@ bool CanManager::receive(uint32_t& id, uint8_t* data, uint8_t& dlc, bool& extd) 
 }
 
 }  // namespace sema
+#endif  // SEMA_USE_CAN

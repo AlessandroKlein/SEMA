@@ -1,5 +1,8 @@
 #include "core/ZigbeeManager.hpp"
 
+#include "hw/HwProfile.hpp"
+
+#if SEMA_USE_ZIGBEE
 #include <Arduino.h>
 #include <string.h>
 
@@ -122,3 +125,4 @@ void ZigbeeManager::takeMessage(uint8_t* out, uint8_t maxLen, uint8_t& len) {
 }
 
 }  // namespace sema
+#endif  // SEMA_USE_ZIGBEE

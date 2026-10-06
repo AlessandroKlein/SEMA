@@ -64,13 +64,21 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/gpio", HTTP_POST, [this]() { onGpioWrite(); });
   server_.on("/api/v1/shift", HTTP_GET, [this]() { onShift(); });
   server_.on("/api/v1/shift", HTTP_POST, [this]() { onShiftWrite(); });
+#if SEMA_USE_MODBUS
   server_.on("/api/v1/modbus", HTTP_GET, [this]() { onModbus(); });
+#endif
+#if SEMA_USE_CAN
   server_.on("/api/v1/can", HTTP_GET, [this]() { onCan(); });
   server_.on("/api/v1/can", HTTP_POST, [this]() { onCanWrite(); });
+#endif
+#if SEMA_USE_LORA
   server_.on("/api/v1/lora", HTTP_GET, [this]() { onLora(); });
   server_.on("/api/v1/lora", HTTP_POST, [this]() { onLoraWrite(); });
+#endif
+#if SEMA_USE_ZIGBEE
   server_.on("/api/v1/zigbee", HTTP_GET, [this]() { onZigbee(); });
   server_.on("/api/v1/zigbee", HTTP_POST, [this]() { onZigbeeWrite(); });
+#endif
   server_.onNotFound([this]() { onNotFound(); });
 
   // Token de sesión aleatorio (login web).
@@ -425,11 +433,21 @@ void HttpServer::onConfigPut() {
     core_->applyGpio();
     core_->applyPublishers();
     core_->applyShift();
+#if SEMA_USE_MODBUS
     core_->applyModbus();
+#endif
+#if SEMA_USE_CAN
     core_->applyCan();
+#endif
+#if SEMA_USE_LORA
     core_->applyLora();
+#endif
+#if SEMA_USE_ZIGBEE
     core_->applyZigbee();
+#endif
+#if SEMA_USE_ETHERNET
     core_->applyEthernet();
+#endif
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
@@ -696,6 +714,7 @@ void HttpServer::onShiftWrite() {
   server_.send(200, "application/json", "{\"ok\":true}");
 }
 
+#if SEMA_USE_MODBUS
 void HttpServer::onModbus() {
   const uint8_t result = core_->modbus().read();
   DynamicJsonDocument doc(1024);
@@ -709,7 +728,9 @@ void HttpServer::onModbus() {
   serializeJson(doc, out);
   server_.send(200, "application/json", out);
 }
+#endif
 
+#if SEMA_USE_CAN
 void HttpServer::onCan() {
   uint32_t id = 0;
   uint8_t dlc = 0;
@@ -760,7 +781,9 @@ void HttpServer::onCanWrite() {
   server_.send(ok ? 200 : 500, "application/json",
                ok ? "{\"ok\":true}" : "{\"error\":\"send failed\"}");
 }
+#endif
 
+#if SEMA_USE_LORA
 void HttpServer::onLora() {
   uint8_t buf[64] = {0};
   const uint8_t n = core_->lora().receive(buf, sizeof(buf));
@@ -804,7 +827,9 @@ void HttpServer::onLoraWrite() {
   server_.send(ok ? 200 : 500, "application/json",
                ok ? "{\"ok\":true}" : "{\"error\":\"send failed\"}");
 }
+#endif
 
+#if SEMA_USE_ZIGBEE
 void HttpServer::onZigbee() {
   uint8_t buf[128] = {0};
   uint8_t len = 0;
@@ -853,6 +878,7 @@ void HttpServer::onZigbeeWrite() {
   server_.send(ok ? 200 : 500, "application/json",
                ok ? "{\"ok\":true}" : "{\"error\":\"send failed\"}");
 }
+#endif
 
 void HttpServer::onNotFound() {
   server_.send(404, "application/json", "{\"error\":\"not found\"}");

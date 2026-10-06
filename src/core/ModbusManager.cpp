@@ -1,9 +1,15 @@
 #include "core/ModbusManager.hpp"
 
+#include "hw/HwProfile.hpp"
+
+#if SEMA_USE_MODBUS
 #include <Arduino.h>
 #include <ModbusMaster.h>
 
 namespace sema {
+
+// Transceiver RS485: SEMA_MODBUS_TRANSCEIVER (TD501D485H aislado o
+// SN65HVD75DR sin aislar). El control DE/RE es idéntico en ambos.
 
 static ModbusMaster modbusNode;
 static uint8_t g_deRePin = 0;
@@ -57,3 +63,4 @@ uint8_t ModbusManager::read() {
 }
 
 }  // namespace sema
+#endif  // SEMA_USE_MODBUS
