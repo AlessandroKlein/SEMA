@@ -90,6 +90,7 @@ void SemaCore::setup() {
   gpio_.apply(config_.get().gpio);
   shift_.apply(config_.get().shiftRegister);
   modbus_.apply(config_.get().modbus);
+  can_.apply(config_.get().can);
 
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
@@ -250,6 +251,10 @@ void SemaCore::applyShift() {
 
 void SemaCore::applyModbus() {
   modbus_.apply(config_.get().modbus);
+}
+
+void SemaCore::applyCan() {
+  can_.apply(config_.get().can);
 }
 
 void SemaCore::applyPublishers() {

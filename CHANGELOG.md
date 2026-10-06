@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.21.0] - 2026-10-06
+
+### Added
+
+- CAN 2.0 (TWAI) envío/recepción de tramas (config `can` + API `/api/v1/can`).
+
 ## [1.20.0] - 2026-10-06
 
 ### Added
@@ -586,6 +592,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.21.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.21.0
 [1.20.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.20.0
 [1.19.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.19.0
 [1.18.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.18.0

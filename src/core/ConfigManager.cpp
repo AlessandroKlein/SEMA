@@ -152,6 +152,10 @@ bool ConfigManager::serialize(String& out) const {
   doc["modbus"]["slave_id"] = config_.modbus.slaveId;
   doc["modbus"]["register"] = config_.modbus.registerAddr;
   doc["modbus"]["count"] = config_.modbus.registerCount;
+  doc["can"]["enabled"] = config_.can.enabled;
+  doc["can"]["tx"] = config_.can.txPin;
+  doc["can"]["rx"] = config_.can.rxPin;
+  doc["can"]["speed"] = config_.can.speed;
   serializeJson(doc, out);
   return true;
 }
@@ -243,6 +247,10 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.modbus.slaveId = doc["modbus"]["slave_id"] | 1;
   c.modbus.registerAddr = doc["modbus"]["register"] | 0;
   c.modbus.registerCount = doc["modbus"]["count"] | 4;
+  c.can.enabled = doc["can"]["enabled"] | false;
+  c.can.txPin = doc["can"]["tx"] | 5;
+  c.can.rxPin = doc["can"]["rx"] | 4;
+  c.can.speed = doc["can"]["speed"] | 500000;
   return true;
 }
 

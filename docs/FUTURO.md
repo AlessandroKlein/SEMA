@@ -1,6 +1,6 @@
 # Mejoras opcionales y futuras — SEMA
 
-> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.20.0
+> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.21.0
 
 Registro de ítems **opcionales** (no forman parte de la Definition of Done §103).
 Sirve para tener todo anotado por si en el futuro se quiere implementar. Organizado
@@ -57,13 +57,7 @@ por área; cada ítem es una idea, no un compromiso.
 | Perfiles energéticos por horario | Ahorro programado |
 | Wake por RTC (alarmas de hora) | Despertar a horas fijas |
 
-## 7. Hardware / expansión
-
-| Ítem | Nota |
-|------|------|
-| CAN (TWAI) | Bus industrial |
-
-## 8. Fiabilidad y operación
+## 7. Fiabilidad y operación
 
 | Ítem | Nota |
 |------|------|
@@ -71,7 +65,7 @@ por área; cada ítem es una idea, no un compromiso.
 | Config de respaldo (fail-safe) | Recuperar si la config se corrompe |
 | Watchdog jerárquico por tarea | Un watchdog por cada tarea crítica |
 
-## 9. Plataforma
+## 8. Plataforma
 
 | Ítem | Nota |
 |------|------|

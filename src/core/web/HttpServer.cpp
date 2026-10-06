@@ -65,6 +65,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/shift", HTTP_GET, [this]() { onShift(); });
   server_.on("/api/v1/shift", HTTP_POST, [this]() { onShiftWrite(); });
   server_.on("/api/v1/modbus", HTTP_GET, [this]() { onModbus(); });
+  server_.on("/api/v1/can", HTTP_GET, [this]() { onCan(); });
+  server_.on("/api/v1/can", HTTP_POST, [this]() { onCanWrite(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   // Token de sesión aleatorio (login web).
@@ -420,6 +422,7 @@ void HttpServer::onConfigPut() {
     core_->applyPublishers();
     core_->applyShift();
     core_->applyModbus();
+    core_->applyCan();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
@@ -695,6 +698,57 @@ void HttpServer::onModbus() {
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);
+}
+
+void HttpServer::onCan() {
+  uint32_t id = 0;
+  uint8_t dlc = 0;
+  bool extd = false;
+  uint8_t data[8] = {0};
+  const bool got = core_->can().receive(id, data, dlc, extd);
+
+  DynamicJsonDocument doc(256);
+  doc["ready"] = core_->can().ready();
+  doc["received"] = got;
+  if (got) {
+    doc["id"] = id;
+    doc["extd"] = extd;
+    JsonArray arr = doc.createNestedArray("data");
+    for (uint8_t i = 0; i < dlc; ++i) {
+      arr.add(data[i]);
+    }
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onCanWrite() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"missing body\"}");
+    return;
+  }
+  DynamicJsonDocument doc(256);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  const uint32_t id = doc["id"] | 0;
+  const bool extd = doc["extd"] | false;
+  uint8_t data[8] = {0};
+  uint8_t dlc = 0;
+  JsonArray arr = doc["data"].as<JsonArray>();
+  for (JsonVariant v : arr) {
+    if (dlc >= 8) break;
+    data[dlc++] = v.as<uint8_t>();
+  }
+  const bool ok = core_->can().send(id, data, dlc, extd);
+  server_.send(ok ? 200 : 500, "application/json",
+               ok ? "{\"ok\":true}" : "{\"error\":\"send failed\"}");
 }
 
 void HttpServer::onNotFound() {

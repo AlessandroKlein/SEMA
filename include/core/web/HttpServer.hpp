@@ -48,6 +48,8 @@ private:
   void onShift();
   void onShiftWrite();
   void onModbus();
+  void onCan();
+  void onCanWrite();
   void onNotFound();
 
   bool authorized();

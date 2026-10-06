@@ -119,6 +119,14 @@ struct ModbusConfig {
   uint16_t registerCount = 4; // cantidad de registros a leer
 };
 
+// CAN (TWAI, CAN 2.0).
+struct CanConfig {
+  bool enabled = false;
+  uint8_t txPin = 5;
+  uint8_t rxPin = 4;
+  uint32_t speed = 500000;  // bps: 125000 | 250000 | 500000 | 1000000
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -135,6 +143,7 @@ struct Config {
   std::vector<GpioSpec> gpio;              // GPIO standalone (opcional)
   ShiftRegisterConfig shiftRegister;       // shift register (opcional)
   ModbusConfig modbus;                     // RS485/Modbus (opcional)
+  CanConfig can;                           // CAN/TWAI (opcional)
 };
 
 class ConfigManager {
