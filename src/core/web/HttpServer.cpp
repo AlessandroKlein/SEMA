@@ -35,6 +35,8 @@ button{width:100%;padding:.5rem;border:0;border-radius:4px;background:#1f6feb;co
 )html";
 }  // namespace
 
+static const uint32_t kSessionTimeoutMs = 3600000UL;  // 1 h de sesión (deslizante)
+
 void HttpServer::begin(SemaCore& core) {
   core_ = &core;
 
@@ -243,11 +245,18 @@ setInterval(refresh,5000);
 }
 
 bool HttpServer::sessionAuthorized() {
+  if (sessionStartMs_ == 0 || millis() - sessionStartMs_ > kSessionTimeoutMs) {
+    return false;
+  }
   if (!server_.hasHeader("Cookie")) {
     return false;
   }
   const String cookie = server_.header("Cookie");
-  return cookie.indexOf("sema_auth=" + sessionToken_) >= 0;
+  if (cookie.indexOf("sema_auth=" + sessionToken_) < 0) {
+    return false;
+  }
+  sessionStartMs_ = millis();  // sesión deslizante: refresca al validar
+  return true;
 }
 
 void HttpServer::onLoginPost() {
@@ -265,6 +274,7 @@ void HttpServer::onLoginPost() {
   if (ok) {
     failedLogins_ = 0;
     lockoutUntilMs_ = 0;
+    sessionStartMs_ = millis();
     server_.sendHeader("Set-Cookie", "sema_auth=" + sessionToken_ + "; Path=/; HttpOnly");
     server_.sendHeader("Location", "/");
     server_.send(302, "text/plain", "");
@@ -279,6 +289,7 @@ void HttpServer::onLoginPost() {
 }
 
 void HttpServer::onLogout() {
+  sessionStartMs_ = 0;
   server_.sendHeader("Set-Cookie", "sema_auth=; Path=/; Max-Age=0");
   server_.sendHeader("Location", "/");
   server_.send(302, "text/plain", "");

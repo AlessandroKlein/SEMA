@@ -57,6 +57,7 @@ private:
   String sessionToken_;
   uint32_t failedLogins_ = 0;
   uint32_t lockoutUntilMs_ = 0;
+  uint32_t sessionStartMs_ = 0;  // 0 = sin sesión activa
 };
 
 }  // namespace sema

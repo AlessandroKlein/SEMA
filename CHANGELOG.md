@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.12.0] - 2026-10-06
+
+### Added
+
+- Expiración de sesión del login web (1 h, deslizante).
+
 ## [1.11.0] - 2026-10-06
 
 ### Added
@@ -532,6 +538,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.12.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.12.0
 [1.11.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.11.0
 [1.10.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.10.0
 [1.9.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.9.0

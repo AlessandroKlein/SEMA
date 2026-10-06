@@ -1,6 +1,6 @@
 # Mejoras opcionales y futuras — SEMA
 
-> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.11.0
+> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.12.0
 
 Registro de ítems **opcionales** (no forman parte de la Definition of Done §103).
 Sirve para tener todo anotado por si en el futuro se quiere implementar. Organizado
@@ -13,7 +13,6 @@ por área; cada ítem es una idea, no un compromiso.
 | Ítem | Nota |
 |------|------|
 | TLS/HTTPS (certificado) | Cifrar la web local y la API |
-| Expiración de sesión (login web) | Tiempo máximo de la cookie |
 | OTA con firma/checksum | Verificar integridad antes de aplicar |
 | Tokens/API keys revocables | Más de una clave por actor, con rotación |
 
