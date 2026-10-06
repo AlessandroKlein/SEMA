@@ -144,6 +144,14 @@ bool ConfigManager::serialize(String& out) const {
   doc["shift_register"]["data_pin"] = config_.shiftRegister.dataPin;
   doc["shift_register"]["clock_pin"] = config_.shiftRegister.clockPin;
   doc["shift_register"]["latch_pin"] = config_.shiftRegister.latchPin;
+  doc["modbus"]["enabled"] = config_.modbus.enabled;
+  doc["modbus"]["rx"] = config_.modbus.rxPin;
+  doc["modbus"]["tx"] = config_.modbus.txPin;
+  doc["modbus"]["de_re"] = config_.modbus.deRePin;
+  doc["modbus"]["baud"] = config_.modbus.baud;
+  doc["modbus"]["slave_id"] = config_.modbus.slaveId;
+  doc["modbus"]["register"] = config_.modbus.registerAddr;
+  doc["modbus"]["count"] = config_.modbus.registerCount;
   serializeJson(doc, out);
   return true;
 }
@@ -227,6 +235,14 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.shiftRegister.dataPin = doc["shift_register"]["data_pin"] | 0;
   c.shiftRegister.clockPin = doc["shift_register"]["clock_pin"] | 0;
   c.shiftRegister.latchPin = doc["shift_register"]["latch_pin"] | 0;
+  c.modbus.enabled = doc["modbus"]["enabled"] | false;
+  c.modbus.rxPin = doc["modbus"]["rx"] | 16;
+  c.modbus.txPin = doc["modbus"]["tx"] | 17;
+  c.modbus.deRePin = doc["modbus"]["de_re"] | 0;
+  c.modbus.baud = doc["modbus"]["baud"] | 9600;
+  c.modbus.slaveId = doc["modbus"]["slave_id"] | 1;
+  c.modbus.registerAddr = doc["modbus"]["register"] | 0;
+  c.modbus.registerCount = doc["modbus"]["count"] | 4;
   return true;
 }
 

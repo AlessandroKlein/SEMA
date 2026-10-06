@@ -107,6 +107,18 @@ struct ShiftRegisterConfig {
   uint8_t latchPin = 0;     // RCLK (595) / SH-LD (165)
 };
 
+// RS485 / Modbus RTU (maestro de un esclavo).
+struct ModbusConfig {
+  bool enabled = false;
+  uint8_t rxPin = 16;
+  uint8_t txPin = 17;
+  uint8_t deRePin = 0;        // DE/RE del transceiver RS485 (0 = sin control)
+  uint32_t baud = 9600;
+  uint8_t slaveId = 1;
+  uint16_t registerAddr = 0;  // dirección del primer registro
+  uint16_t registerCount = 4; // cantidad de registros a leer
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -122,6 +134,7 @@ struct Config {
   std::vector<CalibrationSpec> calibrations; // vacío = usar calibración por defecto
   std::vector<GpioSpec> gpio;              // GPIO standalone (opcional)
   ShiftRegisterConfig shiftRegister;       // shift register (opcional)
+  ModbusConfig modbus;                     // RS485/Modbus (opcional)
 };
 
 class ConfigManager {

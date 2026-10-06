@@ -47,6 +47,7 @@ private:
   void onGpioWrite();
   void onShift();
   void onShiftWrite();
+  void onModbus();
   void onNotFound();
 
   bool authorized();

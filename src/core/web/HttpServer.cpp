@@ -64,6 +64,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/gpio", HTTP_POST, [this]() { onGpioWrite(); });
   server_.on("/api/v1/shift", HTTP_GET, [this]() { onShift(); });
   server_.on("/api/v1/shift", HTTP_POST, [this]() { onShiftWrite(); });
+  server_.on("/api/v1/modbus", HTTP_GET, [this]() { onModbus(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   // Token de sesión aleatorio (login web).
@@ -418,6 +419,7 @@ void HttpServer::onConfigPut() {
     core_->applyGpio();
     core_->applyPublishers();
     core_->applyShift();
+    core_->applyModbus();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
@@ -679,6 +681,20 @@ void HttpServer::onShiftWrite() {
   const uint8_t value = doc["value"] | 0;
   core_->shift().writeByte(value);
   server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onModbus() {
+  const uint8_t result = core_->modbus().read();
+  DynamicJsonDocument doc(1024);
+  doc["ready"] = core_->modbus().ready();
+  doc["result"] = result;
+  JsonArray arr = doc.createNestedArray("values");
+  for (uint16_t v : core_->modbus().values()) {
+    arr.add(v);
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
 }
 
 void HttpServer::onNotFound() {

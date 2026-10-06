@@ -7,6 +7,7 @@
 #include "core/EventBus.hpp"
 #include "core/GpioManager.hpp"
 #include "core/ShiftRegisterManager.hpp"
+#include "core/ModbusManager.hpp"
 #include "core/HealthMonitor.hpp"
 #include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
@@ -47,6 +48,7 @@ public:
   void applyPublishers();
   void applySensors();
   void applyShift();
+  void applyModbus();
 
   ModuleRegistry& modules() { return modules_; }
   EventBus& events() { return events_; }
@@ -64,6 +66,7 @@ public:
   EventLog& eventLog() { return eventLog_; }
   GpioManager& gpio() { return gpio_; }
   ShiftRegisterManager& shift() { return shift_; }
+  ModbusManager& modbus() { return modbus_; }
   const std::vector<DetectedDevice>& detectedDevices() const { return detectedDevices_; }
 
 private:
@@ -82,6 +85,7 @@ private:
   EventLog eventLog_;
   GpioManager gpio_;
   ShiftRegisterManager shift_;
+  ModbusManager modbus_;
   Watchdog watchdog_;
   HealthMonitor health_;
   std::vector<DetectedDevice> detectedDevices_;

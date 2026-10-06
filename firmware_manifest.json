@@ -1,8 +1,8 @@
 {
   "name": "sema",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "firmware": "firmware.bin",
-  "sha256": "24d5366b3d9f88c255545b274e5edc80f815fbb55edb2be3d3cbfa0c04bfb10e",
+  "sha256": "a68135976fe1c154197050bce797c1148aad38f3c1a68c3c49fcb838ba2c5c17",
   "hw_version": "rev0",
   "config_schema_version": 1,
   "protocol_version": 1
