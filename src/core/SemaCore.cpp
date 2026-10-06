@@ -84,39 +84,7 @@ void SemaCore::setup() {
                   d.model.length() > 0 ? d.model.c_str() : "desconocido");
   }
 
-  // Fase 2 — Sensor Engine: registra drivers y arranca la lectura periódica.
-  // D-0050: con SEMA_FIXED_HARDWARE=1 se usa el catálogo fijo (pines de
-  // BoardProfile.hpp) y se ignora sensors[] de la configuración.
-  if (SEMA_FIXED_HARDWARE == 1 || config_.get().sensors.empty()) {
-    // Catálogo por defecto con los pines del Board Profile.
-    static Bme280Sensor bme280("EXT", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
-    static Sht40Sensor sht40("INT", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
-    static Ds18b20Sensor ds18b20("SOIL", SEMA_PIN_ONEWIRE);  // pull-up 4,7 kΩ (README §12)
-    static Bh1750Sensor bh1750("LUX", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
-    static Aht20Sensor aht20("AUX", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
-    // Batería (ADC interno): divisor 11:1 para 12 V (README §37).
-    static AdcSensor battery("BATT", SEMA_PIN_BATTERY_ADC, "voltage", "V",
-                             3.3f * 11.0f / 4095.0f, 0.0f);
-    sensors_.registerSensor(&bme280);
-    sensors_.registerSensor(&sht40);
-    sensors_.registerSensor(&ds18b20);
-    sensors_.registerSensor(&bh1750);
-    sensors_.registerSensor(&aht20);
-    sensors_.registerSensor(&battery);
-  } else {
-    // D-0042: el catálogo de sensores viene de la configuración.
-    for (const SensorSpec& spec : config_.get().sensors) {
-      Sensor* sensor = SensorFactory::create(spec);
-      if (sensor != nullptr) {
-        sensors_.registerSensor(sensor);
-        ownedSensors_.push_back(sensor);
-      } else {
-        Serial.printf("Sensor desconocido: %s (modelo %s)\n",
-                      spec.id.c_str(), spec.model.c_str());
-      }
-    }
-  }
-  sensors_.beginAll();
+  applySensors();
 
   applyCalibrations();
   gpio_.apply(config_.get().gpio);
@@ -226,6 +194,48 @@ void SemaCore::applyRules() {
       rules_.addRule(r);
     }
   }
+}
+
+void SemaCore::applySensors() {
+  // Libera los sensores config-driven previos y reinicia el registro.
+  sensors_.clear();
+  for (Sensor* s : ownedSensors_) {
+    delete s;
+  }
+  ownedSensors_.clear();
+
+  // D-0050: con SEMA_FIXED_HARDWARE=1 se usa el catálogo fijo (pines de
+  // BoardProfile.hpp) y se ignora sensors[] de la configuración.
+  if (SEMA_FIXED_HARDWARE == 1 || config_.get().sensors.empty()) {
+    // Catálogo por defecto con los pines del Board Profile.
+    static Bme280Sensor bme280("EXT", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
+    static Sht40Sensor sht40("INT", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
+    static Ds18b20Sensor ds18b20("SOIL", SEMA_PIN_ONEWIRE);  // pull-up 4,7 kΩ (README §12)
+    static Bh1750Sensor bh1750("LUX", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
+    static Aht20Sensor aht20("AUX", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
+    // Batería (ADC interno): divisor 11:1 para 12 V (README §37).
+    static AdcSensor battery("BATT", SEMA_PIN_BATTERY_ADC, "voltage", "V",
+                             3.3f * 11.0f / 4095.0f, 0.0f);
+    sensors_.registerSensor(&bme280);
+    sensors_.registerSensor(&sht40);
+    sensors_.registerSensor(&ds18b20);
+    sensors_.registerSensor(&bh1750);
+    sensors_.registerSensor(&aht20);
+    sensors_.registerSensor(&battery);
+  } else {
+    // D-0042: el catálogo de sensores viene de la configuración.
+    for (const SensorSpec& spec : config_.get().sensors) {
+      Sensor* sensor = SensorFactory::create(spec);
+      if (sensor != nullptr) {
+        sensors_.registerSensor(sensor);
+        ownedSensors_.push_back(sensor);
+      } else {
+        Serial.printf("Sensor desconocido: %s (modelo %s)\n",
+                      spec.id.c_str(), spec.model.c_str());
+      }
+    }
+  }
+  sensors_.beginAll();
 }
 
 void SemaCore::applyGpio() {

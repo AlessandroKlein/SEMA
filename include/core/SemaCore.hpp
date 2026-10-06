@@ -44,6 +44,7 @@ public:
   void applyCalibrations();
   void applyGpio();
   void applyPublishers();
+  void applySensors();
 
   ModuleRegistry& modules() { return modules_; }
   EventBus& events() { return events_; }

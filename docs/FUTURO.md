@@ -1,6 +1,6 @@
 # Mejoras opcionales y futuras — SEMA
 
-> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.8.0
+> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.9.0
 
 Registro de ítems **opcionales** (no forman parte de la Definition of Done §103).
 Sirve para tener todo anotado por si en el futuro se quiere implementar. Organizado
@@ -76,7 +76,6 @@ por área; cada ítem es una idea, no un compromiso.
 
 | Ítem | Nota |
 |------|------|
-| Hot reload de sensores | Reglas, calibración y publicadores ya se re-aplican |
 | RTC hardware (DS3231) con batería | Hora real sin NTP |
 | Config de respaldo (fail-safe) | Recuperar si la config se corrompe |
 | Watchdog jerárquico por tarea | Un watchdog por cada tarea crítica |

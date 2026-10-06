@@ -27,6 +27,7 @@ struct SensorInfo {
 class SensorManager {
 public:
   void registerSensor(Sensor* sensor);
+  void clear() { sensors_.clear(); }
   void beginAll();
   void readAll();
 

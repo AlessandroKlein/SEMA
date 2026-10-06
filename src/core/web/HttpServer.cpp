@@ -398,7 +398,8 @@ void HttpServer::onConfigPut() {
   }
   const String body = server_.arg("plain");
   if (core_->config().applyJson(body)) {
-    // Re-aplica la config no hardware-dependiente sin reiniciar.
+    // Re-aplica la config sin reiniciar (sensores primero, luego el resto).
+    core_->applySensors();
     core_->applyRules();
     core_->applyCalibrations();
     core_->applyGpio();
