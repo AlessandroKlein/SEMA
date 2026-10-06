@@ -179,6 +179,10 @@ section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
 .cat-item:hover{background:#161b22}
 .cat-item .add{background:#238636;border:0;border-radius:4px;color:#fff;padding:.2rem .6rem;cursor:pointer;width:auto}
 .cat-group{font-size:.72rem;color:#8b949e;text-transform:uppercase;margin:.6rem 0 .2rem}
+.range{display:flex;gap:2px;margin:.2rem 0}
+.rbtn{width:auto;padding:.1rem .5rem;font-size:.68rem;background:#21262d;border:1px solid #30363d;border-radius:3px;cursor:pointer;margin:0;color:#8b949e}
+.rbtn.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.68rem;color:#8b949e;margin-top:.2rem}
 </style>
 <script src="/gridstack-all.min.js"></script>
 </head>
@@ -228,6 +232,7 @@ section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
 
 <script>
 const DIRS=['N','NE','E','SE','S','SO','O','NO'];
+const COLORS=['#58a6ff','#f0883e','#3fb950','#d29922','#bc8cff','#ff7b72','#56d4dd','#79c0ff'];
 let grid=null, editMode=false, cfg={}, layout=[], lastMeasurements=[];
 
 function cid(type,k){ return type+'_'+String(k).replace(/[|]/g,'~'); }
@@ -262,7 +267,13 @@ function findValue(key){
 function cardContent(it){
   if(it.type==='chart'){
     return '<div class="card"><div class="t">📈 '+it.key+'</div>'+
-           '<canvas class="chart" data-key="'+it.key+'"></canvas>'+
+           '<div class="range">'+
+             '<button class="rbtn on" data-r="1" onclick="setRange(this,\''+it.key+'\')">1h</button>'+
+             '<button class="rbtn" data-r="24" onclick="setRange(this,\''+it.key+'\')">24h</button>'+
+             '<button class="rbtn" data-r="168" onclick="setRange(this,\''+it.key+'\')">7d</button>'+
+           '</div>'+
+           '<canvas class="chart" data-key="'+it.key+'" data-range="1"></canvas>'+
+           '<div class="legend" data-key="'+it.key+'"></div>'+
            '<button class="del" onclick="deleteCard(\''+cid(it.type,it.key)+'\')">✕</button></div>';
   }
   const m=findValue(it.key);
@@ -291,40 +302,90 @@ function renderCards(){
   drawCharts();
 }
 
-function drawLine(cv, vals){
+function fmtTime(ts){
+  if(ts>1000000000){const d=new Date(ts*1000);return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+  return '+'+(ts/60).toFixed(0)+'m';
+}
+
+function drawChartCard(cv, key, rangeH){
   const ctx=cv.getContext('2d');
   const dpr=window.devicePixelRatio||1;
-  const w=cv.clientWidth||cv.width, h=cv.clientHeight||cv.height;
+  const w=cv.clientWidth||cv.width||200, h=cv.clientHeight||cv.height||130;
   cv.width=w*dpr; cv.height=h*dpr; ctx.scale(dpr,dpr);
   ctx.clearRect(0,0,w,h);
-  if(vals.length<2)return;
-  const pad=8;
-  const min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
-  const range=(max-min)||1;
-  ctx.strokeStyle='#30363d';
-  ctx.beginPath();
-  for(let i=0;i<=3;i++){const y=pad+(h-2*pad)*i/3;ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);}
-  ctx.stroke();
-  ctx.strokeStyle='#58a6ff';ctx.lineWidth=1.6;
-  ctx.beginPath();
-  for(let i=0;i<vals.length;i++){
-    const x=pad+(w-2*pad)*i/(vals.length-1);
-    const y=pad+(h-2*pad)*(1-(vals[i]-min)/range);
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  }
-  ctx.stroke();
+  ctx.fillStyle='#8b949e'; ctx.font='10px system-ui';
+  ctx.fillText('Cargando…',8,14);
+
+  fetch('/api/v1/history?limit=3000').then(r=>r.json()).then(r=>{
+    const now=Date.now()/1000;
+    const since=now-rangeH*3600;
+    const items=(r.history||[]).filter(m=>m.measurement===key && m.ts>=since);
+    const sensors=[...new Set(items.map(m=>m.sensor))];
+    const unit=(items[0]||{}).unit||'';
+    ctx.clearRect(0,0,w,h);
+
+    if(items.length<2){ ctx.fillStyle='#8b949e'; ctx.font='10px system-ui'; ctx.fillText('Sin datos suficientes',8,14); return; }
+
+    const padL=36,padR=8,padT=8,padB=18;
+    const pw=w-padL-padR, ph=h-padT-padB;
+    const vals=items.map(m=>m.value);
+    let min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
+    if(max===min){max=min+1;}
+    const range=max-min;
+
+    // Rejilla + eje Y (valores)
+    ctx.strokeStyle='#21262d'; ctx.fillStyle='#8b949e'; ctx.font='9px system-ui';
+    for(let i=0;i<=3;i++){
+      const y=padT+ph*i/3;
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+      const v=max-range*i/3;
+      ctx.fillText((Math.abs(v)>=100?v.toFixed(0):v.toFixed(1)),2,y+3);
+    }
+    // Eje X (tiempo)
+    for(let i=0;i<=4;i++){
+      const ts=since+(now-since)*i/4;
+      const x=padL+pw*i/4;
+      ctx.fillText(fmtTime(ts), x-12, h-5);
+    }
+    // Unidad (esquina superior izquierda)
+    ctx.fillStyle='#8b949e'; ctx.font='9px system-ui';
+    ctx.fillText(unit, 2, padT-1);
+
+    // Series (una por sensor)
+    sensors.forEach((s,si)=>{
+      const series=items.filter(m=>m.sensor===s).sort((a,b)=>a.ts-b.ts);
+      if(series.length<2) return;
+      ctx.strokeStyle=COLORS[si%COLORS.length]; ctx.lineWidth=1.6; ctx.beginPath();
+      series.forEach((m,i)=>{
+        const x=padL+pw*(m.ts-since)/(now-since);
+        const y=padT+ph*(1-(m.value-min)/range);
+        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+      });
+      ctx.stroke();
+    });
+
+    // Leyenda
+    const lg=document.querySelector('.legend[data-key="'+key+'"]');
+    if(lg) lg.innerHTML=sensors.map((s,i)=>'<span style="color:'+COLORS[i%COLORS.length]+'">● '+s+'</span>').join(' ');
+  }).catch(()=>{});
+}
+
+function setRange(btn, key){
+  const card=btn.closest('.card');
+  card.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const cv=card.querySelector('canvas.chart');
+  const r=parseInt(btn.getAttribute('data-r'),10);
+  cv.setAttribute('data-range', r);
+  drawChartCard(cv, key, r);
 }
 
 async function drawCharts(){
-  try{
-    const r=await(await fetch('/api/v1/history?limit=300')).json();
-    const hist=r.history||[];
-    document.querySelectorAll('canvas.chart').forEach(cv=>{
-      const k=cv.getAttribute('data-key');
-      const vals=hist.filter(m=>m.measurement===k).slice(-120).map(m=>m.value);
-      drawLine(cv, vals);
-    });
-  }catch(e){}
+  document.querySelectorAll('canvas.chart').forEach(cv=>{
+    const k=cv.getAttribute('data-key');
+    const r=parseInt(cv.getAttribute('data-range')||'1',10);
+    drawChartCard(cv, k, r);
+  });
 }
 
 async function refresh(){
@@ -901,7 +962,7 @@ void HttpServer::onHistory() {
   size_t limit = 50;
   if (server_.hasArg("limit")) {
     const long l = server_.arg("limit").toInt();
-    if (l > 0 && l <= 100) {
+    if (l > 0 && l <= 3000) {
       limit = static_cast<size_t>(l);
     }
   }
