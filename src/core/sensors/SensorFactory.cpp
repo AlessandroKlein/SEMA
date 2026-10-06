@@ -9,6 +9,7 @@
 #include "core/sensors/PcntSensor.hpp"
 #include "core/sensors/Pms5003Sensor.hpp"
 #include "core/sensors/Scd30Sensor.hpp"
+#include "core/sensors/Sgp30Sensor.hpp"
 #include "core/sensors/Sht31Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
 #include "core/sensors/Veml6075Sensor.hpp"
@@ -52,6 +53,9 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   }
   if (spec.model == "SCD30") {
     return new Scd30Sensor(spec.id.c_str(), spec.sda, spec.scl);
+  }
+  if (spec.model == "SGP30") {
+    return new Sgp30Sensor(spec.id.c_str(), spec.sda, spec.scl);
   }
   if (spec.model == "PMS5003") {
     return new Pms5003Sensor(spec.id.c_str(), spec.rxPin, spec.txPin);
