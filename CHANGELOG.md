@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.25.0] - 2026-10-06
+
+### Changed
+
+- Ethernet W5500 (ESP32-S3): de pila separada a driver ESP-IDF `esp_eth` integrado a lwIP. El WebServer ahora sirve sobre W5500.
+
 ## [1.24.0] - 2026-10-06
 
 ### Added
@@ -610,6 +616,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.25.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.25.0
 [1.24.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.24.0
 [1.23.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.23.0
 [1.22.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.22.0

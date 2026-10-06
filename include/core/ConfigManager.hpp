@@ -157,9 +157,13 @@ struct EthernetConfig {
   uint8_t mdioPin = 18;
   uint8_t phyAddr = 1;
   int powerPin = -1;   // -1 = sin control de alimentación de la PHY
-  // W5500 (SPI) — board sin MAC nativa
+  // W5500 (SPI) — board sin MAC nativa (driver ESP-IDF)
   uint8_t csPin = 5;
   int rstPin = -1;     // -1 = sin pin de reset
+  int irqPin = 4;      // -1 = sin IRQ (modo polling)
+  uint8_t sckPin = 12;
+  uint8_t misoPin = 13;
+  uint8_t mosiPin = 11;
 };
 
 // Configuración completa (schema=1).

@@ -177,6 +177,10 @@ bool ConfigManager::serialize(String& out) const {
   doc["ethernet"]["power"] = config_.ethernet.powerPin;
   doc["ethernet"]["cs"] = config_.ethernet.csPin;
   doc["ethernet"]["rst"] = config_.ethernet.rstPin;
+  doc["ethernet"]["irq"] = config_.ethernet.irqPin;
+  doc["ethernet"]["sck"] = config_.ethernet.sckPin;
+  doc["ethernet"]["miso"] = config_.ethernet.misoPin;
+  doc["ethernet"]["mosi"] = config_.ethernet.mosiPin;
   serializeJson(doc, out);
   return true;
 }
@@ -293,6 +297,10 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.ethernet.powerPin = doc["ethernet"]["power"] | -1;
   c.ethernet.csPin = doc["ethernet"]["cs"] | 5;
   c.ethernet.rstPin = doc["ethernet"]["rst"] | -1;
+  c.ethernet.irqPin = doc["ethernet"]["irq"] | 4;
+  c.ethernet.sckPin = doc["ethernet"]["sck"] | 12;
+  c.ethernet.misoPin = doc["ethernet"]["miso"] | 13;
+  c.ethernet.mosiPin = doc["ethernet"]["mosi"] | 11;
   return true;
 }
 
