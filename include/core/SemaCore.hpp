@@ -16,6 +16,8 @@
 #include "core/network/WiFiManager.hpp"
 #include "core/PowerManager.hpp"
 #include "core/Watchdog.hpp"
+#include "core/publishers/HttpPublisher.hpp"
+#include "core/publishers/MqttPublisher.hpp"
 #include "core/publishers/PublisherManager.hpp"
 #include "core/storage/HistoryStore.hpp"
 #include "core/storage/NvsStore.hpp"
@@ -41,6 +43,7 @@ public:
   void applyRules();
   void applyCalibrations();
   void applyGpio();
+  void applyPublishers();
 
   ModuleRegistry& modules() { return modules_; }
   EventBus& events() { return events_; }
@@ -69,6 +72,8 @@ private:
   SensorManager sensors_;
   HistoryStore history_;
   PublisherManager publishers_;
+  HttpPublisher webhook_;
+  MqttPublisher mqtt_;
   RuleEngine rules_;
   EventLog eventLog_;
   GpioManager gpio_;

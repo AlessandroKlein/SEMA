@@ -13,6 +13,12 @@ MqttPublisher::MqttPublisher(const char* id, const char* host, uint16_t port,
                              const char* topic)
     : id_(id), host_(host), port_(port), topic_(topic) {}
 
+void MqttPublisher::configure(const char* host, uint16_t port, const char* topic) {
+  host_ = host;
+  port_ = port;
+  topic_ = topic;
+}
+
 const char* MqttPublisher::id() const { return id_; }
 
 bool MqttPublisher::enabled() const { return host_.length() > 0; }

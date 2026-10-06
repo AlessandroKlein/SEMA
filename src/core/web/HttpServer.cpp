@@ -402,6 +402,7 @@ void HttpServer::onConfigPut() {
     core_->applyRules();
     core_->applyCalibrations();
     core_->applyGpio();
+    core_->applyPublishers();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");

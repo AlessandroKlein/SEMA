@@ -16,6 +16,8 @@ class HttpPublisher : public Publisher {
 public:
   HttpPublisher(const char* id, const char* url);
 
+  void setUrl(const char* url) { url_ = url; }
+
   const char* id() const override;
   bool enabled() const override;
   bool publish(const Measurement& m) override;

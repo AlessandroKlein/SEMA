@@ -1,6 +1,6 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-10-03 | **Firmware:** v1.7.0 | **Releases:** 63
+> **Tipo:** Guía de continuación | **Fecha:** 2026-10-03 | **Firmware:** v1.8.0 | **Releases:** 64
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.
@@ -53,7 +53,7 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 
 | Prioridad | Ítem | Nota |
 |:---------:|------|------|
-| 1 | **Hot reload de sensores/publicadores** | Reglas y calibración ya se re-aplican; falta sensores y publicadores |
+| 1 | **Hot reload de sensores** | Reglas, calibración y publicadores ya se re-aplican; falta sensores |
 | 2 | **TLS/HTTPS** (opcional) | Cifrar la web local y la API |
 
 ### B. Hardware específico (requieren el módulo físico para validar)

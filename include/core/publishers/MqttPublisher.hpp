@@ -16,6 +16,8 @@ class MqttPublisher : public Publisher {
 public:
   MqttPublisher(const char* id, const char* host, uint16_t port, const char* topic);
 
+  void configure(const char* host, uint16_t port, const char* topic);
+
   const char* id() const override;
   bool enabled() const override;
   bool publish(const Measurement& m) override;

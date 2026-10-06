@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.8.0] - 2026-10-06
+
+### Added
+
+- Hot reload de publicadores: `PUT /config` re-aplica webhook y MQTT sin reinicio.
+
 ## [1.7.0] - 2026-10-06
 
 ### Added
@@ -508,6 +514,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.8.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.8.0
 [1.7.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.7.0
 [1.6.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.6.0
 [1.5.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.5.0

@@ -21,7 +21,13 @@ SemaCore& SemaCore::instance() {
   return core;
 }
 
-SemaCore::SemaCore() : store_(), config_(store_), rules_(events_), eventLog_(events_) {}
+SemaCore::SemaCore()
+    : store_(),
+      config_(store_),
+      webhook_("webhook", ""),
+      mqtt_("mqtt", "", 1883, ""),
+      rules_(events_),
+      eventLog_(events_) {}
 
 void SemaCore::setup() {
   Serial.begin(115200);
@@ -126,12 +132,9 @@ void SemaCore::setup() {
   http_.begin(*this);
 
   // Publicadores (D-0010): webhook HTTP y MQTT, configurados desde la config.
-  static HttpPublisher webhook("webhook", config_.get().publishers.webhookUrl.c_str());
-  static MqttPublisher mqtt("mqtt", config_.get().publishers.mqttHost.c_str(),
-                            config_.get().publishers.mqttPort,
-                            config_.get().publishers.mqttTopic.c_str());
-  publishers_.registerPublisher(&webhook);
-  publishers_.registerPublisher(&mqtt);
+  publishers_.registerPublisher(&webhook_);
+  publishers_.registerPublisher(&mqtt_);
+  applyPublishers();
 
   applyRules();
 
@@ -227,6 +230,13 @@ void SemaCore::applyRules() {
 
 void SemaCore::applyGpio() {
   gpio_.apply(config_.get().gpio);
+}
+
+void SemaCore::applyPublishers() {
+  webhook_.setUrl(config_.get().publishers.webhookUrl.c_str());
+  mqtt_.configure(config_.get().publishers.mqttHost.c_str(),
+                  config_.get().publishers.mqttPort,
+                  config_.get().publishers.mqttTopic.c_str());
 }
 
 void SemaCore::loop() {
