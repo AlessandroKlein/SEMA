@@ -153,11 +153,13 @@ body{font-family:system-ui,sans-serif;margin:1rem;background:#0d1117;color:#e6ed
 h1{margin:0 0 .25rem}h2{margin:1.25rem 0 .5rem}
 .muted{color:#8b949e}
 a{color:#8b949e}
-.card{height:100%;box-sizing:border-box;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:.5rem}
+.card{height:100%;box-sizing:border-box;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:.5rem;position:relative}
 .card .t{font-size:.72rem;color:#8b949e;text-transform:uppercase}
 .card .v{font-size:1.35rem;font-weight:600;margin:.1rem 0}
 .card .v span{font-size:.75rem;color:#8b949e;font-weight:400}
 .card .s{font-size:.68rem;color:#58a6ff}
+.card .del{position:absolute;top:.2rem;right:.2rem;background:#30363d;color:#f85149;border:0;border-radius:4px;width:22px;height:22px;line-height:1;cursor:pointer;font-size:.8rem;padding:0}
+canvas.chart{width:100%;height:100%;display:block}
 .grid-stack{background:#0d1117}
 .grid-stack>.grid-stack-item>.grid-stack-item-content{overflow:hidden}
 input,button{box-sizing:border-box;padding:.45rem;margin:.3rem 0;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#e6edf3;font-size:.9rem}
@@ -165,10 +167,18 @@ input{display:block;width:100%}
 button{width:100%;background:#1f6feb;color:#fff;border:0;cursor:pointer}
 button.sec{background:#30363d}
 .bar{display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0}
-.bar button{flex:1;min-width:140px}
+.bar button{flex:1;min-width:130px}
 .grid-wind{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
 label{font-size:.75rem;color:#8b949e;display:block}
 section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;overflow:auto}
+.modal.open{display:block}
+.modal-box{background:#0d1117;border:1px solid #30363d;border-radius:8px;max-width:520px;margin:2rem auto;padding:1rem}
+.catalog{max-height:60vh;overflow:auto;border:1px solid #30363d;border-radius:6px;padding:.5rem}
+.cat-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem;border-bottom:1px solid #21262d;cursor:pointer}
+.cat-item:hover{background:#161b22}
+.cat-item .add{background:#238636;border:0;border-radius:4px;color:#fff;padding:.2rem .6rem;cursor:pointer;width:auto}
+.cat-group{font-size:.72rem;color:#8b949e;text-transform:uppercase;margin:.6rem 0 .2rem}
 </style>
 <script src="/gridstack-all.min.js"></script>
 </head>
@@ -177,12 +187,22 @@ section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
 <div id="status" class="muted">Cargando…</div>
 
 <div class="bar">
-  <button onclick="toggleEdit()">✏️ Editar layout</button>
+  <button onclick="openCatalog()">➕ Añadir tarjeta</button>
+  <button class="sec" onclick="toggleEdit()">✏️ Editar layout</button>
   <button class="sec" onclick="saveLayout()">💾 Guardar layout</button>
   <button class="sec" onclick="calibrateNorth()">🧭 Norte de la veleta</button>
 </div>
 
 <div class="grid-stack" id="grid"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h2>Añadir tarjeta</h2>
+    <p class="muted">Elegí qué mostrar. Los gráficos muestran la última hora.</p>
+    <div class="catalog" id="catalog"></div>
+    <button class="sec" onclick="closeCatalog()">Cerrar</button>
+  </div>
+</div>
 
 <section>
 <h2>Calibración de la veleta (WH-SP-WD)</h2>
@@ -208,14 +228,10 @@ section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
 
 <script>
 const DIRS=['N','NE','E','SE','S','SO','O','NO'];
-let grid=null, editMode=false, cfg={}, posMap={}, knownKeys=new Set();
+let grid=null, editMode=false, cfg={}, layout=[], lastMeasurements=[];
 
-function key(m){return m.sensor_id+'|'+m.channel_id;}
-
-function applyLayout(layout){
-  posMap={};
-  (layout||[]).forEach(it=>{ if(it&&it.id) posMap[it.id]={x:it.x,y:it.y,w:it.w,h:it.h}; });
-}
+function cid(type,k){ return type+'_'+String(k).replace(/[|]/g,'~'); }
+function mkey(m){ return m.sensor_id+'|'+m.channel_id; }
 
 function setEdit(on){
   editMode=on;
@@ -224,28 +240,91 @@ function setEdit(on){
   grid.enableMove(on);
   grid.enableResize(on);
 }
-
 function toggleEdit(){ setEdit(!editMode); }
 
-function renderCards(list){
+function defaultLayout(ms){
+  const lay=[];
+  const chans=[...new Set(ms.map(m=>m.measurement))];
+  if(chans.includes('temperature')) lay.push({type:'chart',key:'temperature',x:0,y:0,w:6,h:3});
+  let x=6,y=0;
+  for(const m of ms){
+    if(x+3>12){x=0;y++;}
+    lay.push({type:'value',key:mkey(m),x:x,y:y,w:3,h:1});
+    x+=3;
+  }
+  return lay;
+}
+
+function findValue(key){
+  return lastMeasurements.find(m=>mkey(m)===key);
+}
+
+function cardContent(it){
+  if(it.type==='chart'){
+    return '<div class="card"><div class="t">📈 '+it.key+'</div>'+
+           '<canvas class="chart" data-key="'+it.key+'"></canvas>'+
+           '<button class="del" onclick="deleteCard(\''+cid(it.type,it.key)+'\')">✕</button></div>';
+  }
+  const m=findValue(it.key);
+  const v=m?(+m.value).toFixed(2):'—';
+  const u=m?m.unit:'';
+  const q=m?m.quality:'';
+  const nm=m?m.measurement:it.key;
+  return '<div class="card"><div class="t">'+nm+'</div>'+
+         '<div class="v">'+v+' <span>'+u+'</span></div>'+
+         '<div class="s">'+(m?m.sensor_id:'')+' · '+q+'</div>'+
+         '<button class="del" onclick="deleteCard(\''+cid(it.type,it.key)+'\')">✕</button></div>';
+}
+
+function renderCards(){
   if(!grid){
     grid=GridStack.init({column:12, cellHeight:72, margin:6});
-    grid.on('change',function(){ /* layout cambió */ });
   }
   grid.removeAll(false);
-  let x=0,y=0;
-  for(const m of list){
-    const k=key(m);
-    const p=posMap[k]||{x:x,y:y,w:3,h:1};
+  for(const it of layout){
     grid.addWidget({
-      id:k, x:p.x, y:p.y, w:p.w, h:p.h,
-      content:'<div class="card"><div class="t">'+m.measurement+'</div>'+
-              '<div class="v">'+(+m.value).toFixed(2)+' <span>'+m.unit+'</span></div>'+
-              '<div class="s">'+m.sensor_id+' · '+m.quality+'</div></div>'
+      id:cid(it.type,it.key), x:it.x, y:it.y, w:it.w, h:it.h,
+      content:cardContent(it)
     });
-    x+=p.w; if(x>=12){x=0;y+=1;}
   }
   setEdit(editMode);
+  drawCharts();
+}
+
+function drawLine(cv, vals){
+  const ctx=cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth||cv.width, h=cv.clientHeight||cv.height;
+  cv.width=w*dpr; cv.height=h*dpr; ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,w,h);
+  if(vals.length<2)return;
+  const pad=8;
+  const min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
+  const range=(max-min)||1;
+  ctx.strokeStyle='#30363d';
+  ctx.beginPath();
+  for(let i=0;i<=3;i++){const y=pad+(h-2*pad)*i/3;ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);}
+  ctx.stroke();
+  ctx.strokeStyle='#58a6ff';ctx.lineWidth=1.6;
+  ctx.beginPath();
+  for(let i=0;i<vals.length;i++){
+    const x=pad+(w-2*pad)*i/(vals.length-1);
+    const y=pad+(h-2*pad)*(1-(vals[i]-min)/range);
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  }
+  ctx.stroke();
+}
+
+async function drawCharts(){
+  try{
+    const r=await(await fetch('/api/v1/history?limit=300')).json();
+    const hist=r.history||[];
+    document.querySelectorAll('canvas.chart').forEach(cv=>{
+      const k=cv.getAttribute('data-key');
+      const vals=hist.filter(m=>m.measurement===k).slice(-120).map(m=>m.value);
+      drawLine(cv, vals);
+    });
+  }catch(e){}
 }
 
 async function refresh(){
@@ -255,18 +334,54 @@ async function refresh(){
   }catch(e){document.getElementById('status').textContent='Sin conexión';}
   try{
     const r=await(await fetch('/api/v1/sensors')).json();
-    renderCards(r.measurements||[]);
+    lastMeasurements=r.measurements||[];
+    renderCards();
   }catch(e){}
+}
+
+function buildCatalog(){
+  const c=document.getElementById('catalog');
+  let h='<div class="cat-group">Gráficos (última hora)</div>';
+  const chans=[...new Set(lastMeasurements.map(m=>m.measurement))];
+  chans.forEach(ch=>{
+    h+='<div class="cat-item"><span>📈 '+ch+'</span><button class="add" onclick="addCard(\'chart\',\''+ch+'\')">Añadir</button></div>';
+  });
+  h+='<div class="cat-group">Valores actuales</div>';
+  lastMeasurements.forEach(m=>{
+    h+='<div class="cat-item"><span>'+m.measurement+' <span class="muted">('+m.sensor_id+')</span></span><button class="add" onclick="addCard(\'value\',\''+mkey(m)+'\')">Añadir</button></div>';
+  });
+  c.innerHTML=h||'<div class="muted">Sin datos disponibles</div>';
+}
+
+function openCatalog(){ buildCatalog(); document.getElementById('modal').classList.add('open'); }
+function closeCatalog(){ document.getElementById('modal').classList.remove('open'); }
+
+function addCard(type,key){
+  if(layout.some(it=>it.type===type && it.key===key)) return;
+  let x=0,y=0;
+  if(layout.length){ const l=layout[layout.length-1]; x=l.x+l.w; y=l.y; if(x+l.w>12){x=0;y=l.y+1;} }
+  layout.push({type:type,key:key,x:x,y:y,w:type==='chart'?6:3,h:type==='chart'?3:1});
+  closeCatalog();
+  renderCards();
+  saveLayout();
+}
+
+function deleteCard(id){
+  layout=layout.filter(it=>cid(it.type,it.key)!==id);
+  renderCards();
+  saveLayout();
 }
 
 async function saveLayout(){
   if(!grid)return;
-  const lay=grid.save(false).map(it=>({id:it.id,x:it.x,y:it.y,w:it.w,h:it.h}));
-  applyLayout(lay);
+  const lay=grid.save(false).map(it=>{
+    const l=layout.find(l=>cid(l.type,l.key)===it.id);
+    return {type:l?l.type:'value', key:l?l.key:it.id, x:it.x, y:it.y, w:it.w, h:it.h};
+  });
+  layout=lay;
   try{
-    const resp=await fetch('/api/v1/dashboard/layout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(lay)});
-    alert(resp.ok?'Layout guardado':'Error al guardar layout');
-  }catch(e){alert('Error de red');}
+    await fetch('/api/v1/dashboard/layout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(lay)});
+  }catch(e){}
 }
 
 async function loadConfig(){
@@ -285,7 +400,9 @@ async function loadConfig(){
       const inp=document.getElementById('wr'+i);
       if(inp) inp.value=wr[i]!==undefined?wr[i]:(i===0?33000:i===1?8200:i===2?1000:i===3?2200:i===4?3900:i===5?16000:i===6?120000:64900);
     });
-    if(r.system&&r.system.dashboard_layout){ try{applyLayout(JSON.parse(r.system.dashboard_layout));}catch(e){} }
+    if(r.system&&r.system.dashboard_layout){
+      try{ const l=JSON.parse(r.system.dashboard_layout); if(Array.isArray(l)&&l.length) layout=l; }catch(e){}
+    }
   }catch(e){}
 }
 
@@ -318,7 +435,6 @@ async function calibrateNorth(){
   }catch(e){alert('Error de red');}
 }
 
-// Construye los inputs de las 8 resistencias.
 (function(){
   const c=document.getElementById('windInputs');
   DIRS.forEach((d,i)=>{
@@ -328,9 +444,19 @@ async function calibrateNorth(){
   });
 })();
 
-loadConfig().then(refresh);
-refresh();
-setInterval(refresh,5000);
+async function boot(){
+  await loadConfig();
+  // Si no hay layout guardado, usar el por defecto al recibir la primera lectura.
+  await refresh();
+  if(!layout.length && lastMeasurements.length){
+    layout=defaultLayout(lastMeasurements);
+    renderCards();
+    saveLayout();
+  }
+  setInterval(refresh,5000);
+  setInterval(drawCharts,30000);
+}
+boot();
 </script>
 </body>
 </html>
