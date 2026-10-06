@@ -15,6 +15,7 @@
 #include "core/sensors/Sgp30Sensor.hpp"
 #include "core/sensors/Sht31Sensor.hpp"
 #include "core/sensors/Sht40Sensor.hpp"
+#include "core/sensors/SolarSensor.hpp"
 #include "core/sensors/Veml6075Sensor.hpp"
 
 namespace sema {
@@ -73,6 +74,9 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   }
   if (spec.model == "CO") {
     return new CoSensor(spec.id.c_str(), spec.pin, spec.scale, spec.offset);
+  }
+  if (spec.model == "SOLAR") {
+    return new SolarSensor(spec.id.c_str(), spec.pin, spec.scale, spec.offset);
   }
   return nullptr;
 }
