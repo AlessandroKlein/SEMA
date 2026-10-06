@@ -58,6 +58,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
   server_.on("/api/v1/events", HTTP_GET, [this]() { onEvents(); });
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
+  server_.on("/api/v1/gpio", HTTP_GET, [this]() { onGpio(); });
+  server_.on("/api/v1/gpio", HTTP_POST, [this]() { onGpioWrite(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   // Token de sesión aleatorio (login web).
@@ -399,6 +401,7 @@ void HttpServer::onConfigPut() {
     // Re-aplica la config no hardware-dependiente sin reiniciar.
     core_->applyRules();
     core_->applyCalibrations();
+    core_->applyGpio();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
@@ -596,6 +599,42 @@ void HttpServer::onAlarms() {
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);
+}
+
+void HttpServer::onGpio() {
+  DynamicJsonDocument doc(1024);
+  JsonArray arr = doc.createNestedArray("gpio");
+  const GpioManager& gpio = core_->gpio();
+  for (const GpioSpec& s : gpio.specs()) {
+    JsonObject o = arr.createNestedObject();
+    o["id"] = s.id;
+    o["pin"] = s.pin;
+    o["mode"] = s.mode;
+    o["value"] = gpio.read(s.pin);
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onGpioWrite() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"missing body\"}");
+    return;
+  }
+  DynamicJsonDocument doc(256);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  const uint8_t pin = doc["pin"] | 0;
+  const int value = doc["value"] | 0;
+  core_->gpio().write(pin, value);
+  server_.send(200, "application/json", "{\"ok\":true}");
 }
 
 void HttpServer::onNotFound() {

@@ -88,6 +88,14 @@ struct SensorSpec {
   float offset = 0.0f;
 };
 
+// Especificación de un pin GPIO standalone (entradas/salidas digitales).
+struct GpioSpec {
+  String id;
+  uint8_t pin = 0;
+  String mode;      // "output" | "input" | "input_pullup" | "input_pulldown"
+  uint8_t initial = 0;
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -101,6 +109,7 @@ struct Config {
   std::vector<SensorSpec> sensors;          // vacío = usar catálogo por defecto
   std::vector<RuleSpec> rules;              // vacío = usar regla por defecto
   std::vector<CalibrationSpec> calibrations; // vacío = usar calibración por defecto
+  std::vector<GpioSpec> gpio;              // GPIO standalone (opcional)
 };
 
 class ConfigManager {

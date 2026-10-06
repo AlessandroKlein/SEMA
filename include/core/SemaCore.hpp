@@ -5,6 +5,7 @@
 #include "core/alarms/RuleEngine.hpp"
 #include "core/events/EventLog.hpp"
 #include "core/EventBus.hpp"
+#include "core/GpioManager.hpp"
 #include "core/HealthMonitor.hpp"
 #include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
@@ -39,6 +40,7 @@ public:
   // Re-aplican configuración no hardware-dependiente (sin reinicio).
   void applyRules();
   void applyCalibrations();
+  void applyGpio();
 
   ModuleRegistry& modules() { return modules_; }
   EventBus& events() { return events_; }
@@ -54,6 +56,7 @@ public:
   PublisherManager& publishers() { return publishers_; }
   RuleEngine& rules() { return rules_; }
   EventLog& eventLog() { return eventLog_; }
+  GpioManager& gpio() { return gpio_; }
   const std::vector<DetectedDevice>& detectedDevices() const { return detectedDevices_; }
 
 private:
@@ -68,6 +71,7 @@ private:
   PublisherManager publishers_;
   RuleEngine rules_;
   EventLog eventLog_;
+  GpioManager gpio_;
   Watchdog watchdog_;
   HealthMonitor health_;
   std::vector<DetectedDevice> detectedDevices_;

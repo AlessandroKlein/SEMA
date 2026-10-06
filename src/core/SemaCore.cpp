@@ -113,6 +113,7 @@ void SemaCore::setup() {
   sensors_.beginAll();
 
   applyCalibrations();
+  gpio_.apply(config_.get().gpio);
 
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
@@ -222,6 +223,10 @@ void SemaCore::applyRules() {
       rules_.addRule(r);
     }
   }
+}
+
+void SemaCore::applyGpio() {
+  gpio_.apply(config_.get().gpio);
 }
 
 void SemaCore::loop() {

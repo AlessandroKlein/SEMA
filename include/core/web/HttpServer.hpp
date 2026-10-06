@@ -43,6 +43,8 @@ private:
   void onHistory();
   void onEvents();
   void onAlarms();
+  void onGpio();
+  void onGpioWrite();
   void onNotFound();
 
   bool authorized();

@@ -129,6 +129,14 @@ bool ConfigManager::serialize(String& out) const {
     o["scale"] = s.scale;
     o["offset"] = s.offset;
   }
+  JsonArray gpio = doc.createNestedArray("gpio");
+  for (const GpioSpec& g : config_.gpio) {
+    JsonObject o = gpio.createNestedObject();
+    o["id"] = g.id;
+    o["pin"] = g.pin;
+    o["mode"] = g.mode;
+    o["initial"] = g.initial;
+  }
   serializeJson(doc, out);
   return true;
 }
@@ -195,6 +203,15 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     s.scale = o["scale"] | 1.0f;
     s.offset = o["offset"] | 0.0f;
     c.sensors.push_back(s);
+  }
+  c.gpio.clear();
+  for (JsonObject o : doc["gpio"].as<JsonArray>()) {
+    GpioSpec g;
+    g.id = o["id"] | "";
+    g.pin = o["pin"] | 0;
+    g.mode = o["mode"] | "input";
+    g.initial = o["initial"] | 0;
+    c.gpio.push_back(g);
   }
   return true;
 }
