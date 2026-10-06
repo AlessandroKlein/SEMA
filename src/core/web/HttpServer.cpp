@@ -275,7 +275,7 @@ void HttpServer::onLoginPost() {
     failedLogins_ = 0;
     lockoutUntilMs_ = 0;
     sessionStartMs_ = millis();
-    server_.sendHeader("Set-Cookie", "sema_auth=" + sessionToken_ + "; Path=/; HttpOnly");
+    server_.sendHeader("Set-Cookie", "sema_auth=" + sessionToken_ + "; Path=/; HttpOnly; SameSite=Strict");
     server_.sendHeader("Location", "/");
     server_.send(302, "text/plain", "");
   } else {
@@ -290,7 +290,7 @@ void HttpServer::onLoginPost() {
 
 void HttpServer::onLogout() {
   sessionStartMs_ = 0;
-  server_.sendHeader("Set-Cookie", "sema_auth=; Path=/; Max-Age=0");
+  server_.sendHeader("Set-Cookie", "sema_auth=; Path=/; Max-Age=0; SameSite=Strict");
   server_.sendHeader("Location", "/");
   server_.send(302, "text/plain", "");
 }
