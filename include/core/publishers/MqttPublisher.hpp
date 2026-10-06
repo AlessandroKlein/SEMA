@@ -16,7 +16,8 @@ class MqttPublisher : public Publisher {
 public:
   MqttPublisher(const char* id, const char* host, uint16_t port, const char* topic);
 
-  void configure(const char* host, uint16_t port, const char* topic);
+  void configure(const char* host, uint16_t port, const char* topic,
+                 const char* user, const char* pass);
 
   const char* id() const override;
   bool enabled() const override;
@@ -27,6 +28,8 @@ private:
   String host_;
   uint16_t port_;
   String topic_;
+  String user_;
+  String pass_;
 };
 
 }  // namespace sema

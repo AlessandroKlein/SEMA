@@ -13,10 +13,13 @@ MqttPublisher::MqttPublisher(const char* id, const char* host, uint16_t port,
                              const char* topic)
     : id_(id), host_(host), port_(port), topic_(topic) {}
 
-void MqttPublisher::configure(const char* host, uint16_t port, const char* topic) {
+void MqttPublisher::configure(const char* host, uint16_t port, const char* topic,
+                              const char* user, const char* pass) {
   host_ = host;
   port_ = port;
   topic_ = topic;
+  user_ = user;
+  pass_ = pass;
 }
 
 const char* MqttPublisher::id() const { return id_; }
@@ -30,7 +33,11 @@ bool MqttPublisher::publish(const Measurement& m) {
 
   if (!mqtt.connected()) {
     mqtt.setServer(host_.c_str(), port_);
-    mqtt.connect(id_);  // TODO(D-0048): usuario/contraseña desde configuración.
+    if (user_.length() > 0) {
+      mqtt.connect(id_, user_.c_str(), pass_.c_str());
+    } else {
+      mqtt.connect(id_);
+    }
   }
   if (!mqtt.connected()) {
     return false;

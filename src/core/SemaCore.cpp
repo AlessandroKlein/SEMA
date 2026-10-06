@@ -246,7 +246,9 @@ void SemaCore::applyPublishers() {
   webhook_.setUrl(config_.get().publishers.webhookUrl.c_str());
   mqtt_.configure(config_.get().publishers.mqttHost.c_str(),
                   config_.get().publishers.mqttPort,
-                  config_.get().publishers.mqttTopic.c_str());
+                  config_.get().publishers.mqttTopic.c_str(),
+                  config_.get().publishers.mqttUser.c_str(),
+                  config_.get().publishers.mqttPass.c_str());
 }
 
 void SemaCore::loop() {

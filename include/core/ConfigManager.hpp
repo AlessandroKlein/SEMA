@@ -51,6 +51,8 @@ struct PublishersConfig {
   String mqttHost;     // vacío = deshabilitado
   uint16_t mqttPort = 1883;
   String mqttTopic = "sema/measurement";
+  String mqttUser;     // vacío = sin autenticación
+  String mqttPass;
 };
 
 // Especificación de una regla de alarma (D-0059): configurable.

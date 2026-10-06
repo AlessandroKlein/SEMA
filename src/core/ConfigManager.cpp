@@ -94,6 +94,8 @@ bool ConfigManager::serialize(String& out) const {
   doc["publishers"]["mqtt_host"] = config_.publishers.mqttHost;
   doc["publishers"]["mqtt_port"] = config_.publishers.mqttPort;
   doc["publishers"]["mqtt_topic"] = config_.publishers.mqttTopic;
+  doc["publishers"]["mqtt_user"] = config_.publishers.mqttUser;
+  doc["publishers"]["mqtt_pass"] = config_.publishers.mqttPass;
   JsonArray rules = doc.createNestedArray("rules");
   for (const RuleSpec& r : config_.rules) {
     JsonObject o = rules.createNestedObject();
@@ -166,6 +168,8 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.publishers.mqttHost = doc["publishers"]["mqtt_host"] | "";
   c.publishers.mqttPort = doc["publishers"]["mqtt_port"] | 1883;
   c.publishers.mqttTopic = doc["publishers"]["mqtt_topic"] | "sema/measurement";
+  c.publishers.mqttUser = doc["publishers"]["mqtt_user"] | "";
+  c.publishers.mqttPass = doc["publishers"]["mqtt_pass"] | "";
   c.rules.clear();
   for (JsonObject o : doc["rules"].as<JsonArray>()) {
     RuleSpec r;
