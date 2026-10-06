@@ -24,12 +24,17 @@ public:
   uint32_t maxEntries() const { return maxEntries_; }
   void setMaxEntries(uint32_t max) { maxEntries_ = max; }
 
+  // Retención por tiempo (segundos); 0 = deshabilitada.
+  void setRetentionSeconds(uint32_t s) { retentionSeconds_ = s; }
+  bool prune(uint32_t nowEpoch);  // descarta lo más antiguo que el umbral
+
 private:
   bool rotate();
 
   String path_;
   size_t count_ = 0;
   uint32_t maxEntries_ = 10000;
+  uint32_t retentionSeconds_ = 0;
 };
 
 }  // namespace sema

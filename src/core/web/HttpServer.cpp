@@ -195,6 +195,7 @@ section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
   <button class="sec" onclick="toggleEdit()">✏️ Editar layout</button>
   <button class="sec" onclick="saveLayout()">💾 Guardar layout</button>
   <button class="sec" onclick="calibrateNorth()">🧭 Norte de la veleta</button>
+  <button class="sec" onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV</button>
 </div>
 
 <div class="grid-stack" id="grid"></div>
@@ -966,9 +967,26 @@ void HttpServer::onHistory() {
       limit = static_cast<size_t>(l);
     }
   }
+  const String format = server_.hasArg("format") ? server_.arg("format") : "json";
 
   std::deque<Measurement> items;
   core_->history().readRecent(items, limit);
+
+  if (format == "csv") {
+    // Export CSV (descarga del histórico).
+    String csv;
+    csv.reserve(items.size() * 64 + 64);
+    csv += "ts,sensor,channel,measurement,value,unit,quality,seq\n";
+    for (const Measurement& m : items) {
+      csv += String(m.timestamp) + "," + m.sensorId + "," + m.channelId + "," +
+             m.measurement + "," + String(m.value, 4) + "," + m.unit + "," +
+             qualityName(m.quality) + "," + String(m.sequence) + "\n";
+    }
+    server_.sendHeader("Content-Disposition",
+                       "attachment; filename=sema_history.csv");
+    server_.send(200, "text/csv", csv);
+    return;
+  }
 
   DynamicJsonDocument doc(16384);
   JsonArray arr = doc.createNestedArray("history");

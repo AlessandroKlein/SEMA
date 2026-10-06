@@ -58,8 +58,6 @@ Se corrigieron dos inconsistencias de documentación:
 
 **Almacenamiento y datos**
 - Agregación por niveles (alta resolución reciente + resumen a largo plazo).
-- Export CSV/JSON del histórico.
-- Retención por tiempo (descartar por antigüedad).
 
 **Comunicaciones**
 - LoRaWAN (red sobre LoRa).

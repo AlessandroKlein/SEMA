@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.33.0] - 2026-10-06
+
+### Added
+
+- Export CSV del histórico (`/api/v1/history?format=csv` + botón en el dashboard).
+- Retención por tiempo del histórico (`storage.retention_days`).
+
 ## [1.32.0] - 2026-10-06
 
 ### Added
@@ -687,6 +694,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.33.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.33.0
 [1.32.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.32.0
 [1.31.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.31.0
 [1.30.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.30.0

@@ -113,6 +113,40 @@ bool HistoryStore::append(const Measurement& m) {
   return true;
 }
 
+bool HistoryStore::prune(uint32_t nowEpoch) {
+  if (retentionSeconds_ == 0) {
+    return true;
+  }
+  const uint32_t cutoff = nowEpoch - retentionSeconds_;
+  std::deque<String> keep;
+  File f = LittleFS.open(path_, "r");
+  if (f) {
+    while (f.available()) {
+      String line = f.readStringUntil('\n');
+      line.trim();
+      if (line.length() == 0) {
+        continue;
+      }
+      Measurement m;
+      if (parseMeasurement(line, m) && m.timestamp >= cutoff) {
+        keep.push_back(line);
+      }
+    }
+    f.close();
+  }
+
+  File w = LittleFS.open(path_, "w");  // trunca
+  if (!w) {
+    return false;
+  }
+  for (const String& line : keep) {
+    w.println(line);
+  }
+  w.close();
+  count_ = keep.size();
+  return true;
+}
+
 bool HistoryStore::readRecent(std::deque<Measurement>& out, size_t maxCount) {
   out.clear();
 

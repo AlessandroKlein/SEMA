@@ -56,6 +56,7 @@ void SemaCore::setup() {
   caps.set(Capability::DualCore, true);
 
   config_.load();
+  history_.setRetentionSeconds(config_.get().storage.retentionDays * 86400);
 
   Serial.println();
   Serial.printf("SEMA v%s (hw %s, schema %d, protocol %d)\n",
@@ -325,6 +326,15 @@ void SemaCore::loop() {
 #if SEMA_USE_ETHERNET
   ethernet_.loop();
 #endif
+  // Retención por tiempo: poda el histórico periódicamente (cada hora).
+  {
+    static uint32_t lastPrune = 0;
+    const uint32_t now = nowEpoch();
+    if (now - lastPrune >= 3600) {
+      lastPrune = now;
+      history_.prune(now);
+    }
+  }
   scheduler_.run();
 }
 
