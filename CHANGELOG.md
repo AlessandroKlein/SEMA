@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.18.0] - 2026-10-06
+
+### Added
+
+- Sensor CO (monóxido de carbono, analógico) — 16º tipo de sensor.
+
 ## [1.17.0] - 2026-10-06
 
 ### Added
@@ -568,6 +574,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.18.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.18.0
 [1.17.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.17.0
 [1.16.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.16.0
 [1.15.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.15.0

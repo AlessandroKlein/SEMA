@@ -6,6 +6,7 @@
 #include "core/sensors/As3935Sensor.hpp"
 #include "core/sensors/Bh1750Sensor.hpp"
 #include "core/sensors/Bme280Sensor.hpp"
+#include "core/sensors/CoSensor.hpp"
 #include "core/sensors/Bmp280Sensor.hpp"
 #include "core/sensors/Ds18b20Sensor.hpp"
 #include "core/sensors/PcntSensor.hpp"
@@ -69,6 +70,9 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
     return new Ads1115Sensor(spec.id.c_str(), spec.sda, spec.scl, spec.pin,
                              spec.channel.c_str(), spec.unit.c_str(),
                              spec.scale, spec.offset);
+  }
+  if (spec.model == "CO") {
+    return new CoSensor(spec.id.c_str(), spec.pin, spec.scale, spec.offset);
   }
   return nullptr;
 }

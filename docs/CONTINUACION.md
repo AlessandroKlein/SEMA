@@ -1,6 +1,6 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-10-03 | **Firmware:** v1.17.0 | **Releases:** 73
+> **Tipo:** Guía de continuación | **Fecha:** 2026-10-03 | **Firmware:** v1.18.0 | **Releases:** 74
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.
@@ -23,10 +23,10 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 - **Core modular**: `SemaCore`, `ModuleRegistry`, `EventBus` tipado, `ConfigManager`
   (schema=1, transaccional), Storage (NVS + LittleFS), `Scheduler`, `CapabilityManager`,
   `Watchdog` (D-0019), `HealthMonitor` (D-0020), `PowerManager` (D-0054).
-- **Sensores (15 tipos, 5 interfaces)**:
+- **Sensores (16 tipos, 5 interfaces)**:
   - I²C: BME280, BMP280, SHT40, SHT31, AHT20, BH1750 (lux), VEML6075 (UV), SCD30 (CO₂), SGP30 (eCO₂/TVOC), AS3935 (rayos), ADS1115 (ADC ext.).
   - 1-Wire: DS18B20 (multi-dispositivo, auto-detección).
-  - ADC: batería (genérico).
+  - ADC: batería (genérico), CO (monóxido).
   - PCNT: lluvia/viento por pulsos.
   - UART: PMS5003 (PM1/PM2.5/PM10).
   - Catálogo configurable vía [`SensorFactory`](../src/core/sensors/SensorFactory.cpp) (D-0042).
