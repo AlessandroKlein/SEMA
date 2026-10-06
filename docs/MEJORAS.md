@@ -52,7 +52,7 @@ RS485 · Modbus · CAN
 ```text
 LoRa · Zigbee · Ethernet · MQTT · Servidor central
 ```
-🔄 MQTT listo (publicador); LoRa/Zigbee/Ethernet/Servidor central pendientes.
+🔄 MQTT listo (publicador); LoRa/Zigbee listos; Ethernet/Servidor central pendientes.
 
 ### Fase 8 — Energía
 ```text
@@ -86,8 +86,8 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Configuración GPIO | ✅ (entradas/salidas + API `/api/v1/gpio`) |
 | Configuración ADC | ✅ (AdcSensor configurable vía `sensors[]`) |
 | MCP23017 / 74HC595 / 74HC165 | ✅ |
-| RS485 / Modbus RTU / CAN | ⬜ |
-| LoRa / Zigbee | ⬜ |
+| RS485 / Modbus RTU / CAN | ✅ |
+| LoRa / Zigbee | ✅ |
 | Medición energética | 🔄 (batería por ADC) |
 | Almacenamiento | ✅ |
 | Histórico | ✅ |
@@ -109,9 +109,9 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 |------|--------|--------------------------|
 | Servidor Central | — | Fuera del alcance de SEMA (proyecto separado); SEMA se conecta con `server_key` |
 | Expansión GPIO (MCP23017/ADS1115) | ✅ | Fase 3 |
-| Buses industriales (RS485/CAN) | ⬜ | Fase 6 (requieren hardware) |
-| LoRa / Zigbee | ⬜ | Fase 7 (requieren hardware) |
-| Rayos (AS3935) / CO / Radiación | ⬜ | Fases 4/5 (requieren hardware) |
+| Buses industriales (RS485/CAN) | ✅ | Fase 6 |
+| LoRa / Zigbee | ✅ | Fase 7 |
+| Rayos (AS3935) / CO / Radiación | ✅ | Fases 4/5 |
 
 ---
 
