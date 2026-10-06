@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.30.0] - 2026-10-06
+
+### Changed
+
+- Gridstack.js servido localmente desde LittleFS (sin CDN): dashboard offline.
+- `data/` con `gridstack-all.min.js` + `gridstack.min.css` (flashear con `uploadfs`).
+
 ## [1.29.0] - 2026-10-06
 
 ### Added
@@ -663,6 +670,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.30.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.30.0
 [1.29.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.29.0
 [1.28.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.28.0
 [1.27.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.27.0

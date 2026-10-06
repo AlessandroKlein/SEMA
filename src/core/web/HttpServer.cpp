@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <Update.h>
 #include <esp_system.h>
+#include <LittleFS.h>
 
 #include "core/SemaCore.hpp"
 
@@ -60,6 +61,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/wind/north", HTTP_POST, [this]() { onWindNorth(); });
   server_.on("/api/v1/wind/resistors", HTTP_POST, [this]() { onWindResistors(); });
   server_.on("/api/v1/dashboard/layout", HTTP_POST, [this]() { onDashboardLayout(); });
+  server_.on("/gridstack.min.css", HTTP_GET, [this]() { onStaticFile("/gridstack.min.css", "text/css"); });
+  server_.on("/gridstack-all.min.js", HTTP_GET, [this]() { onStaticFile("/gridstack-all.min.js", "application/javascript"); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
   server_.on("/api/v1/events", HTTP_GET, [this]() { onEvents(); });
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
@@ -144,7 +147,7 @@ void HttpServer::onRoot() {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SEMA</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack.min.css">
+<link rel="stylesheet" href="/gridstack.min.css">
 <style>
 body{font-family:system-ui,sans-serif;margin:1rem;background:#0d1117;color:#e6edf3}
 h1{margin:0 0 .25rem}h2{margin:1.25rem 0 .5rem}
@@ -167,7 +170,7 @@ button.sec{background:#30363d}
 label{font-size:.75rem;color:#8b949e;display:block}
 section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack-all.js"></script>
+<script src="/gridstack-all.min.js"></script>
 </head>
 <body>
 <h1>SEMA</h1>
@@ -752,6 +755,20 @@ void HttpServer::onDashboardLayout() {
     return;
   }
   server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onStaticFile(const char* path, const char* type) {
+  if (!LittleFS.begin(false) || !LittleFS.exists(path)) {
+    server_.send(404, "text/plain", "Not found");
+    return;
+  }
+  File f = LittleFS.open(path, "r");
+  if (!f) {
+    server_.send(404, "text/plain", "Not found");
+    return;
+  }
+  server_.streamFile(f, type);
+  f.close();
 }
 
 void HttpServer::onHistory() {
