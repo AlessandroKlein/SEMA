@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Adafruit_MCP23X17.h>
 #include <vector>
 
 #include "core/ConfigManager.hpp"
@@ -21,7 +22,12 @@ public:
   const std::vector<GpioSpec>& specs() const { return specs_; }
 
 private:
+  const GpioSpec* find(uint8_t pin) const;
+
   std::vector<GpioSpec> specs_;
+  mutable Adafruit_MCP23X17 mcp_;  // digitalRead() no es const en la librería
+  uint8_t mcpAddr_ = 0;
+  bool mcpReady_ = false;
 };
 
 }  // namespace sema

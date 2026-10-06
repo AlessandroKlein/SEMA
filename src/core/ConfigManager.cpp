@@ -138,6 +138,7 @@ bool ConfigManager::serialize(String& out) const {
     o["pin"] = g.pin;
     o["mode"] = g.mode;
     o["initial"] = g.initial;
+    o["expander_addr"] = g.expanderAddr;
   }
   serializeJson(doc, out);
   return true;
@@ -215,6 +216,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     g.pin = o["pin"] | 0;
     g.mode = o["mode"] | "input";
     g.initial = o["initial"] | 0;
+    g.expanderAddr = o["expander_addr"] | 0;
     c.gpio.push_back(g);
   }
   return true;

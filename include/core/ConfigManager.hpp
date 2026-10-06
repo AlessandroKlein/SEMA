@@ -96,6 +96,7 @@ struct GpioSpec {
   uint8_t pin = 0;
   String mode;      // "output" | "input" | "input_pullup" | "input_pulldown"
   uint8_t initial = 0;
+  uint8_t expanderAddr = 0;  // 0 = pin nativo; != 0 = MCP23017 en esa dirección I²C
 };
 
 // Configuración completa (schema=1).
