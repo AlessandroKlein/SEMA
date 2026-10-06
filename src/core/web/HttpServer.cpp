@@ -67,6 +67,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/modbus", HTTP_GET, [this]() { onModbus(); });
   server_.on("/api/v1/can", HTTP_GET, [this]() { onCan(); });
   server_.on("/api/v1/can", HTTP_POST, [this]() { onCanWrite(); });
+  server_.on("/api/v1/lora", HTTP_GET, [this]() { onLora(); });
+  server_.on("/api/v1/lora", HTTP_POST, [this]() { onLoraWrite(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   // Token de sesión aleatorio (login web).
@@ -423,6 +425,7 @@ void HttpServer::onConfigPut() {
     core_->applyShift();
     core_->applyModbus();
     core_->applyCan();
+    core_->applyLora();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
@@ -747,6 +750,50 @@ void HttpServer::onCanWrite() {
     data[dlc++] = v.as<uint8_t>();
   }
   const bool ok = core_->can().send(id, data, dlc, extd);
+  server_.send(ok ? 200 : 500, "application/json",
+               ok ? "{\"ok\":true}" : "{\"error\":\"send failed\"}");
+}
+
+void HttpServer::onLora() {
+  uint8_t buf[64] = {0};
+  const uint8_t n = core_->lora().receive(buf, sizeof(buf));
+
+  DynamicJsonDocument doc(512);
+  doc["ready"] = core_->lora().ready();
+  doc["received"] = n > 0;
+  if (n > 0) {
+    JsonArray arr = doc.createNestedArray("data");
+    for (uint8_t i = 0; i < n; ++i) {
+      arr.add(buf[i]);
+    }
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onLoraWrite() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"missing body\"}");
+    return;
+  }
+  DynamicJsonDocument doc(256);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  uint8_t buf[64] = {0};
+  uint8_t len = 0;
+  JsonArray arr = doc["data"].as<JsonArray>();
+  for (JsonVariant v : arr) {
+    if (len >= sizeof(buf)) break;
+    buf[len++] = v.as<uint8_t>();
+  }
+  const bool ok = core_->lora().send(buf, len);
   server_.send(ok ? 200 : 500, "application/json",
                ok ? "{\"ok\":true}" : "{\"error\":\"send failed\"}");
 }

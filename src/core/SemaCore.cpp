@@ -91,6 +91,7 @@ void SemaCore::setup() {
   shift_.apply(config_.get().shiftRegister);
   modbus_.apply(config_.get().modbus);
   can_.apply(config_.get().can);
+  lora_.apply(config_.get().lora);
 
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
@@ -255,6 +256,10 @@ void SemaCore::applyModbus() {
 
 void SemaCore::applyCan() {
   can_.apply(config_.get().can);
+}
+
+void SemaCore::applyLora() {
+  lora_.apply(config_.get().lora);
 }
 
 void SemaCore::applyPublishers() {

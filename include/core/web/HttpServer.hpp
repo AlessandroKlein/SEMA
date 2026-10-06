@@ -50,6 +50,8 @@ private:
   void onModbus();
   void onCan();
   void onCanWrite();
+  void onLora();
+  void onLoraWrite();
   void onNotFound();
 
   bool authorized();

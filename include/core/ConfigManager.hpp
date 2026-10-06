@@ -127,6 +127,20 @@ struct CanConfig {
   uint32_t speed = 500000;  // bps: 125000 | 250000 | 500000 | 1000000
 };
 
+// LoRa (SX1262, módulo Silicontra SX1262PATR8-GC).
+struct LoraConfig {
+  bool enabled = false;
+  uint8_t csPin = 5;
+  uint8_t rstPin = 14;
+  uint8_t dio1Pin = 26;
+  uint8_t busyPin = 27;
+  float frequency = 915.0f;   // MHz
+  float bandwidth = 125.0f;   // kHz
+  uint8_t spreading = 7;      // 7..12
+  uint8_t codingRate = 5;     // 5..8
+  int8_t txPower = 14;        // dBm
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -144,6 +158,7 @@ struct Config {
   ShiftRegisterConfig shiftRegister;       // shift register (opcional)
   ModbusConfig modbus;                     // RS485/Modbus (opcional)
   CanConfig can;                           // CAN/TWAI (opcional)
+  LoraConfig lora;                         // LoRa/SX1262 (opcional)
 };
 
 class ConfigManager {

@@ -156,6 +156,16 @@ bool ConfigManager::serialize(String& out) const {
   doc["can"]["tx"] = config_.can.txPin;
   doc["can"]["rx"] = config_.can.rxPin;
   doc["can"]["speed"] = config_.can.speed;
+  doc["lora"]["enabled"] = config_.lora.enabled;
+  doc["lora"]["cs"] = config_.lora.csPin;
+  doc["lora"]["rst"] = config_.lora.rstPin;
+  doc["lora"]["dio1"] = config_.lora.dio1Pin;
+  doc["lora"]["busy"] = config_.lora.busyPin;
+  doc["lora"]["frequency"] = config_.lora.frequency;
+  doc["lora"]["bandwidth"] = config_.lora.bandwidth;
+  doc["lora"]["spreading"] = config_.lora.spreading;
+  doc["lora"]["coding_rate"] = config_.lora.codingRate;
+  doc["lora"]["tx_power"] = config_.lora.txPower;
   serializeJson(doc, out);
   return true;
 }
@@ -251,6 +261,16 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.can.txPin = doc["can"]["tx"] | 5;
   c.can.rxPin = doc["can"]["rx"] | 4;
   c.can.speed = doc["can"]["speed"] | 500000;
+  c.lora.enabled = doc["lora"]["enabled"] | false;
+  c.lora.csPin = doc["lora"]["cs"] | 5;
+  c.lora.rstPin = doc["lora"]["rst"] | 14;
+  c.lora.dio1Pin = doc["lora"]["dio1"] | 26;
+  c.lora.busyPin = doc["lora"]["busy"] | 27;
+  c.lora.frequency = doc["lora"]["frequency"] | 915.0f;
+  c.lora.bandwidth = doc["lora"]["bandwidth"] | 125.0f;
+  c.lora.spreading = doc["lora"]["spreading"] | 7;
+  c.lora.codingRate = doc["lora"]["coding_rate"] | 5;
+  c.lora.txPower = doc["lora"]["tx_power"] | 14;
   return true;
 }
 

@@ -9,6 +9,7 @@
 #include "core/ShiftRegisterManager.hpp"
 #include "core/ModbusManager.hpp"
 #include "core/CanManager.hpp"
+#include "core/LoraManager.hpp"
 #include "core/HealthMonitor.hpp"
 #include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
@@ -51,6 +52,7 @@ public:
   void applyShift();
   void applyModbus();
   void applyCan();
+  void applyLora();
 
   ModuleRegistry& modules() { return modules_; }
   EventBus& events() { return events_; }
@@ -70,6 +72,7 @@ public:
   ShiftRegisterManager& shift() { return shift_; }
   ModbusManager& modbus() { return modbus_; }
   CanManager& can() { return can_; }
+  LoraManager& lora() { return lora_; }
   const std::vector<DetectedDevice>& detectedDevices() const { return detectedDevices_; }
 
 private:
@@ -90,6 +93,7 @@ private:
   ShiftRegisterManager shift_;
   ModbusManager modbus_;
   CanManager can_;
+  LoraManager lora_;
   Watchdog watchdog_;
   HealthMonitor health_;
   std::vector<DetectedDevice> detectedDevices_;
