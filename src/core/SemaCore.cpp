@@ -86,6 +86,7 @@ void SemaCore::setup() {
   }
 
   applySensors();
+  derived_.configure(config_.get().system);
 
   applyCalibrations();
   gpio_.apply(config_.get().gpio);
@@ -220,6 +221,8 @@ void SemaCore::applyRules() {
 }
 
 void SemaCore::applySensors() {
+  derived_.configure(config_.get().system);
+
   // Libera los sensores config-driven previos y reinicia el registro.
   sensors_.clear();
   for (Sensor* s : ownedSensors_) {
@@ -248,6 +251,9 @@ void SemaCore::applySensors() {
   } else {
     // D-0042: el catálogo de sensores viene de la configuración.
     for (const SensorSpec& spec : config_.get().sensors) {
+      if (!spec.enabled) {
+        continue;  // sensor apagado desde la web
+      }
       Sensor* sensor = SensorFactory::create(spec);
       if (sensor != nullptr) {
         sensors_.registerSensor(sensor);

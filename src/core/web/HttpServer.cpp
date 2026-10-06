@@ -57,6 +57,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/energy", HTTP_GET, [this]() { onEnergy(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
+  server_.on("/api/v1/wind/north", HTTP_POST, [this]() { onWindNorth(); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
   server_.on("/api/v1/events", HTTP_GET, [this]() { onEvents(); });
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
@@ -558,7 +559,10 @@ void HttpServer::onDiagnostics() {
 }
 
 void HttpServer::onSensors() {
-  DynamicJsonDocument doc(2048);
+  const String units = core_->config().get().system.units;
+  const bool imperial = (units == "imperial");
+
+  DynamicJsonDocument doc(4096);
 
   JsonArray catalog = doc.createNestedArray("catalog");
   std::vector<SensorInfo> info;
@@ -571,8 +575,25 @@ void HttpServer::onSensors() {
     o["healthy"] = s.healthy;
   }
 
+  // Magnitudes derivadas (punto de rocío, índice de calor, QNH, VPD, AQI, …).
+  std::vector<Measurement> derived;
+  core_->derived().compute(core_->sensors().measurements(), derived, units);
+
   JsonArray arr = doc.createNestedArray("measurements");
   for (const Measurement& m : core_->sensors().measurements()) {
+    String u;
+    const float v = DerivedCalculator::convertUnit(m.value, m.measurement,
+                                                   m.unit, imperial, u);
+    JsonObject o = arr.createNestedObject();
+    o["sensor_id"] = m.sensorId;
+    o["channel_id"] = m.channelId;
+    o["measurement"] = m.measurement;
+    o["value"] = v;
+    o["unit"] = u;
+    o["quality"] = qualityName(m.quality);
+    o["sequence"] = m.sequence;
+  }
+  for (const Measurement& m : derived) {
     JsonObject o = arr.createNestedObject();
     o["sensor_id"] = m.sensorId;
     o["channel_id"] = m.channelId;
@@ -583,9 +604,34 @@ void HttpServer::onSensors() {
     o["sequence"] = m.sequence;
   }
 
+  doc["units"] = units;
+
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);
+}
+
+void HttpServer::onWindNorth() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  const SystemConfig& sys = core_->config().get().system;
+  if (sys.windDirectionPin == 0) {
+    server_.send(400, "application/json",
+                 "{\"error\":\"wind direction not configured\"}");
+    return;
+  }
+  // Guarda la lectura actual como referencia de NORTE (auto-calibración).
+  const float raw = analogRead(sys.windDirectionPin);
+  Config next = core_->config().get();
+  next.system.windNorthOffset = raw * sys.windDirectionScale;
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
+  core_->derived().configure(core_->config().get().system);
+  server_.send(200, "application/json", "{\"ok\":true}");
 }
 
 void HttpServer::onHistory() {

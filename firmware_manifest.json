@@ -1,6 +1,6 @@
 {
   "name": "sema",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "hw_version": "rev0",
   "config_schema_version": 1,
   "protocol_version": 1,
@@ -9,15 +9,15 @@
       "board": "esp32-wroom-4mb",
       "chip": "esp32",
       "flash_mb": 4,
-      "firmware": "sema_1.27.0_esp32-wroom-4mb.bin",
-      "sha256": "5c1649508eab52a957754a4c96b76037e8b4fb932e729c96f7d4382b159f5049"
+      "firmware": "sema_1.28.0_esp32-wroom-4mb.bin",
+      "sha256": "70c1311f902b658cbd05031e2811156145d8f602c6681ec16688c8e49a103be3"
     },
     {
       "board": "esp32-s3-8mb",
       "chip": "esp32s3",
       "flash_mb": 8,
-      "firmware": "sema_1.27.0_esp32-s3-8mb.bin",
-      "sha256": "751325f0a34e667010da611f7a07f50621542b10931a6b71bbbfaa5fc90b74ca"
+      "firmware": "sema_1.28.0_esp32-s3-8mb.bin",
+      "sha256": "25cafeb08c6325c8a37c8541e7c69e453e6b744bec6c8f8cd4e6de54d076b84b"
     }
   ]
 }

@@ -4,6 +4,7 @@
 
 #include "core/CapabilityManager.hpp"
 #include "core/ConfigManager.hpp"
+#include "core/derived/DerivedCalculator.hpp"
 #include "core/alarms/RuleEngine.hpp"
 #include "core/events/EventLog.hpp"
 #include "core/EventBus.hpp"
@@ -93,6 +94,7 @@ public:
   HistoryStore& history() { return history_; }
   PublisherManager& publishers() { return publishers_; }
   RuleEngine& rules() { return rules_; }
+  DerivedCalculator& derived() { return derived_; }
   EventLog& eventLog() { return eventLog_; }
   GpioManager& gpio() { return gpio_; }
   ShiftRegisterManager& shift() { return shift_; }
@@ -126,6 +128,7 @@ private:
   HttpPublisher webhook_;
   MqttPublisher mqtt_;
   RuleEngine rules_;
+  DerivedCalculator derived_;
   EventLog eventLog_;
   GpioManager gpio_;
   ShiftRegisterManager shift_;

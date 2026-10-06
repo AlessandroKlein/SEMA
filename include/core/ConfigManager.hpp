@@ -30,6 +30,11 @@ struct NetworkConfig {
 struct SystemConfig {
   String timezone;
   String logLevel;
+  String units = "metric";          // "metric" | "imperial"
+  float altitude = 0.0f;            // metros (para QNH y altitud barométrica)
+  float windNorthOffset = 0.0f;     // grados (referencia norte de la veleta)
+  uint8_t windDirectionPin = 0;     // ADC de la veleta WH-SP-WD (0 = sin veleta)
+  float windDirectionScale = 360.0f / 4095.0f;  // ADC → grados
 };
 
 struct StorageConfig {
@@ -79,6 +84,7 @@ struct CalibrationSpec {
 struct SensorSpec {
   String id;
   String model;      // "BME280" | "SHT40" | "DS18B20" | "BH1750" | "AHT20" | "ADC" | …
+  bool enabled = true;  // false = sensor apagado (no se lee ni se deriva)
   uint8_t sda = 21;
   uint8_t scl = 22;
   uint8_t pin = 0;

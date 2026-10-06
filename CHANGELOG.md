@@ -6,6 +6,19 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.28.0] - 2026-10-06
+
+### Added
+
+- Unidades métricas/imperiales (config `system.units`).
+- Magnitudes derivadas: punto de rocío, índice de calor, sensación térmica, QNH, VPD, AQI, altitud barométrica, tasa de lluvia, dirección de viento.
+- Calibración de norte de la veleta (`POST /api/v1/wind/north`).
+- `sensors[].enabled` para apagar sensores desde la web.
+
+### Changed
+
+- `/api/v1/sensors` devuelve magnitudes derivadas + conversión de unidades.
+
 ## [1.27.0] - 2026-10-06
 
 ### Added
@@ -638,6 +651,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.28.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.28.0
 [1.27.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.27.0
 [1.26.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.26.0
 [1.25.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.25.0

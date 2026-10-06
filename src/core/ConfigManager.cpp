@@ -119,6 +119,11 @@ bool ConfigManager::serialize(String& out) const {
   doc["network"]["mdns"] = config_.network.mdns;
   doc["system"]["timezone"] = config_.system.timezone;
   doc["system"]["log_level"] = config_.system.logLevel;
+  doc["system"]["units"] = config_.system.units;
+  doc["system"]["altitude"] = config_.system.altitude;
+  doc["system"]["wind_north_offset"] = config_.system.windNorthOffset;
+  doc["system"]["wind_direction_pin"] = config_.system.windDirectionPin;
+  doc["system"]["wind_direction_scale"] = config_.system.windDirectionScale;
   doc["storage"]["backend"] = config_.storage.backend;
   doc["storage"]["retention_days"] = config_.storage.retentionDays;
   doc["security"]["api_key"] = config_.security.apiKey;
@@ -155,6 +160,7 @@ bool ConfigManager::serialize(String& out) const {
     JsonObject o = sensors.createNestedObject();
     o["id"] = s.id;
     o["model"] = s.model;
+    o["enabled"] = s.enabled;
     o["sda"] = s.sda;
     o["scl"] = s.scl;
     o["pin"] = s.pin;
@@ -235,6 +241,11 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.network.mdns = doc["network"]["mdns"] | true;
   c.system.timezone = doc["system"]["timezone"] | "America/Argentina/Buenos_Aires";
   c.system.logLevel = doc["system"]["log_level"] | "INFO";
+  c.system.units = doc["system"]["units"] | "metric";
+  c.system.altitude = doc["system"]["altitude"] | 0.0f;
+  c.system.windNorthOffset = doc["system"]["wind_north_offset"] | 0.0f;
+  c.system.windDirectionPin = doc["system"]["wind_direction_pin"] | 0;
+  c.system.windDirectionScale = doc["system"]["wind_direction_scale"] | (360.0f / 4095.0f);
   c.storage.backend = doc["storage"]["backend"] | "littlefs";
   c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
   c.security.apiKey = doc["security"]["api_key"] | "";
@@ -273,6 +284,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     SensorSpec s;
     s.id = o["id"] | "";
     s.model = o["model"] | "";
+    s.enabled = o["enabled"] | true;
     s.sda = o["sda"] | 21;
     s.scl = o["scl"] | 22;
     s.pin = o["pin"] | 0;

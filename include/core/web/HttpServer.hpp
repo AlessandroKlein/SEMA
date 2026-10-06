@@ -42,6 +42,7 @@ private:
   void onEnergy();
   void onDiagnostics();
   void onSensors();
+  void onWindNorth();
   void onHistory();
   void onEvents();
   void onAlarms();
