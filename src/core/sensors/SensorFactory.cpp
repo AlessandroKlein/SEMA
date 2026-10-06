@@ -2,6 +2,7 @@
 
 #include "core/sensors/AdcSensor.hpp"
 #include "core/sensors/Aht20Sensor.hpp"
+#include "core/sensors/As3935Sensor.hpp"
 #include "core/sensors/Bh1750Sensor.hpp"
 #include "core/sensors/Bme280Sensor.hpp"
 #include "core/sensors/Bmp280Sensor.hpp"
@@ -59,6 +60,9 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   }
   if (spec.model == "PMS5003") {
     return new Pms5003Sensor(spec.id.c_str(), spec.rxPin, spec.txPin);
+  }
+  if (spec.model == "AS3935") {
+    return new As3935Sensor(spec.id.c_str(), spec.sda, spec.scl);
   }
   return nullptr;
 }

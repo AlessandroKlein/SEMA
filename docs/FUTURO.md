@@ -1,6 +1,6 @@
 # Mejoras opcionales y futuras — SEMA
 
-> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.12.0
+> **Tipo:** Catálogo de ideas opcionales | **Fecha:** 2026-10-03 | **Firmware:** v1.13.0
 
 Registro de ítems **opcionales** (no forman parte de la Definition of Done §103).
 Sirve para tener todo anotado por si en el futuro se quiere implementar. Organizado
@@ -46,7 +46,6 @@ por área; cada ítem es una idea, no un compromiso.
 
 | Ítem | Nota |
 |------|------|
-| Rayos (AS3935) | Detección de tormentas (SPI/I²C + IRQ) |
 | CO (MQ-7 / MICS-5524) | Monóxido de carbono |
 | Radiación solar (piranómetro) | Salida analógica (ya soportado por `ADC`) |
 | Veleta (dirección del viento) | Encoder/ADC (velocidad ya cubierta por PCNT) |
