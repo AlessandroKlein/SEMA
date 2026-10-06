@@ -10,6 +10,7 @@
 #include "core/ModbusManager.hpp"
 #include "core/CanManager.hpp"
 #include "core/LoraManager.hpp"
+#include "core/ZigbeeManager.hpp"
 #include "core/HealthMonitor.hpp"
 #include "core/Measurement.hpp"
 #include "core/ModuleRegistry.hpp"
@@ -53,6 +54,7 @@ public:
   void applyModbus();
   void applyCan();
   void applyLora();
+  void applyZigbee();
 
   ModuleRegistry& modules() { return modules_; }
   EventBus& events() { return events_; }
@@ -73,6 +75,7 @@ public:
   ModbusManager& modbus() { return modbus_; }
   CanManager& can() { return can_; }
   LoraManager& lora() { return lora_; }
+  ZigbeeManager& zigbee() { return zigbee_; }
   const std::vector<DetectedDevice>& detectedDevices() const { return detectedDevices_; }
 
 private:
@@ -94,6 +97,7 @@ private:
   ModbusManager modbus_;
   CanManager can_;
   LoraManager lora_;
+  ZigbeeManager zigbee_;
   Watchdog watchdog_;
   HealthMonitor health_;
   std::vector<DetectedDevice> detectedDevices_;

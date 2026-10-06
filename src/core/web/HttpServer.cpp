@@ -69,6 +69,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/can", HTTP_POST, [this]() { onCanWrite(); });
   server_.on("/api/v1/lora", HTTP_GET, [this]() { onLora(); });
   server_.on("/api/v1/lora", HTTP_POST, [this]() { onLoraWrite(); });
+  server_.on("/api/v1/zigbee", HTTP_GET, [this]() { onZigbee(); });
+  server_.on("/api/v1/zigbee", HTTP_POST, [this]() { onZigbeeWrite(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   // Token de sesión aleatorio (login web).
@@ -426,6 +428,7 @@ void HttpServer::onConfigPut() {
     core_->applyModbus();
     core_->applyCan();
     core_->applyLora();
+    core_->applyZigbee();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
@@ -794,6 +797,55 @@ void HttpServer::onLoraWrite() {
     buf[len++] = v.as<uint8_t>();
   }
   const bool ok = core_->lora().send(buf, len);
+  server_.send(ok ? 200 : 500, "application/json",
+               ok ? "{\"ok\":true}" : "{\"error\":\"send failed\"}");
+}
+
+void HttpServer::onZigbee() {
+  uint8_t buf[128] = {0};
+  uint8_t len = 0;
+  if (core_->zigbee().available()) {
+    core_->zigbee().takeMessage(buf, sizeof(buf), len);
+  }
+
+  DynamicJsonDocument doc(512);
+  doc["ready"] = core_->zigbee().ready();
+  doc["received"] = len > 0;
+  doc["src"] = core_->zigbee().lastSrc();
+  if (len > 0) {
+    JsonArray arr = doc.createNestedArray("data");
+    for (uint8_t i = 0; i < len; ++i) {
+      arr.add(buf[i]);
+    }
+  }
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onZigbeeWrite() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"missing body\"}");
+    return;
+  }
+  DynamicJsonDocument doc(256);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  const uint16_t destination = doc["destination"] | 0;
+  uint8_t buf[110] = {0};
+  uint8_t len = 0;
+  JsonArray arr = doc["data"].as<JsonArray>();
+  for (JsonVariant v : arr) {
+    if (len >= sizeof(buf)) break;
+    buf[len++] = v.as<uint8_t>();
+  }
+  const bool ok = core_->zigbee().send(destination, buf, len);
   server_.send(ok ? 200 : 500, "application/json",
                ok ? "{\"ok\":true}" : "{\"error\":\"send failed\"}");
 }

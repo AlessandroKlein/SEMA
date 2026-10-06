@@ -52,6 +52,8 @@ private:
   void onCanWrite();
   void onLora();
   void onLoraWrite();
+  void onZigbee();
+  void onZigbeeWrite();
   void onNotFound();
 
   bool authorized();

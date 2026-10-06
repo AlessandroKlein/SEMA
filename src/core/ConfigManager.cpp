@@ -166,6 +166,10 @@ bool ConfigManager::serialize(String& out) const {
   doc["lora"]["spreading"] = config_.lora.spreading;
   doc["lora"]["coding_rate"] = config_.lora.codingRate;
   doc["lora"]["tx_power"] = config_.lora.txPower;
+  doc["zigbee"]["enabled"] = config_.zigbee.enabled;
+  doc["zigbee"]["rx"] = config_.zigbee.rxPin;
+  doc["zigbee"]["tx"] = config_.zigbee.txPin;
+  doc["zigbee"]["baud"] = config_.zigbee.baud;
   serializeJson(doc, out);
   return true;
 }
@@ -271,6 +275,10 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.lora.spreading = doc["lora"]["spreading"] | 7;
   c.lora.codingRate = doc["lora"]["coding_rate"] | 5;
   c.lora.txPower = doc["lora"]["tx_power"] | 14;
+  c.zigbee.enabled = doc["zigbee"]["enabled"] | false;
+  c.zigbee.rxPin = doc["zigbee"]["rx"] | 16;
+  c.zigbee.txPin = doc["zigbee"]["tx"] | 17;
+  c.zigbee.baud = doc["zigbee"]["baud"] | 115200;
   return true;
 }
 

@@ -141,6 +141,14 @@ struct LoraConfig {
   int8_t txPower = 14;        // dBm
 };
 
+// Zigbee (RF-BM-2652P2 / CC2652P2, ZNP por UART).
+struct ZigbeeConfig {
+  bool enabled = false;
+  uint8_t rxPin = 16;
+  uint8_t txPin = 17;
+  uint32_t baud = 115200;
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -159,6 +167,7 @@ struct Config {
   ModbusConfig modbus;                     // RS485/Modbus (opcional)
   CanConfig can;                           // CAN/TWAI (opcional)
   LoraConfig lora;                         // LoRa/SX1262 (opcional)
+  ZigbeeConfig zigbee;                     // Zigbee/CC2652P2 (opcional)
 };
 
 class ConfigManager {
