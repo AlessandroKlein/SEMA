@@ -364,13 +364,17 @@ void HttpServer::onBackup() {
 }
 
 void HttpServer::onSystem() {
-  DynamicJsonDocument doc(256);
+  DynamicJsonDocument doc(384);
   doc["id"] = core_->config().get().station.id;
   doc["name"] = core_->config().get().station.name;
   doc["firmware"] = SEMA_FW_VERSION;
   doc["hw"] = SEMA_HW_VERSION;
   doc["config_schema"] = SEMA_CONFIG_SCHEMA_VERSION;
   doc["protocol"] = SEMA_PROTOCOL_VERSION;
+  doc["board"] = SEMA_BOARD_ID;
+  doc["flash_mb"] = SEMA_FLASH_MB;
+  doc["firmware_file"] =
+      String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);

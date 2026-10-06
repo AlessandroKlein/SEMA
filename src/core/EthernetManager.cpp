@@ -10,17 +10,15 @@
 //   BOARD_ESP32_WROOM → MAC Ethernet nativa + LAN8720A (RMII).
 //   BOARD_ESP32_S3    → sin MAC nativa, W5500 SPI vía driver ESP-IDF (esp_eth),
 //                       integrado a lwIP (la misma pila que WiFi).
-#if defined(BOARD_ESP32_WROOM)
+#if SEMA_NATIVE_ETH
 #include <ETH.h>
-#elif defined(BOARD_ESP32_S3)
+#else
 #include <esp_eth.h>
 #include <esp_eth_mac.h>
 #include <esp_eth_phy.h>
 #include <esp_netif.h>
 #include <esp_eth_netif_glue.h>
 #include <driver/spi_master.h>
-#else
-#error "Define BOARD_ESP32_WROOM o BOARD_ESP32_S3 en build_flags (platformio.ini)"
 #endif
 
 namespace sema {
@@ -36,13 +34,13 @@ void EthernetManager::apply(const EthernetConfig& cfg) {
     return;
   }
 
-#if defined(BOARD_ESP32_WROOM)
+#if SEMA_NATIVE_ETH
   // LAN8720A por RMII: reloj de 50 MHz entrando por GPIO0.
   ETH.begin(cfg_.phyAddr, cfg_.powerPin, cfg_.mdcPin, cfg_.mdioPin,
             ETH_PHY_LAN8720, ETH_CLOCK_GPIO0_IN);
   ready_ = true;
 
-#elif defined(BOARD_ESP32_S3)
+#else
   // --- 1. Bus SPI ---
   spi_bus_config_t buscfg = {};
   buscfg.miso_io_num = cfg_.misoPin;
@@ -114,9 +112,9 @@ void EthernetManager::loop() {
 }
 
 bool EthernetManager::connected() const {
-#if defined(BOARD_ESP32_WROOM)
+#if SEMA_NATIVE_ETH
   return ready_ && ETH.linkUp();
-#elif defined(BOARD_ESP32_S3)
+#else
   if (!ready_ || g_eth_netif == nullptr) {
     return false;
   }
@@ -130,9 +128,9 @@ bool EthernetManager::connected() const {
 }
 
 String EthernetManager::localIP() const {
-#if defined(BOARD_ESP32_WROOM)
+#if SEMA_NATIVE_ETH
   return ETH.localIP().toString();
-#elif defined(BOARD_ESP32_S3)
+#else
   if (g_eth_netif == nullptr) {
     return String();
   }

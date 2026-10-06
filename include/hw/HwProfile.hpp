@@ -7,8 +7,9 @@
 // verdad del hardware: board, features, transceivers, origen de pines y bus SPI.
 //
 //   Board (variante de silicio):
-//     -D BOARD_ESP32_WROOM   ESP32 clásico (MAC Ethernet nativa, SPI VSPI)
-//     -D BOARD_ESP32_S3      ESP32-S3 (SPI FSPI, sin MAC Ethernet nativa)
+//     -D BOARD_ESP32_WROOM     ESP32 clásico 4 MB (MAC Ethernet nativa, VSPI)
+//     -D BOARD_ESP32_WROOM32U  ESP32-WROOM-32U 16 MB (PCB futura)
+//     -D BOARD_ESP32_S3        ESP32-S3 8 MB (SPI FSPI, sin MAC nativa)
 //
 //   Features (0 = no compilar; reduce firmware):
 //     -D SEMA_USE_ETHERNET=0  -D SEMA_USE_LORA=0  -D SEMA_USE_MODBUS=0
@@ -24,8 +25,23 @@
 //     -D SEMA_PINS_FROM_FILE=0   → pines configurables en runtime (web).
 // =============================================================================
 
-#if !defined(BOARD_ESP32_WROOM) && !defined(BOARD_ESP32_S3)
-#error "Define BOARD_ESP32_WROOM o BOARD_ESP32_S3 en build_flags (platformio.ini)"
+#if !defined(BOARD_ESP32_WROOM) && !defined(BOARD_ESP32_S3) && !defined(BOARD_ESP32_WROOM32U)
+#error "Define BOARD_ESP32_WROOM, BOARD_ESP32_WROOM32U o BOARD_ESP32_S3 en build_flags"
+#endif
+
+// --- Identidad de la board (para OTA / manifest) ---
+#if defined(BOARD_ESP32_WROOM)
+#define SEMA_BOARD_ID "esp32-wroom-4mb"
+#define SEMA_FLASH_MB 4
+#define SEMA_NATIVE_ETH 1
+#elif defined(BOARD_ESP32_WROOM32U)
+#define SEMA_BOARD_ID "esp32-wroom32u-16mb"
+#define SEMA_FLASH_MB 16
+#define SEMA_NATIVE_ETH 1
+#elif defined(BOARD_ESP32_S3)
+#define SEMA_BOARD_ID "esp32-s3-8mb"
+#define SEMA_FLASH_MB 8
+#define SEMA_NATIVE_ETH 0
 #endif
 
 #define SEMA_ON 1
@@ -71,16 +87,16 @@
 // Cada módulo se selecciona con su propio CS.
 
 // --- LoRa (bus SPI de Arduino) ---
-#if defined(BOARD_ESP32_WROOM)
-#define SEMA_SPI_SCK 18
-#define SEMA_SPI_MISO 19
-#define SEMA_SPI_MOSI 23
-#define SEMA_SPI_CS 5
-#elif defined(BOARD_ESP32_S3)
+#if defined(BOARD_ESP32_S3)
 #define SEMA_SPI_SCK 12
 #define SEMA_SPI_MISO 13
 #define SEMA_SPI_MOSI 11
 #define SEMA_SPI_CS 10
+#else  // WROOM / WROOM32U (VSPI)
+#define SEMA_SPI_SCK 18
+#define SEMA_SPI_MISO 19
+#define SEMA_SPI_MOSI 23
+#define SEMA_SPI_CS 5
 #endif
 
 // --- Chip-select de cada dispositivo ---
