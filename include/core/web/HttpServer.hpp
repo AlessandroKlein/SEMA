@@ -45,6 +45,8 @@ private:
   void onAlarms();
   void onGpio();
   void onGpioWrite();
+  void onShift();
+  void onShiftWrite();
   void onNotFound();
 
   bool authorized();

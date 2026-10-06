@@ -88,6 +88,7 @@ void SemaCore::setup() {
 
   applyCalibrations();
   gpio_.apply(config_.get().gpio);
+  shift_.apply(config_.get().shiftRegister);
 
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
@@ -240,6 +241,10 @@ void SemaCore::applySensors() {
 
 void SemaCore::applyGpio() {
   gpio_.apply(config_.get().gpio);
+}
+
+void SemaCore::applyShift() {
+  shift_.apply(config_.get().shiftRegister);
 }
 
 void SemaCore::applyPublishers() {

@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.17.0] - 2026-10-06
+
+### Added
+
+- Shift registers 74HC595/74HC165 (config `shift_register` + API `/api/v1/shift`).
+
 ## [1.16.0] - 2026-10-06
 
 ### Security
@@ -562,6 +568,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.17.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.17.0
 [1.16.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.16.0
 [1.15.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.15.0
 [1.14.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.14.0

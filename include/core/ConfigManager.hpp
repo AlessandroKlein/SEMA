@@ -99,6 +99,14 @@ struct GpioSpec {
   uint8_t expanderAddr = 0;  // 0 = pin nativo; != 0 = MCP23017 en esa dirección I²C
 };
 
+// Shift register standalone (74HC595 salida / 74HC165 entrada).
+struct ShiftRegisterConfig {
+  String type = "74HC595";  // "74HC595" (salida) | "74HC165" (entrada)
+  uint8_t dataPin = 0;      // SER (595) / QH (165)
+  uint8_t clockPin = 0;     // SRCLK (595) / CLK (165)
+  uint8_t latchPin = 0;     // RCLK (595) / SH-LD (165)
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -113,6 +121,7 @@ struct Config {
   std::vector<RuleSpec> rules;              // vacío = usar regla por defecto
   std::vector<CalibrationSpec> calibrations; // vacío = usar calibración por defecto
   std::vector<GpioSpec> gpio;              // GPIO standalone (opcional)
+  ShiftRegisterConfig shiftRegister;       // shift register (opcional)
 };
 
 class ConfigManager {

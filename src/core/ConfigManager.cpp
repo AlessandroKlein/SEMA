@@ -140,6 +140,10 @@ bool ConfigManager::serialize(String& out) const {
     o["initial"] = g.initial;
     o["expander_addr"] = g.expanderAddr;
   }
+  doc["shift_register"]["type"] = config_.shiftRegister.type;
+  doc["shift_register"]["data_pin"] = config_.shiftRegister.dataPin;
+  doc["shift_register"]["clock_pin"] = config_.shiftRegister.clockPin;
+  doc["shift_register"]["latch_pin"] = config_.shiftRegister.latchPin;
   serializeJson(doc, out);
   return true;
 }
@@ -219,6 +223,10 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     g.expanderAddr = o["expander_addr"] | 0;
     c.gpio.push_back(g);
   }
+  c.shiftRegister.type = doc["shift_register"]["type"] | "74HC595";
+  c.shiftRegister.dataPin = doc["shift_register"]["data_pin"] | 0;
+  c.shiftRegister.clockPin = doc["shift_register"]["clock_pin"] | 0;
+  c.shiftRegister.latchPin = doc["shift_register"]["latch_pin"] | 0;
   return true;
 }
 

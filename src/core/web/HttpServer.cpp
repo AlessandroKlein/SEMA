@@ -62,6 +62,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
   server_.on("/api/v1/gpio", HTTP_GET, [this]() { onGpio(); });
   server_.on("/api/v1/gpio", HTTP_POST, [this]() { onGpioWrite(); });
+  server_.on("/api/v1/shift", HTTP_GET, [this]() { onShift(); });
+  server_.on("/api/v1/shift", HTTP_POST, [this]() { onShiftWrite(); });
   server_.onNotFound([this]() { onNotFound(); });
 
   // Token de sesión aleatorio (login web).
@@ -415,6 +417,7 @@ void HttpServer::onConfigPut() {
     core_->applyCalibrations();
     core_->applyGpio();
     core_->applyPublishers();
+    core_->applyShift();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
@@ -647,6 +650,34 @@ void HttpServer::onGpioWrite() {
   const uint8_t pin = doc["pin"] | 0;
   const int value = doc["value"] | 0;
   core_->gpio().write(pin, value);
+  server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onShift() {
+  DynamicJsonDocument doc(256);
+  doc["type"] = core_->shift().config().type;
+  doc["value"] = core_->shift().readByte();
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onShiftWrite() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"missing body\"}");
+    return;
+  }
+  DynamicJsonDocument doc(256);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  const uint8_t value = doc["value"] | 0;
+  core_->shift().writeByte(value);
   server_.send(200, "application/json", "{\"ok\":true}");
 }
 
