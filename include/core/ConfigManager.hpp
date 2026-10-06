@@ -149,6 +149,19 @@ struct ZigbeeConfig {
   uint32_t baud = 115200;
 };
 
+// Ethernet: nativo (LAN8720A por RMII) o SPI (W5500), según la board.
+struct EthernetConfig {
+  bool enabled = false;
+  // LAN8720A (RMII) — board con MAC Ethernet nativa
+  uint8_t mdcPin = 23;
+  uint8_t mdioPin = 18;
+  uint8_t phyAddr = 1;
+  int powerPin = -1;   // -1 = sin control de alimentación de la PHY
+  // W5500 (SPI) — board sin MAC nativa
+  uint8_t csPin = 5;
+  int rstPin = -1;     // -1 = sin pin de reset
+};
+
 // Configuración completa (schema=1).
 struct Config {
   uint32_t schemaVersion = 1;
@@ -168,6 +181,7 @@ struct Config {
   CanConfig can;                           // CAN/TWAI (opcional)
   LoraConfig lora;                         // LoRa/SX1262 (opcional)
   ZigbeeConfig zigbee;                     // Zigbee/CC2652P2 (opcional)
+  EthernetConfig ethernet;                 // Ethernet LAN8720A/W5500 (opcional)
 };
 
 class ConfigManager {

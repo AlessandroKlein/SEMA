@@ -429,6 +429,7 @@ void HttpServer::onConfigPut() {
     core_->applyCan();
     core_->applyLora();
     core_->applyZigbee();
+    core_->applyEthernet();
     server_.send(200, "application/json", "{\"ok\":true}");
   } else {
     server_.send(400, "application/json", "{\"error\":\"invalid config\"}");
@@ -484,11 +485,14 @@ void HttpServer::onCapabilities() {
 }
 
 void HttpServer::onNetwork() {
-  DynamicJsonDocument doc(256);
+  DynamicJsonDocument doc(384);
   doc["mode"] = core_->wifi().isAp() ? "AP" : "STA";
   doc["connected"] = core_->wifi().connected();
   doc["ip"] = core_->wifi().localIP();
   doc["rssi"] = core_->wifi().rssi();
+  doc["ethernet"]["enabled"] = core_->ethernet().enabled();
+  doc["ethernet"]["connected"] = core_->ethernet().connected();
+  doc["ethernet"]["ip"] = core_->ethernet().localIP();
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);

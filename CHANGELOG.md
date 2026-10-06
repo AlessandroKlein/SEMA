@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.24.0] - 2026-10-06
+
+### Added
+
+- Ethernet con dos variantes por `build_flags`: LAN8720A nativo (`BOARD_ESP32_WROOM`) y W5500 SPI (`BOARD_ESP32_S3`).
+
 ## [1.23.0] - 2026-10-06
 
 ### Added
@@ -604,6 +610,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.24.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.24.0
 [1.23.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.23.0
 [1.22.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.22.0
 [1.21.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.21.0

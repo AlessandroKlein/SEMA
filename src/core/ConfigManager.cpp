@@ -170,6 +170,13 @@ bool ConfigManager::serialize(String& out) const {
   doc["zigbee"]["rx"] = config_.zigbee.rxPin;
   doc["zigbee"]["tx"] = config_.zigbee.txPin;
   doc["zigbee"]["baud"] = config_.zigbee.baud;
+  doc["ethernet"]["enabled"] = config_.ethernet.enabled;
+  doc["ethernet"]["mdc"] = config_.ethernet.mdcPin;
+  doc["ethernet"]["mdio"] = config_.ethernet.mdioPin;
+  doc["ethernet"]["phy_addr"] = config_.ethernet.phyAddr;
+  doc["ethernet"]["power"] = config_.ethernet.powerPin;
+  doc["ethernet"]["cs"] = config_.ethernet.csPin;
+  doc["ethernet"]["rst"] = config_.ethernet.rstPin;
   serializeJson(doc, out);
   return true;
 }
@@ -279,6 +286,13 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.zigbee.rxPin = doc["zigbee"]["rx"] | 16;
   c.zigbee.txPin = doc["zigbee"]["tx"] | 17;
   c.zigbee.baud = doc["zigbee"]["baud"] | 115200;
+  c.ethernet.enabled = doc["ethernet"]["enabled"] | false;
+  c.ethernet.mdcPin = doc["ethernet"]["mdc"] | 23;
+  c.ethernet.mdioPin = doc["ethernet"]["mdio"] | 18;
+  c.ethernet.phyAddr = doc["ethernet"]["phy_addr"] | 1;
+  c.ethernet.powerPin = doc["ethernet"]["power"] | -1;
+  c.ethernet.csPin = doc["ethernet"]["cs"] | 5;
+  c.ethernet.rstPin = doc["ethernet"]["rst"] | -1;
   return true;
 }
 

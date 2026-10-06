@@ -93,6 +93,7 @@ void SemaCore::setup() {
   can_.apply(config_.get().can);
   lora_.apply(config_.get().lora);
   zigbee_.apply(config_.get().zigbee);
+  ethernet_.apply(config_.get().ethernet);
 
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
@@ -267,6 +268,10 @@ void SemaCore::applyZigbee() {
   zigbee_.apply(config_.get().zigbee);
 }
 
+void SemaCore::applyEthernet() {
+  ethernet_.apply(config_.get().ethernet);
+}
+
 void SemaCore::applyPublishers() {
   webhook_.setUrl(config_.get().publishers.webhookUrl.c_str());
   mqtt_.configure(config_.get().publishers.mqttHost.c_str(),
@@ -282,6 +287,7 @@ void SemaCore::loop() {
   wifi_.loop();
   http_.loop();
   zigbee_.loop();
+  ethernet_.loop();
   scheduler_.run();
 }
 
