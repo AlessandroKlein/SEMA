@@ -41,13 +41,7 @@ por área; cada ítem es una idea, no un compromiso.
 | BLE | Configuración por Bluetooth |
 | CoAP / MQTT-SN | Protocolos ligeros |
 
-## 5. Sensores adicionales
-
-| Ítem | Nota |
-|------|------|
-| Veleta (dirección del viento) | Encoder/ADC (velocidad ya cubierta por PCNT) |
-
-## 6. Energía
+## 5. Energía
 
 | Ítem | Nota |
 |------|------|
@@ -56,7 +50,7 @@ por área; cada ítem es una idea, no un compromiso.
 | Perfiles energéticos por horario | Ahorro programado |
 | Wake por RTC (alarmas de hora) | Despertar a horas fijas |
 
-## 7. Fiabilidad y operación
+## 6. Fiabilidad y operación
 
 | Ítem | Nota |
 |------|------|
@@ -64,7 +58,7 @@ por área; cada ítem es una idea, no un compromiso.
 | Config de respaldo (fail-safe) | Recuperar si la config se corrompe |
 | Watchdog jerárquico por tarea | Un watchdog por cada tarea crítica |
 
-## 8. Plataforma
+## 7. Plataforma
 
 | Ítem | Nota |
 |------|------|

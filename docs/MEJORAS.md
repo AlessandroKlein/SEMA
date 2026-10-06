@@ -27,45 +27,46 @@ DS18B20 · AHT20/AHT21/AHT30 · SHT31/SHT40 · BME280 · BMP280 · BH1750
 ```text
 MCP23017 · 74HC595 · 74HC165 · ADS1115
 ```
-⬜ pendiente.
+✅ (v1.14–v1.17): MCP23017, ADS1115, 74HC595 y 74HC165.
 
 ### Fase 4 — Meteorología
 ```text
 Viento · Lluvia · Radiación · UV · Rayos
 ```
-🔄 (v0.48.0): lluvia/viento por PCNT (conteo de pulsos) y UV (VEML6075).
-Falta radiación y rayos.
+✅ (v1.13–v1.19): lluvia/viento por PCNT, UV (VEML6075), rayos (AS3935) y
+radiación (SOLAR).
 
 ### Fase 5 — Calidad ambiental
 ```text
 CO₂ · PM · CO
 ```
-🔄 (v0.50.0): CO₂ (SCD30) y PM (PMS5003).
+✅ (v1.18–v1.19): CO₂ (SCD30), PM (PMS5003) y CO.
 
 ### Fase 6 — Industrial
 ```text
 RS485 · Modbus · CAN
 ```
-⬜ pendiente.
+✅ (v1.20–v1.21): RS485/Modbus (TD501D485H) y CAN (TWAI).
 
 ### Fase 7 — Comunicaciones remotas
 ```text
 LoRa · Zigbee · Ethernet · MQTT · Servidor central
 ```
-🔄 MQTT listo (publicador); LoRa/Zigbee listos; Ethernet/Servidor central pendientes.
+🔄 MQTT (publicador), LoRa, Zigbee y Ethernet listos; Servidor central pendiente
+(fuera de alcance, proyecto separado).
 
 ### Fase 8 — Energía
 ```text
 Panel solar · Batería · Medición energética · Deep Sleep
 ```
 🔄 (v0.34.0): batería por ADC, perfiles energéticos, deep sleep (timer RTC) y
-wake-up por lluvia. Falta gestión de panel solar.
+wake-up por lluvia. Falta gestión de carga/MPPT del panel solar.
 
 ### Fase 9 — Plataforma distribuida
 ```text
 Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · Alertas
 ```
-⬜ pendiente.
+⬜ pendiente (futuro; depende del Servidor Central, fuera de alcance).
 
 ---
 
