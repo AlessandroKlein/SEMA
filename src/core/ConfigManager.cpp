@@ -123,7 +123,12 @@ bool ConfigManager::serialize(String& out) const {
   doc["system"]["altitude"] = config_.system.altitude;
   doc["system"]["wind_north_offset"] = config_.system.windNorthOffset;
   doc["system"]["wind_direction_pin"] = config_.system.windDirectionPin;
-  doc["system"]["wind_direction_scale"] = config_.system.windDirectionScale;
+  doc["system"]["wind_rpull"] = config_.system.windRpull;
+  JsonArray wr = doc["system"].createNestedArray("wind_resistors");
+  for (uint8_t i = 0; i < 8; ++i) {
+    wr.add(config_.system.windResistors[i]);
+  }
+  doc["system"]["dashboard_layout"] = config_.system.dashboardLayout;
   doc["storage"]["backend"] = config_.storage.backend;
   doc["storage"]["retention_days"] = config_.storage.retentionDays;
   doc["security"]["api_key"] = config_.security.apiKey;
@@ -245,7 +250,12 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.system.altitude = doc["system"]["altitude"] | 0.0f;
   c.system.windNorthOffset = doc["system"]["wind_north_offset"] | 0.0f;
   c.system.windDirectionPin = doc["system"]["wind_direction_pin"] | 0;
-  c.system.windDirectionScale = doc["system"]["wind_direction_scale"] | (360.0f / 4095.0f);
+  c.system.windRpull = doc["system"]["wind_rpull"] | 10000.0f;
+  JsonArray wr = doc["system"]["wind_resistors"].as<JsonArray>();
+  for (uint8_t i = 0; i < 8 && i < wr.size(); ++i) {
+    c.system.windResistors[i] = wr[i] | 0.0f;
+  }
+  c.system.dashboardLayout = doc["system"]["dashboard_layout"] | "";
   c.storage.backend = doc["storage"]["backend"] | "littlefs";
   c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
   c.security.apiKey = doc["security"]["api_key"] | "";

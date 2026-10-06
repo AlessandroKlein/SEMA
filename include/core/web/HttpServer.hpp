@@ -43,6 +43,8 @@ private:
   void onDiagnostics();
   void onSensors();
   void onWindNorth();
+  void onWindResistors();
+  void onDashboardLayout();
   void onHistory();
   void onEvents();
   void onAlarms();

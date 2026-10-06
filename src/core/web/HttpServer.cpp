@@ -58,6 +58,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
   server_.on("/api/v1/wind/north", HTTP_POST, [this]() { onWindNorth(); });
+  server_.on("/api/v1/wind/resistors", HTTP_POST, [this]() { onWindResistors(); });
+  server_.on("/api/v1/dashboard/layout", HTTP_POST, [this]() { onDashboardLayout(); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
   server_.on("/api/v1/events", HTTP_GET, [this]() { onEvents(); });
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });
@@ -142,26 +144,52 @@ void HttpServer::onRoot() {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SEMA</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack.min.css">
 <style>
 body{font-family:system-ui,sans-serif;margin:1rem;background:#0d1117;color:#e6edf3}
 h1{margin:0 0 .25rem}h2{margin:1.25rem 0 .5rem}
-table{border-collapse:collapse;width:100%}
-td,th{border:1px solid #30363d;padding:.4rem .6rem;text-align:left}
 .muted{color:#8b949e}
-input{display:block;width:100%;box-sizing:border-box;padding:.4rem;margin:.3rem 0;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#e6edf3}
-button{width:100%;padding:.5rem;border:0;border-radius:4px;background:#1f6feb;color:#fff;cursor:pointer;margin-top:.4rem}
+a{color:#8b949e}
+.card{height:100%;box-sizing:border-box;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:.5rem}
+.card .t{font-size:.72rem;color:#8b949e;text-transform:uppercase}
+.card .v{font-size:1.35rem;font-weight:600;margin:.1rem 0}
+.card .v span{font-size:.75rem;color:#8b949e;font-weight:400}
+.card .s{font-size:.68rem;color:#58a6ff}
+.grid-stack{background:#0d1117}
+.grid-stack>.grid-stack-item>.grid-stack-item-content{overflow:hidden}
+input,button{box-sizing:border-box;padding:.45rem;margin:.3rem 0;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#e6edf3;font-size:.9rem}
+input{display:block;width:100%}
+button{width:100%;background:#1f6feb;color:#fff;border:0;cursor:pointer}
+button.sec{background:#30363d}
+.bar{display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0}
+.bar button{flex:1;min-width:140px}
+.grid-wind{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+label{font-size:.75rem;color:#8b949e;display:block}
+section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack-all.js"></script>
 </head>
 <body>
 <h1>SEMA</h1>
 <div id="status" class="muted">Cargando…</div>
-<h2>Sensores</h2>
-<table><thead><tr><th>Sensor</th><th>Canal</th><th>Valor</th><th>Unidad</th><th>Calidad</th></tr></thead>
-<tbody id="rows"><tr><td colspan="5" class="muted">Cargando…</td></tr></tbody></table>
-<h2>Histórico</h2>
-<canvas id="chart" width="600" height="160" style="max-width:100%;border:1px solid #30363d;border-radius:4px;margin-bottom:.5rem"></canvas>
-<table><thead><tr><th>Fecha</th><th>Sensor</th><th>Canal</th><th>Valor</th></tr></thead>
-<tbody id="hist"><tr><td colspan="4" class="muted">Cargando…</td></tr></tbody></table>
+
+<div class="bar">
+  <button onclick="toggleEdit()">✏️ Editar layout</button>
+  <button class="sec" onclick="saveLayout()">💾 Guardar layout</button>
+  <button class="sec" onclick="calibrateNorth()">🧭 Norte de la veleta</button>
+</div>
+
+<div class="grid-stack" id="grid"></div>
+
+<section>
+<h2>Calibración de la veleta (WH-SP-WD)</h2>
+<p class="muted">Ingresá los valores de las 8 resistencias en el orden del datasheet (empezando por N), y el pull-up. Las 16 posiciones (8 directas + 8 en paralelo) se calculan automáticamente.</p>
+<div class="grid-wind" id="windInputs"></div>
+<div style="max-width:260px"><label>Resistencia pull-up (Ω)</label><input id="wrp" type="number" step="1" value="10000"></div>
+<button onclick="saveWind()">Guardar resistencias</button>
+</section>
+
+<section>
 <h2>Configuración</h2>
 <form onsubmit="saveConfig();return false;">
 <input id="cfg_name" placeholder="Nombre de la estación">
@@ -172,62 +200,72 @@ button{width:100%;padding:.5rem;border:0;border-radius:4px;background:#1f6feb;co
 <input id="cfg_serverkey" type="password" placeholder="Server key (Central)">
 <button type="submit">Guardar</button>
 </form>
-<a href="/logout" style="display:inline-block;margin-top:1rem;color:#8b949e">Cerrar sesión</a>
+<a href="/logout" style="display:inline-block;margin-top:.5rem">Cerrar sesión</a>
+</section>
+
 <script>
+const DIRS=['N','NE','E','SE','S','SO','O','NO'];
+let grid=null, editMode=false, cfg={}, posMap={}, knownKeys=new Set();
+
+function key(m){return m.sensor_id+'|'+m.channel_id;}
+
+function applyLayout(layout){
+  posMap={};
+  (layout||[]).forEach(it=>{ if(it&&it.id) posMap[it.id]={x:it.x,y:it.y,w:it.w,h:it.h}; });
+}
+
+function setEdit(on){
+  editMode=on;
+  if(!grid)return;
+  grid.setStatic(!on);
+  grid.enableMove(on);
+  grid.enableResize(on);
+}
+
+function toggleEdit(){ setEdit(!editMode); }
+
+function renderCards(list){
+  if(!grid){
+    grid=GridStack.init({column:12, cellHeight:72, margin:6});
+    grid.on('change',function(){ /* layout cambió */ });
+  }
+  grid.removeAll(false);
+  let x=0,y=0;
+  for(const m of list){
+    const k=key(m);
+    const p=posMap[k]||{x:x,y:y,w:3,h:1};
+    grid.addWidget({
+      id:k, x:p.x, y:p.y, w:p.w, h:p.h,
+      content:'<div class="card"><div class="t">'+m.measurement+'</div>'+
+              '<div class="v">'+(+m.value).toFixed(2)+' <span>'+m.unit+'</span></div>'+
+              '<div class="s">'+m.sensor_id+' · '+m.quality+'</div></div>'
+    });
+    x+=p.w; if(x>=12){x=0;y+=1;}
+  }
+  setEdit(editMode);
+}
+
 async function refresh(){
   try{
     const s=await(await fetch('/api/v1/status')).json();
-    document.getElementById('status').textContent=s.name+' ('+s.station+') — v'+s.firmware+' — '+s.uptime_s+' s';
+    document.getElementById('status').textContent=s.name+' — v'+s.firmware+' — '+s.board;
   }catch(e){document.getElementById('status').textContent='Sin conexión';}
   try{
     const r=await(await fetch('/api/v1/sensors')).json();
-    let h='';
-    for(const m of r.measurements){
-      h+='<tr><td>'+m.sensor_id+'</td><td>'+m.channel_id+'</td><td>'+m.value+'</td><td>'+m.unit+'</td><td>'+m.quality+'</td></tr>';
-    }
-    document.getElementById('rows').innerHTML=h||'<tr><td colspan="5" class="muted">Sin datos</td></tr>';
+    renderCards(r.measurements||[]);
   }catch(e){}
 }
-function drawChart(vals){
-  const cv=document.getElementById('chart');
-  if(!cv)return;
-  const ctx=cv.getContext('2d');
-  ctx.clearRect(0,0,cv.width,cv.height);
-  if(vals.length<2)return;
-  const w=cv.width,h=cv.height,pad=16;
-  const min=Math.min.apply(null,vals),max=Math.max.apply(null,vals);
-  const range=(max-min)||1;
-  ctx.strokeStyle='#30363d';
-  ctx.beginPath();
-  for(let i=0;i<=3;i++){const y=pad+(h-2*pad)*i/3;ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);}
-  ctx.stroke();
-  ctx.strokeStyle='#58a6ff';ctx.lineWidth=2;
-  ctx.beginPath();
-  for(let i=0;i<vals.length;i++){
-    const x=pad+(w-2*pad)*i/(vals.length-1);
-    const y=pad+(h-2*pad)*(1-(vals[i]-min)/range);
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  }
-  ctx.stroke();
-}
-async function loadHistory(){
+
+async function saveLayout(){
+  if(!grid)return;
+  const lay=grid.save(false).map(it=>({id:it.id,x:it.x,y:it.y,w:it.w,h:it.h}));
+  applyLayout(lay);
   try{
-    const r=await(await fetch('/api/v1/history?limit=100')).json();
-    const items=r.history||[];
-    let h='';
-    for(const m of items.slice(-20)){
-      const d=new Date(m.ts*1000);
-      const t=(m.ts>1000000000)?d.toLocaleString():('uptime '+m.ts+' s');
-      h+='<tr><td>'+t+'</td><td>'+m.sensor+'</td><td>'+m.channel+'</td><td>'+m.value+' '+m.unit+'</td></tr>';
-    }
-    document.getElementById('hist').innerHTML=h||'<tr><td colspan="4" class="muted">Sin datos</td></tr>';
-    const temps=items.filter(m=>m.channel==='temperature').map(m=>m.value);
-    drawChart(temps);
-  }catch(e){}
+    const resp=await fetch('/api/v1/dashboard/layout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(lay)});
+    alert(resp.ok?'Layout guardado':'Error al guardar layout');
+  }catch(e){alert('Error de red');}
 }
-loadHistory();
-setInterval(loadHistory,10000);
-let cfg={};
+
 async function loadConfig(){
   try{
     const r=await(await fetch('/api/v1/config')).json();
@@ -238,8 +276,16 @@ async function loadConfig(){
     document.getElementById('cfg_host').value=r.network?r.network.hostname:'';
     document.getElementById('cfg_apikey').value=r.security?r.security.api_key:'';
     document.getElementById('cfg_serverkey').value=r.security?r.security.server_key:'';
+    document.getElementById('wrp').value=r.system&&r.system.wind_rpull?r.system.wind_rpull:10000;
+    const wr=(r.system&&r.system.wind_resistors)||[];
+    DIRS.forEach((d,i)=>{
+      const inp=document.getElementById('wr'+i);
+      if(inp) inp.value=wr[i]!==undefined?wr[i]:(i===0?33000:i===1?8200:i===2?1000:i===3?2200:i===4?3900:i===5?16000:i===6?120000:64900);
+    });
+    if(r.system&&r.system.dashboard_layout){ try{applyLayout(JSON.parse(r.system.dashboard_layout));}catch(e){} }
   }catch(e){}
 }
+
 async function saveConfig(){
   cfg.station=cfg.station||{};cfg.station.name=document.getElementById('cfg_name').value;
   cfg.network=cfg.network||{};cfg.network.ssid=document.getElementById('cfg_ssid').value;
@@ -252,7 +298,34 @@ async function saveConfig(){
     alert(resp.ok?'Guardado':'Error al guardar');
   }catch(e){alert('Error de red');}
 }
-loadConfig();
+
+async function saveWind(){
+  const resistors=DIRS.map((d,i)=>parseFloat(document.getElementById('wr'+i).value)||0);
+  const rpull=parseFloat(document.getElementById('wrp').value)||10000;
+  try{
+    const resp=await fetch('/api/v1/wind/resistors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rpull:rpull,resistors:resistors})});
+    alert(resp.ok?'Resistencias guardadas':'Error al guardar');
+  }catch(e){alert('Error de red');}
+}
+
+async function calibrateNorth(){
+  try{
+    const resp=await fetch('/api/v1/wind/north',{method:'POST'});
+    alert(resp.ok?'Norte calibrado (apuntá la veleta al norte y guardá)':'Error al calibrar norte');
+  }catch(e){alert('Error de red');}
+}
+
+// Construye los inputs de las 8 resistencias.
+(function(){
+  const c=document.getElementById('windInputs');
+  DIRS.forEach((d,i)=>{
+    const box=document.createElement('div');
+    box.innerHTML='<label>R'+(i+1)+' — '+d+' (Ω)</label><input id="wr'+i+'" type="number" step="1" value="0">';
+    c.appendChild(box);
+  });
+})();
+
+loadConfig().then(refresh);
 refresh();
 setInterval(refresh,5000);
 </script>
@@ -622,15 +695,62 @@ void HttpServer::onWindNorth() {
                  "{\"error\":\"wind direction not configured\"}");
     return;
   }
-  // Guarda la lectura actual como referencia de NORTE (auto-calibración).
-  const float raw = analogRead(sys.windDirectionPin);
+  // Guarda el ángulo bruto actual como referencia de NORTE (auto-calibración).
+  const uint16_t adc = analogRead(sys.windDirectionPin);
+  const float rawAngle = DerivedCalculator::windVaneRawAngle(adc, sys);
   Config next = core_->config().get();
-  next.system.windNorthOffset = raw * sys.windDirectionScale;
+  next.system.windNorthOffset = rawAngle;
   if (!core_->config().apply(next)) {
     server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
     return;
   }
   core_->derived().configure(core_->config().get().system);
+  server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onWindResistors() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"missing body\"}");
+    return;
+  }
+  DynamicJsonDocument doc(512);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  Config next = core_->config().get();
+  next.system.windRpull = doc["rpull"] | 10000.0f;
+  JsonArray arr = doc["resistors"].as<JsonArray>();
+  for (uint8_t i = 0; i < 8 && i < arr.size(); ++i) {
+    next.system.windResistors[i] = arr[i].as<float>();
+  }
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
+  core_->derived().configure(core_->config().get().system);
+  server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onDashboardLayout() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"missing body\"}");
+    return;
+  }
+  Config next = core_->config().get();
+  next.system.dashboardLayout = server_.arg("plain");
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
   server_.send(200, "application/json", "{\"ok\":true}");
 }
 

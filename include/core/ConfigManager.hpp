@@ -32,9 +32,14 @@ struct SystemConfig {
   String logLevel;
   String units = "metric";          // "metric" | "imperial"
   float altitude = 0.0f;            // metros (para QNH y altitud barométrica)
-  float windNorthOffset = 0.0f;     // grados (referencia norte de la veleta)
+  float windNorthOffset = 0.0f;     // grados (fine-tune del norte de la veleta)
   uint8_t windDirectionPin = 0;     // ADC de la veleta WH-SP-WD (0 = sin veleta)
-  float windDirectionScale = 360.0f / 4095.0f;  // ADC → grados
+  float windRpull = 10000.0f;       // pull-up de la veleta (Ω)
+  // Red de 8 resistencias de la veleta, en orden del datasheet:
+  // N, NE, E, SE, S, SO, O, NO. Las 16 posiciones son 8 directas + 8 en paralelo.
+  float windResistors[8] = {33000.0f, 8200.0f, 1000.0f, 2200.0f,
+                            3900.0f, 16000.0f, 120000.0f, 64900.0f};
+  String dashboardLayout;  // JSON del layout Gridstack (global, no por usuario)
 };
 
 struct StorageConfig {

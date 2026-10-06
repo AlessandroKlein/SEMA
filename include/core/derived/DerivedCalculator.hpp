@@ -27,6 +27,11 @@ public:
   static float convertUnit(float value, const String& measurement,
                            const String& unit, bool imperial, String& outUnit);
 
+  // Ángulo bruto (0–360°, 0 = norte) de la veleta, sin offset.
+  static float windVaneRawAngle(uint16_t adc, const SystemConfig& sys);
+  // Dirección de viento (0–360°) con el offset de norte aplicado.
+  static float windDirection(uint16_t adc, const SystemConfig& sys);
+
 private:
   SystemConfig sys_;
   float rainTotal_ = 0.0f;   // precipitación acumulada (mm)

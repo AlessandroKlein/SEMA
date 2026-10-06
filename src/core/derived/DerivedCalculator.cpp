@@ -87,7 +87,48 @@ bool hasRaw(const std::vector<Measurement>& raw, const char* measurement) {
   return false;
 }
 
+// 16 posiciones de la veleta WH-SP-WD: 8 resistencias directas + 8 en paralelo.
+void windVanePositions(const SystemConfig& sys, float angles[16],
+                       uint16_t adcVals[16]) {
+  for (int i = 0; i < 8; ++i) {
+    const float rd = sys.windResistors[i];
+    angles[2 * i] = i * 45.0f;
+    adcVals[2 * i] =
+        (uint16_t)lroundf(4095.0f * rd / (rd + sys.windRpull));
+
+    const float rn = sys.windResistors[(i + 1) % 8];
+    const float rp = (rd * rn) / (rd + rn);
+    angles[2 * i + 1] = i * 45.0f + 22.5f;
+    adcVals[2 * i + 1] =
+        (uint16_t)lroundf(4095.0f * rp / (rp + sys.windRpull));
+  }
+}
+
 }  // namespace
+
+float DerivedCalculator::windVaneRawAngle(uint16_t adc, const SystemConfig& sys) {
+  float angles[16];
+  uint16_t adcVals[16];
+  windVanePositions(sys, angles, adcVals);
+
+  int best = 0;
+  uint32_t bestDiff = 0xFFFFFFFFu;
+  for (int i = 0; i < 16; ++i) {
+    const uint32_t d = (uint32_t)abs((int)adc - (int)adcVals[i]);
+    if (d < bestDiff) {
+      bestDiff = d;
+      best = i;
+    }
+  }
+  return angles[best];
+}
+
+float DerivedCalculator::windDirection(uint16_t adc, const SystemConfig& sys) {
+  float a = windVaneRawAngle(adc, sys) - sys.windNorthOffset;
+  while (a < 0.0f) a += 360.0f;
+  while (a >= 360.0f) a -= 360.0f;
+  return a;
+}
 
 float DerivedCalculator::convertUnit(float value, const String& measurement,
                                      const String& unit, bool imperial,
@@ -173,13 +214,10 @@ void DerivedCalculator::compute(const std::vector<Measurement>& raw,
     emit(out, "rain_accumulated", convertUnit(rainTotal_, "rain", "mm", imperial, u), u.c_str());
   }
 
-  // --- Dirección de viento (veleta WH-SP-WD por ADC, con calibración norte). ---
+  // --- Dirección de viento (veleta WH-SP-WD por tabla de resistencias). ---
   if (sys_.windDirectionPin != 0) {
-    const float rawAdc = analogRead(sys_.windDirectionPin);
-    float angle = rawAdc * sys_.windDirectionScale - sys_.windNorthOffset;
-    while (angle < 0.0f) angle += 360.0f;
-    while (angle >= 360.0f) angle -= 360.0f;
-    emit(out, "wind_direction", angle, "deg");
+    const uint16_t adc = analogRead(sys_.windDirectionPin);
+    emit(out, "wind_direction", windDirection(adc, sys_), "deg");
   }
 }
 
