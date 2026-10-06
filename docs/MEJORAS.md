@@ -1,6 +1,6 @@
 # Mejoras y roadmap — SEMA
 
-> **Tipo:** Roadmap | **Estado:** Estable | **Fecha:** 2026-10-03 | **Versión:** 1.14.0
+> **Tipo:** Roadmap | **Estado:** Estable | **Fecha:** 2026-10-03 | **Versión:** 1.15.0
 
 Estado del desarrollo de SEMA. Las 9 fases provienen de `README.md` §104.
 Estado de cada ítem: ✅ hecho · 🔄 en curso/parcial · ⬜ pendiente.
@@ -108,7 +108,7 @@ Múltiples SEMA · Nodos remotos · Servidor central · Históricos · Mapas · 
 | Ítem | Estado | Notas / vía de solución |
 |------|--------|--------------------------|
 | Servidor Central | — | Fuera del alcance de SEMA (proyecto separado); SEMA se conecta con `server_key` |
-| Expansión GPIO (MCP23017/ADS1115) | ⬜ | Fase 3 (requieren hardware) |
+| Expansión GPIO (MCP23017/ADS1115) | ✅ | Fase 3 |
 | Buses industriales (RS485/CAN) | ⬜ | Fase 6 (requieren hardware) |
 | LoRa / Zigbee | ⬜ | Fase 7 (requieren hardware) |
 | Rayos (AS3935) / CO / Radiación | ⬜ | Fases 4/5 (requieren hardware) |

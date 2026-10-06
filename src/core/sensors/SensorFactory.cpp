@@ -1,6 +1,7 @@
 #include "core/sensors/SensorFactory.hpp"
 
 #include "core/sensors/AdcSensor.hpp"
+#include "core/sensors/Ads1115Sensor.hpp"
 #include "core/sensors/Aht20Sensor.hpp"
 #include "core/sensors/As3935Sensor.hpp"
 #include "core/sensors/Bh1750Sensor.hpp"
@@ -63,6 +64,11 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   }
   if (spec.model == "AS3935") {
     return new As3935Sensor(spec.id.c_str(), spec.sda, spec.scl);
+  }
+  if (spec.model == "ADS1115") {
+    return new Ads1115Sensor(spec.id.c_str(), spec.sda, spec.scl, spec.pin,
+                             spec.channel.c_str(), spec.unit.c_str(),
+                             spec.scale, spec.offset);
   }
   return nullptr;
 }
