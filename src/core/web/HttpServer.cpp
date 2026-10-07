@@ -503,71 +503,11 @@ async function loadConfig(){
   try{
     const r=await(await fetch('/api/v1/config')).json();
     cfg=r;
-    document.getElementById('cfg_name').value=r.station?r.station.name:'';
-    document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';
-    document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';
-    document.getElementById('cfg_pass').value=r.network?r.network.password:'';
-    document.getElementById('cfg_host').value=r.network?r.network.hostname:'';
-    document.getElementById('cfg_apikey').value=r.security?r.security.api_key:'';
-    document.getElementById('cfg_serverkey').value=r.security?r.security.server_key:'';
-    document.getElementById('cfg_user').value=r.security?r.security.username:'';
-    document.getElementById('cfg_loginpass').value=r.security?r.security.password:'';
-    document.getElementById('wrp').value=r.system&&r.system.wind_rpull?r.system.wind_rpull:10000;
-    const wr=(r.system&&r.system.wind_resistors)||[];
-    DIRS.forEach((d,i)=>{
-      const inp=document.getElementById('wr'+i);
-      if(inp) inp.value=wr[i]!==undefined?wr[i]:(i===0?33000:i===1?8200:i===2?1000:i===3?2200:i===4?3900:i===5?16000:i===6?120000:64900);
-    });
     if(r.system&&r.system.dashboard_layout){
       try{ const l=JSON.parse(r.system.dashboard_layout); if(Array.isArray(l)&&l.length) layout=l; }catch(e){}
     }
   }catch(e){}
 }
-
-async function saveNetwork(){
-  const body={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,hostname:document.getElementById('cfg_host').value};
-  try{
-    const resp=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    alert(resp.ok?'Red guardada (reiniciá para aplicar)':'Error al guardar red');
-  }catch(e){alert('Error de red');}
-}
-
-async function saveConfig(){
-  cfg.station=cfg.station||{};cfg.station.name=document.getElementById('cfg_name').value;
-  cfg.security=cfg.security||{};cfg.security.api_key=document.getElementById('cfg_apikey').value;
-  cfg.security.server_key=document.getElementById('cfg_serverkey').value;
-  cfg.security.username=document.getElementById('cfg_user').value;
-  cfg.security.password=document.getElementById('cfg_loginpass').value;
-  try{
-    const resp=await fetch('/api/v1/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
-    alert(resp.ok?'Guardado':'Error al guardar');
-  }catch(e){alert('Error de red');}
-}
-
-async function saveWind(){
-  const resistors=DIRS.map((d,i)=>parseFloat(document.getElementById('wr'+i).value)||0);
-  const rpull=parseFloat(document.getElementById('wrp').value)||10000;
-  try{
-    const resp=await fetch('/api/v1/wind/resistors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rpull:rpull,resistors:resistors})});
-    alert(resp.ok?'Resistencias guardadas':'Error al guardar');
-  }catch(e){alert('Error de red');}
-}
-
-async function calibrateNorth(){
-  try{
-    const resp=await fetch('/api/v1/wind/north',{method:'POST'});
-    alert(resp.ok?'Norte calibrado (apuntá la veleta al norte y guardá)':'Error al calibrar norte');
-  }catch(e){alert('Error de red');}
-}
-
-(function(){
-  const c=document.getElementById('windInputs');
-  DIRS.forEach((d,i)=>{
-    const box=document.createElement('div');
-    box.innerHTML='<label>R'+(i+1)+' — '+d+' (Ω)</label><input id="wr'+i+'" type="number" step="1" value="0">';
-    c.appendChild(box);
-  });
-})();
 
 async function boot(){
   await loadConfig();
@@ -767,7 +707,10 @@ void HttpServer::onSystemPage() {
 <section><h2>Actualización (OTA)</h2>
 <div style="text-align:center;margin:.4rem 0 1rem"><button onclick="checkUpdate()">🔎 Comprobar actualización</button></div>
 <div id="upd" class="muted" style="text-align:center;margin-bottom:1rem"></div>
-<form method="POST" action="/api/v1/ota" enctype="multipart/form-data"><input type="file" name="firmware"><button type="submit">Subir firmware</button></form></section>
+<input type="file" id="fwfile" accept=".bin">
+<div id="otaBar" style="display:none;background:#21262d;border-radius:6px;height:16px;margin:.5rem 0;overflow:hidden"><div id="otaFill" style="width:0%;height:100%;background:#1f6feb"></div></div>
+<div id="otaMsg" class="muted"></div>
+<button onclick="doOta()">⬆️ Subir firmware</button></section>
 <section><h2>Acciones</h2>
 <button onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV histórico</button>
 <button class="sec" onclick="doRestart()">🔄 Reiniciar</button></section>
@@ -777,6 +720,7 @@ function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='_
 async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'')}catch(e){}}
 async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp()})});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
+function doOta(){const f=document.getElementById('fwfile').files[0];if(!f)return alert('Elegí un archivo .bin');if(!confirm('¿Actualizar con '+f.name+'?'))return;const bar=document.getElementById('otaBar'),fill=document.getElementById('otaFill'),msg=document.getElementById('otaMsg');bar.style.display='block';msg.textContent='Subiendo…';const fd=new FormData();fd.append('firmware',f);const xhr=new XMLHttpRequest();xhr.open('POST','/api/v1/ota');xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);fill.style.width=p+'%';msg.textContent='Subiendo '+p+'%'}};xhr.onload=()=>{fill.style.width='100%';msg.textContent='Flasheado. Reiniciando…';setTimeout(()=>location.href='/',12000)};xhr.onerror=()=>{msg.textContent='Error al subir'};xhr.send(fd)}
 async function doRestart(){if(!confirm('¿Reiniciar?'))return;try{await fetch('/api/v1/restart',{method:'POST'});alert('Reiniciando…')}catch(e){}}
 load();
 </script>

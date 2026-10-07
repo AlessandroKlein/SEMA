@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.47.0] - 2026-10-07
+
+### Fixed
+
+- Dashboard: arreglo del bug que dejaba la pagina en Cargando (IIFE de veleta huérfana).
+- OTA: barra de progreso y redireccion al dashboard.
+
 ## [1.46.0] - 2026-10-07
 
 ### Fixed
@@ -803,6 +810,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.47.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.47.0
 [1.46.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.46.0
 [1.45.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.45.0
 [1.44.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.44.0
