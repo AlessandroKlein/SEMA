@@ -802,7 +802,7 @@ const TYPES=[
  {m:'VEML6075',name:'VEML6075',i:'i2c',d:'Luz ultravioleta UVA y UVB (I²C).'},
  {m:'SCD30',name:'SCD30',i:'i2c',d:'CO₂, temperatura y humedad (I²C).'},
  {m:'SGP30',name:'SGP30',i:'i2c',d:'Calidad de aire: CO₂ y TVOC (I²C).'},
- {m:'ADS1115',name:'ADS1115',i:'i2c',adc:true,d:'ADC externo 16 bits por I²C. Elegí canal A0-A3 y qué mide.'},
+ {m:'ADS1115',name:'ADS1115',i:'i2c',d:'ADC externo 16 bits por I²C (4 canales A0-A3). Los canales se eligen desde cada sensor analógico.'},
  {m:'AS3935',name:'AS3935',i:'i2c',d:'Detector de rayos / relámpagos (I²C).'},
  {m:'DS18B20',name:'DS18B20',i:'1w',d:'Temperatura por bus 1-Wire (Dallas).',multi:true},
  {m:'ADC',name:'Veleta',i:'ana',ch:'wind_direction',d:'Dirección del viento (veleta, entrada analógica).'},
@@ -831,16 +831,13 @@ function render(){
     if(t.i==='i2c'){
       h+='<span class="muted">ID<select class="a" data-k="'+key+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option><option value="73"'+(addr==73?' selected':'')+'>0x49</option><option value="74"'+(addr==74?' selected':'')+'>0x4A</option><option value="75"'+(addr==75?' selected':'')+'>0x4B</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option></select></span>';
       h+='<span class="muted">SDA<input class="p" data-k="'+key+'" data-p="sda" value="'+sda+'" style="width:44px"> SCL<input class="p" data-k="'+key+'" data-p="scl" value="'+scl+'" style="width:44px"></span>';
-      if(t.adc){
-        h+='<span class="muted">CANAL<select class="ch" data-k="'+key+'" style="width:70px"><option value="0"'+(pin==0?' selected':'')+'>A0</option><option value="1"'+(pin==1?' selected':'')+'>A1</option><option value="2"'+(pin==2?' selected':'')+'>A2</option><option value="3"'+(pin==3?' selected':'')+'>A3</option></select></span>';
-        h+='<span class="muted">MIDE<input class="chv" data-k="'+key+'" value="'+(cur.channel||'')+'" placeholder="ej. voltage" style="width:90px"></span>';
-      }
     }else if(t.i==='uart'){
       h+='<span class="muted">RX<input class="p" data-k="'+key+'" data-p="rx" value="'+rx+'" style="width:44px"> TX<input class="p" data-k="'+key+'" data-p="tx" value="'+tx+'" style="width:44px"></span>';
     }else{
       const src=cur.channel&&cur.channel.startsWith('ads')?'ads':'native';
-      h+='<span class="muted">FUENTE<select class="src" data-k="'+key+'" style="width:84px"><option value="native"'+(src==='native'?' selected':'')+'>ADC ESP32</option><option value="ads"'+(src==='ads'?' selected':'')+'>ADS1115</option></select></span>';
-      h+='<span class="muted">PIN<input class="p" data-k="'+key+'" data-p="pin" value="'+pin+'" style="width:44px"></span>';
+      h+='<span class="muted">FUENTE<select class="src" data-k="'+key+'" onchange="srcChange(this)" style="width:84px"><option value="native"'+(src==='native'?' selected':'')+'>ADC ESP32</option><option value="ads"'+(src==='ads'?' selected':'')+'>ADS1115</option></select></span>';
+      h+='<span class="muted pin-wrap" data-k="'+key+'" '+(src==='ads'?'style="display:none"':'')+'>PIN<input class="p" data-k="'+key+'" data-p="pin" value="'+pin+'" style="width:44px"></span>';
+      h+='<span class="muted ch-wrap" data-k="'+key+'" '+(src==='native'?'style="display:none"':'')+'>CANAL<select class="ch" data-k="'+key+'" style="width:70px"><option value="0"'+(pin==0?' selected':'')+'>A0</option><option value="1"'+(pin==1?' selected':'')+'>A1</option><option value="2"'+(pin==2?' selected':'')+'>A2</option><option value="3"'+(pin==3?' selected':'')+'>A3</option></select></span>';
     }
     h+='</div>';
   }
@@ -859,6 +856,14 @@ function render(){
 }
 function addDs(){cfg.sensors=cfg.sensors||[];cfg.sensors.push({id:'ds18b20_'+(cfg.sensors.filter(s=>s.model==='DS18B20').length+1),model:'DS18B20',enabled:true,pin:0});render();}
 function delDs(i){const idx=(cfg.sensors||[]).indexOf((cfg.sensors||[]).filter(s=>s.model==='DS18B20')[i]);if(idx>=0)cfg.sensors.splice(idx,1);render();}
+function srcChange(sel){
+  const k=sel.getAttribute('data-k');
+  const ads=sel.value==='ads';
+  const pw=document.querySelector('#sensorList span.pin-wrap[data-k="'+k+'"]');
+  const cw=document.querySelector('#sensorList span.ch-wrap[data-k="'+k+'"]');
+  if(pw) pw.style.display=ads?'none':'';
+  if(cw) cw.style.display=ads?'':'none';
+}
 function save(){
   const sensors=[];
   document.querySelectorAll('#sensorList input[type=checkbox][data-k]').forEach(cb=>{
@@ -869,18 +874,16 @@ function save(){
     const src=document.querySelector('#sensorList select.src[data-k="'+key+'"]');
     const isAds=src&&src.value==='ads';
     const spec={id:t.name.toLowerCase().replace(/[^a-z0-9]/g,''),model:isAds?'ADS1115':t.m,enabled:true,address:0,sda:21,scl:22,pin:0,rx:0,tx:0,channel:t.ch||''};
-    if(isAds) spec.channel='ads_a0';
     document.querySelectorAll('#sensorList input.p[data-k="'+key+'"]').forEach(p=>{
       const k=p.getAttribute('data-p');spec[k]=parseInt(p.value)||0;
     });
-    const a=document.querySelector('#sensorList select.a[data-k="'+key+'"]');
-    if(a) spec.address=parseInt(a.value)||0;
-    if(t.adc){
+    if(isAds){
+      // El sensor analógico usa el ADS1115: el pin pasa a ser el canal A0-A3.
       const ch=document.querySelector('#sensorList select.ch[data-k="'+key+'"]');
       if(ch) spec.pin=parseInt(ch.value)||0;
-      const chv=document.querySelector('#sensorList input.chv[data-k="'+key+'"]');
-      if(chv) spec.channel=chv.value.trim()||'voltage';
     }
+    const a=document.querySelector('#sensorList select.a[data-k="'+key+'"]');
+    if(a) spec.address=parseInt(a.value)||0;
     sensors.push(spec);
   });
   document.querySelectorAll('#dsList input[type=checkbox][data-ds]').forEach(cb=>{

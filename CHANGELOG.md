@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.60.0] - 2026-10-07
+
+### Changed
+
+- ADS1115: el canal A0-A3 se elige desde cada sensor analogico (FUENTE=ADS1115), no desde el chip.
+
 ## [1.59.0] - 2026-10-07
 
 ### Added
@@ -900,6 +906,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.60.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.60.0
 [1.59.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.59.0
 [1.58.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.58.0
 [1.57.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.57.0
