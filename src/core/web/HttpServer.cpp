@@ -183,6 +183,12 @@ section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
 .rbtn{width:auto;padding:.1rem .5rem;font-size:.68rem;background:#21262d;border:1px solid #30363d;border-radius:3px;cursor:pointer;margin:0;color:#8b949e}
 .rbtn.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
 .legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.68rem;color:#8b949e;margin-top:.2rem}
+body.light{background:#f6f8fa;color:#24292f}
+body.light .card{background:#ffffff;border-color:#d0d7de}
+body.light input{background:#ffffff;color:#24292f;border-color:#d0d7de}
+body.light .muted,body.light a{color:#57606a}
+body.light section{border-color:#d0d7de}
+body.light .cat-item:hover{background:#f6f8fa}
 </style>
 <script src="/gridstack-all.min.js"></script>
 </head>
@@ -196,6 +202,7 @@ section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
   <button class="sec" onclick="saveLayout()">💾 Guardar layout</button>
   <button class="sec" onclick="calibrateNorth()">🧭 Norte de la veleta</button>
   <button class="sec" onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV</button>
+  <button class="sec" onclick="toggleTheme()">🌓 Tema</button>
 </div>
 
 <div class="grid-stack" id="grid"></div>
@@ -247,6 +254,11 @@ function setEdit(on){
   grid.enableResize(on);
 }
 function toggleEdit(){ setEdit(!editMode); }
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  try{localStorage.setItem('sema_theme', document.body.classList.contains('light')?'light':'dark');}catch(e){}
+}
+try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add('light');}catch(e){}
 
 function defaultLayout(ms){
   const lay=[];
