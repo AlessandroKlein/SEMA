@@ -294,12 +294,13 @@ async function scanWifi(){
   try{
     const r=await(await fetch('/api/v1/wifi/scan')).json();
     const nets=(r.networks||[]).sort((a,b)=>b.rssi-a.rssi);
+    if(!nets.length){ document.getElementById('wifiList').innerHTML='<p class="muted">Sin redes encontradas</p>'; return; }
     let h='<div class="catalog">';
     for(const n of nets){
       h+='<div class="cat-item"><span>'+n.ssid+' <span class="muted">('+n.rssi+' dBm'+(n.secure?' 🔒':'')+')</span></span><button class="add" data-ssid="'+n.ssid.replace(/"/g,'&quot;')+'" onclick="pickSsid(this)">Usar</button></div>';
     }
     h+='</div>';
-    document.getElementById('wifiList').innerHTML=h||'<p class="muted">Sin redes</p>';
+    document.getElementById('wifiList').innerHTML=h;
   }catch(e){document.getElementById('wifiList').innerHTML='<p class="muted">Error al escanear</p>';}
 }
 function pickSsid(btn){
@@ -457,8 +458,22 @@ async function refresh(){
   try{
     const r=await(await fetch('/api/v1/sensors')).json();
     lastMeasurements=r.measurements||[];
-    renderCards();
+    if(!grid){ renderCards(); }
+    else { updateCards(); drawCharts(); }
   }catch(e){}
+}
+
+function updateCards(){
+  for(const it of layout){
+    if(it.type!=='value') continue;
+    const card=document.getElementById(cid(it.type,it.key));
+    if(!card) continue;
+    const m=findValue(it.key);
+    const vEl=card.querySelector('.v');
+    const sEl=card.querySelector('.s');
+    if(vEl) vEl.innerHTML=(m?(+m.value).toFixed(2):'—')+' <span>'+(m?m.unit:'')+'</span>';
+    if(sEl) sEl.innerHTML=(m?m.sensor_id:'')+' · '+(m?m.quality:'');
+  }
 }
 
 function buildCatalog(){
@@ -779,7 +794,14 @@ void HttpServer::onWifiScan() {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
-  const int n = WiFi.scanNetworks();
+  int n = WiFi.scanNetworks();
+  if (n < 0) {
+    delay(200);
+    n = WiFi.scanNetworks();
+  }
+  if (n < 0) {
+    n = 0;
+  }
   DynamicJsonDocument doc(4096);
   JsonArray arr = doc.createNestedArray("networks");
   for (int i = 0; i < n && i < 40; ++i) {
