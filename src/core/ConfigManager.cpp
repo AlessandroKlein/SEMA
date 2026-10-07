@@ -180,6 +180,7 @@ bool ConfigManager::serialize(String& out) const {
     o["model"] = s.model;
     o["enabled"] = s.enabled;
     o["address"] = s.address;
+    o["rom"] = s.rom;
     o["sda"] = s.sda;
     o["scl"] = s.scl;
     o["pin"] = s.pin;
@@ -318,6 +319,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     s.model = o["model"] | "";
     s.enabled = o["enabled"] | false;
     s.address = o["address"] | 0;
+    s.rom = o["rom"] | "";
     s.sda = o["sda"] | 21;
     s.scl = o["scl"] | 22;
     s.pin = o["pin"] | 0;

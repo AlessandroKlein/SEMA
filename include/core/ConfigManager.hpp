@@ -99,6 +99,7 @@ struct SensorSpec {
   String model;      // "BME280" | "SHT40" | "DS18B20" | "BH1750" | "AHT20" | "ADC" | …
   bool enabled = false;  // false = sensor apagado (seguridad: se habilita al configurar)
   uint8_t address = 0;   // dirección I²C (0 = default del driver; p. ej. 0x76/0x77)
+  String rom;            // dirección ROM 1-Wire del DS18B20 (16 hex; vacío = autodetección)
   uint8_t sda = 21;
   uint8_t scl = 22;
   uint8_t pin = 0;

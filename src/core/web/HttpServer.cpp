@@ -841,11 +841,13 @@ function render(){
     h+='</div>';
   }
   h+='</div>';
-  h+='<div class="muted" style="margin:.6rem 0 .2rem">DS18B20 (bus 1-Wire) — podés agregar varios</div>';
+  h+='<div class="muted" style="margin:.6rem 0 .2rem">DS18B20 (bus 1-Wire) — un solo pin para todos, cada uno con su dirección ROM</div>';
+  const dspin=(cfg.sensors||[]).find(s=>s.model==='DS18B20')||{};
+  h+='<div class="cat-item"><span>PIN del bus 1-Wire</span><input id="dsBusPin" value="'+(dspin.pin||0)+'" style="width:70px"></div>';
   h+='<div class="catalog" id="dsList">';
   const ds=(cfg.sensors||[]).filter(s=>s.model==='DS18B20');
   ds.forEach((s,i)=>{
-    h+='<div class="cat-item"><label class="switch"><input type="checkbox" data-ds="'+i+'" '+(s.enabled!==false?'checked':'')+'><span class="sl"></span></label><span style="flex:1;margin:0 .4rem"><input class="dsid" data-ds="'+i+'" value="'+(s.id||'')+'" placeholder="nombre (ej. interior)" style="width:130px"></span><span class="muted">PIN<input class="dspin" data-ds="'+i+'" value="'+(s.pin||0)+'" style="width:44px"></span><button class="sec" onclick="delDs('+i+')">🗑️</button></div>';
+    h+='<div class="cat-item"><label class="switch"><input type="checkbox" data-ds="'+i+'" '+(s.enabled!==false?'checked':'')+'><span class="sl"></span></label><span style="flex:1;margin:0 .4rem"><input class="dsid" data-ds="'+i+'" value="'+(s.id||'')+'" placeholder="nombre (ej. interior)" style="width:110px"></span><span class="muted">ROM<input class="dsrom" data-ds="'+i+'" value="'+(s.rom||'')+'" placeholder="16 hex" style="width:140px"></span><button class="sec" onclick="delDs('+i+')">🗑️</button></div>';
   });
   h+='</div>';
   h+='<button class="sec" onclick="addDs()">➕ Añadir DS18B20</button>';
@@ -875,8 +877,9 @@ function save(){
     if(!cb.checked) return;
     const i=parseInt(cb.getAttribute('data-ds'),10);
     const id=document.querySelector('#dsList input.dsid[data-ds="'+i+'"]');
-    const pin=document.querySelector('#dsList input.dspin[data-ds="'+i+'"]');
-    sensors.push({id:id?id.value:('ds'+i),model:'DS18B20',enabled:true,pin:pin?parseInt(pin.value)||0:0});
+    const rom=document.querySelector('#dsList input.dsrom[data-ds="'+i+'"]');
+    const busPin=parseInt(document.getElementById('dsBusPin').value)||0;
+    sensors.push({id:id?id.value:('ds'+i),model:'DS18B20',enabled:true,pin:busPin,rom:rom?rom.value.trim():''});
   });
   fetch('/api/v1/config/sensors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sensors:sensors})}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
 }
@@ -1165,6 +1168,7 @@ void HttpServer::onConfigSensors() {
     s.model = o["model"] | "";
     s.enabled = o["enabled"] | false;
     s.address = o["address"] | 0;
+    s.rom = o["rom"] | "";
     s.sda = o["sda"] | 21;
     s.scl = o["scl"] | 22;
     s.pin = o["pin"] | 0;
