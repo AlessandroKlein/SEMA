@@ -26,6 +26,9 @@ public:
 
 private:
   void onRoot();
+  void onNetworkPage();
+  void onSecurityPage();
+  void onSystemPage();
   void onStatus();
   void onHealth();
   void onSystem();
@@ -33,6 +36,7 @@ private:
   void onConfigPut();
   void onConfigNetwork();
   void onWifiScan();
+  void onApiKeys();
   void onBackup();
   void onLoginPost();
   void onLogout();

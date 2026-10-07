@@ -25,6 +25,10 @@ struct NetworkConfig {
   String password;
   String hostname;
   bool mdns;
+  String ip;        // IP estática (vacío = DHCP)
+  String gateway;
+  String subnet;
+  String dns;
 };
 
 struct SystemConfig {
@@ -52,6 +56,7 @@ struct SecurityConfig {
   String serverKey;  // clave del Servidor Central → SEMA (config de riesgo, vía API)
   String username;   // usuario del login web (vacío = "admin")
   String password;   // contraseña del login web (vacío = sin login)
+  String extraKeys;  // JSON: {"nombre":"clave", ...} — claves API adicionales (revocables)
 };
 
 struct EnergyConfig {

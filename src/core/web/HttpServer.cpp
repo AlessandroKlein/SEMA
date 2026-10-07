@@ -47,6 +47,9 @@ void HttpServer::begin(SemaCore& core) {
   core_ = &core;
 
   server_.on("/", HTTP_GET, [this]() { onRoot(); });
+  server_.on("/network", HTTP_GET, [this]() { onNetworkPage(); });
+  server_.on("/security", HTTP_GET, [this]() { onSecurityPage(); });
+  server_.on("/system", HTTP_GET, [this]() { onSystemPage(); });
   server_.on("/api/v1/status", HTTP_GET, [this]() { onStatus(); });
   server_.on("/api/v1/health", HTTP_GET, [this]() { onHealth(); });
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
@@ -54,6 +57,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
   server_.on("/api/v1/config/network", HTTP_POST, [this]() { onConfigNetwork(); });
   server_.on("/api/v1/wifi/scan", HTTP_GET, [this]() { onWifiScan(); });
+  server_.on("/api/v1/security/keys", HTTP_POST, [this]() { onApiKeys(); });
   server_.on("/api/v1/backup", HTTP_GET, [this]() { onBackup(); });
   server_.on("/api/v1/backup", HTTP_POST, [this]() { onConfigPut(); });
   server_.on("/login", HTTP_POST, [this]() { onLoginPost(); });
@@ -204,10 +208,11 @@ body.light .cat-item:hover{background:#f6f8fa}
 <div id="status" class="muted">Cargando…</div>
 
 <nav style="display:flex;gap:.6rem;flex-wrap:wrap;margin:.5rem 0;padding-bottom:.5rem;border-bottom:1px solid #30363d">
-  <a href="#grid" style="color:#8b949e;text-decoration:none">📊 Dashboard</a>
+  <a href="/" style="color:#8b949e;text-decoration:none">📊 Dashboard</a>
   <a href="#wind" style="color:#8b949e;text-decoration:none">🧭 Veleta</a>
-  <a href="#net" style="color:#8b949e;text-decoration:none">🌐 Red</a>
-  <a href="#sec" style="color:#8b949e;text-decoration:none">🔐 Seguridad</a>
+  <a href="/network" style="color:#8b949e;text-decoration:none">🌐 Red</a>
+  <a href="/security" style="color:#8b949e;text-decoration:none">🔐 Seguridad</a>
+  <a href="/system" style="color:#8b949e;text-decoration:none">⚙️ Sistema</a>
   <a href="/logout" style="color:#f85149;text-decoration:none">Salir</a>
 </nav>
 
@@ -610,6 +615,146 @@ boot();
   server_.send(200, "text/html", kIndexHtml);
 }
 
+namespace {
+const char kBaseCss[] PROGMEM = R"html(
+<style>
+:root{--bg:#0d1117;--fg:#e6edf3;--card:#161b22;--bd:#30363d;--muted:#8b949e;--acc:#1f6feb}
+*{box-sizing:border-box}body{margin:0;padding:1rem;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif}
+h2{font-size:1rem;margin:.2rem 0 .6rem}
+section{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:1rem;margin-bottom:1rem;max-width:760px}
+input,select{width:100%;padding:.5rem;margin:.25rem 0;background:#0d1117;color:var(--fg);border:1px solid var(--bd);border-radius:6px}
+button{background:var(--acc);color:#fff;border:0;padding:.5rem .9rem;border-radius:6px;cursor:pointer;margin:.25rem .3rem 0 0}
+button.sec{background:#21262d}
+.muted{color:var(--muted);font-size:.8rem}
+a{color:var(--acc);text-decoration:none}
+.nav{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--bd)}
+.nav a{color:var(--muted);text-decoration:none;padding:.25rem .5rem;border-radius:6px}
+.nav a.on{color:#fff;background:var(--acc)}
+.nav .out{color:#f85149}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.cat-item{display:flex;justify-content:space-between;align-items:center;padding:.4rem .5rem;border-bottom:1px solid var(--bd)}
+body.light{--bg:#f6f8fa;--fg:#24292f;--card:#fff;--bd:#d0d7de;--muted:#57606a}
+body.light input{background:#fff;color:#24292f}
+</style>
+)html";
+
+const char kNav[] PROGMEM = R"html(
+<nav class="nav">
+<a href="/">📊 Dashboard</a>
+<a href="/network">🌐 Red</a>
+<a href="/security">🔐 Seguridad</a>
+<a href="/system">⚙️ Sistema</a>
+<button class="sec" onclick="toggleTheme()">🌓</button>
+<a href="/logout" class="out">Salir</a>
+</nav>
+)html";
+
+const char kThemeJs[] PROGMEM = R"html(
+<script>
+function toggleTheme(){document.body.classList.toggle('light');try{localStorage.setItem('sema_theme',document.body.classList.contains('light')?'light':'dark')}catch(e){}}
+try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add('light')}catch(e){}
+</script>
+)html";
+
+void serveAuthedPage(WebServer& srv, bool authed, const String& body) {
+  if (!authed) {
+    srv.send(200, "text/html", kLoginHtml);
+    return;
+  }
+  String html = String("<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>SEMA</title>") +
+                String(kBaseCss) + "</head><body>" + String(kNav) + body + "</body></html>";
+  srv.send(200, "text/html", html);
+}
+}  // namespace
+
+void HttpServer::onNetworkPage() {
+  const bool authed = core_->config().get().security.password.length() == 0 || sessionAuthorized();
+  const String body = R"html(
+<section><h2>Red (WiFi)</h2>
+<button class="sec" onclick="scanWifi()">🔍 Buscar redes</button><div id="wifiList"></div>
+<form onsubmit="saveNetwork();return false;">
+<select id="cfg_mode"><option value="STA">Estación (conectarse a un router)</option><option value="AP">Punto de acceso (AP propio)</option></select>
+<input id="cfg_ssid" placeholder="WiFi SSID">
+<input id="cfg_pass" type="password" placeholder="WiFi contraseña">
+<input id="cfg_host" placeholder="Hostname (mDNS)">
+<div class="muted">IP estática (dejar vacío = DHCP):</div>
+<div class="row">
+<input id="cfg_ip" placeholder="IP (ej. 192.168.1.50)">
+<input id="cfg_gateway" placeholder="Gateway (ej. 192.168.1.1)">
+<input id="cfg_subnet" placeholder="Máscara (ej. 255.255.255.0)">
+<input id="cfg_dns" placeholder="DNS (ej. 8.8.8.8)">
+</div>
+<button type="submit">Guardar red (reinicia)</button>
+</form></section>
+<script>
+async function loadNet(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';document.getElementById('cfg_pass').value=r.network?r.network.password:'';document.getElementById('cfg_host').value=r.network?r.network.hostname:'';document.getElementById('cfg_ip').value=r.network?r.network.ip:'';document.getElementById('cfg_gateway').value=r.network?r.network.gateway:'';document.getElementById('cfg_subnet').value=r.network?r.network.subnet:'';document.getElementById('cfg_dns').value=r.network?r.network.dns:''}catch(e){}}
+async function saveNetwork(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,hostname:document.getElementById('cfg_host').value,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){alert('Error de red')}}
+async function scanWifi(){document.getElementById('wifiList').innerHTML='<p class="muted">Escaneando…</p>';try{const r=await(await fetch('/api/v1/wifi/scan')).json();const n=(r.networks||[]).sort((a,b)=>b.rssi-a.rssi);if(!n.length){document.getElementById('wifiList').innerHTML='<p class="muted">Sin redes</p>';return}let h='';for(const x of n)h+='<div class="cat-item"><span>'+x.ssid+' <span class="muted">('+x.rssi+' dBm)</span></span><button data-ssid="'+x.ssid+'" onclick="pickSsid(this)">Usar</button></div>';document.getElementById('wifiList').innerHTML=h}catch(e){document.getElementById('wifiList').innerHTML='<p class="muted">Error al escanear</p>'}}
+function pickSsid(b){document.getElementById('cfg_ssid').value=b.getAttribute('data-ssid');document.getElementById('cfg_pass').focus()}
+loadNet();
+</script>
+)html";
+  serveAuthedPage(server_, authed, body);
+}
+
+void HttpServer::onSecurityPage() {
+  const bool authed = core_->config().get().security.password.length() == 0 || sessionAuthorized();
+  const String body = R"html(
+<section><h2>Estación</h2>
+<form onsubmit="saveStation();return false;">
+<input id="cfg_name" placeholder="Nombre de la estación">
+<button type="submit">Guardar</button>
+</form></section>
+<section><h2>Login (usuario/contraseña)</h2>
+<form onsubmit="saveLogin();return false;">
+<input id="cfg_user" placeholder="Usuario (vacío = admin)">
+<input id="cfg_loginpass" type="password" placeholder="Contraseña (vacío = sin login)">
+<button type="submit">Guardar login</button>
+</form></section>
+<section><h2>Claves API</h2>
+<div class="muted">Claves adicionales con nombre (revocables).</div>
+<div class="row"><input id="keyname" placeholder="Nombre (ej. Cliente 1)"><button class="sec" onclick="genKey()">➕ Generar</button></div>
+<div id="keyList"></div>
+<input id="cfg_apikey" type="password" placeholder="API key principal">
+<input id="cfg_serverkey" type="password" placeholder="Server key (Central)">
+<button onclick="saveKeys()">Guardar claves</button>
+</section>
+<script>
+var cfg={};
+async function loadSec(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;document.getElementById('cfg_name').value=r.station?r.station.name:'';document.getElementById('cfg_user').value=r.security?r.security.username:'';document.getElementById('cfg_loginpass').value=r.security?r.security.password:'';document.getElementById('cfg_apikey').value=r.security?r.security.api_key:'';document.getElementById('cfg_serverkey').value=r.security?r.security.server_key:'';renderKeys()}catch(e){}}
+function renderKeys(){let h='';try{const k=JSON.parse(cfg.security.extra_keys||'{}');for(const n in k)h+='<div class="cat-item"><span>'+n+' <span class="muted">'+k[n]+'</span></span><button class="sec" onclick="revokeKey(this)" data-n="'+n+'">🗑️</button></div>'}catch(e){}document.getElementById('keyList').innerHTML=h||'<p class="muted">Sin claves adicionales</p>'}
+async function genKey(){const n=document.getElementById('keyname').value.trim();if(!n)return alert('Poné un nombre');try{const r=await(await fetch('/api/v1/security/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generate',name:n})})).json();if(r.ok){alert('Clave generada: '+r.key);loadSec()}else alert('Error')}catch(e){alert('Error de red')}}
+async function revokeKey(b){const n=b.getAttribute('data-n');try{const r=await(await fetch('/api/v1/security/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'revoke',name:n})})).json();if(r.ok){loadSec()}else alert('Error')}catch(e){alert('Error de red')}}
+async function saveStation(){cfg.station=cfg.station||{};cfg.station.name=document.getElementById('cfg_name').value;await save()}
+async function saveLogin(){cfg.security=cfg.security||{};cfg.security.username=document.getElementById('cfg_user').value;cfg.security.password=document.getElementById('cfg_loginpass').value;await save()}
+async function saveKeys(){cfg.security=cfg.security||{};cfg.security.api_key=document.getElementById('cfg_apikey').value;cfg.security.server_key=document.getElementById('cfg_serverkey').value;await save()}
+async function save(){try{const r=await fetch('/api/v1/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
+loadSec();
+</script>
+)html";
+  serveAuthedPage(server_, authed, body);
+}
+
+void HttpServer::onSystemPage() {
+  const bool authed = core_->config().get().security.password.length() == 0 || sessionAuthorized();
+  const String body = R"html(
+<section><h2>Sistema</h2>
+<div id="status" class="muted">Cargando…</div>
+<pre id="sysinfo" class="muted"></pre></section>
+<section><h2>Actualización (OTA)</h2>
+<form method="POST" action="/api/v1/ota" enctype="multipart/form-data"><input type="file" name="firmware"><button type="submit">Subir firmware</button></form></section>
+<section><h2>Acciones</h2>
+<button onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV histórico</button>
+<button class="sec" onclick="doRestart()">🔄 Reiniciar</button></section>
+<script>
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file}catch(e){}}
+async function doRestart(){if(!confirm('¿Reiniciar?'))return;try{await fetch('/api/v1/restart',{method:'POST'});alert('Reiniciando…')}catch(e){}}
+load();
+</script>
+)html";
+  serveAuthedPage(server_, authed, body);
+}
+
 bool HttpServer::sessionAuthorized() {
   if (sessionStartMs_ == 0 || millis() - sessionStartMs_ > kSessionTimeoutMs) {
     return false;
@@ -745,18 +890,34 @@ void HttpServer::onConfig() {
 }
 
 bool HttpServer::authorized() {
-  // Dos credenciales: la web local (api_key) y el Servidor Central (server_key),
-  // que puede enviar configuración de riesgo por API (D-0048).
+  // Credenciales: web local (api_key), Servidor Central (server_key) y las
+  // claves adicionales con nombre (extra_keys). Sin claves → permitir.
   const SecurityConfig& sec = core_->config().get().security;
-  if (sec.apiKey.length() == 0 && sec.serverKey.length() == 0) {
+  if (sec.apiKey.length() == 0 && sec.serverKey.length() == 0 &&
+      sec.extraKeys.length() == 0) {
     return true;  // sin claves configuradas → permitir (primera configuración)
   }
   if (!server_.hasHeader("X-API-Key")) {
     return false;
   }
   const String key = server_.header("X-API-Key");
-  return (sec.apiKey.length() > 0 && key == sec.apiKey) ||
-         (sec.serverKey.length() > 0 && key == sec.serverKey);
+  if (sec.apiKey.length() > 0 && key == sec.apiKey) {
+    return true;
+  }
+  if (sec.serverKey.length() > 0 && key == sec.serverKey) {
+    return true;
+  }
+  if (sec.extraKeys.length() > 0) {
+    DynamicJsonDocument doc(1024);
+    if (!deserializeJson(doc, sec.extraKeys)) {
+      for (JsonPair p : doc.as<JsonObject>()) {
+        if (String(p.value().as<const char*>()) == key) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 void HttpServer::onConfigNetwork() {
@@ -779,6 +940,10 @@ void HttpServer::onConfigNetwork() {
   if (doc.containsKey("password")) next.network.password = doc["password"] | "";
   if (doc.containsKey("hostname")) next.network.hostname = doc["hostname"] | "";
   if (doc.containsKey("mdns")) next.network.mdns = doc["mdns"] | true;
+  if (doc.containsKey("ip")) next.network.ip = doc["ip"] | "";
+  if (doc.containsKey("gateway")) next.network.gateway = doc["gateway"] | "";
+  if (doc.containsKey("subnet")) next.network.subnet = doc["subnet"] | "";
+  if (doc.containsKey("dns")) next.network.dns = doc["dns"] | "";
   if (!core_->config().apply(next)) {
     server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
     return;
@@ -813,6 +978,70 @@ void HttpServer::onWifiScan() {
   WiFi.scanDelete();
   String out;
   serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onApiKeys() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"body required\"}");
+    return;
+  }
+  DynamicJsonDocument doc(1024);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  const String action = doc["action"] | "";
+  const String name = doc["name"] | "";
+  if (action.length() == 0 || name.length() == 0) {
+    server_.send(400, "application/json", "{\"error\":\"action/name required\"}");
+    return;
+  }
+
+  Config next = core_->config().get();
+  DynamicJsonDocument keys(1024);
+  const String existing = next.security.extraKeys.length() ? next.security.extraKeys : "{}";
+  if (deserializeJson(keys, existing)) {
+    server_.send(500, "application/json", "{\"error\":\"extra_keys parse\"}");
+    return;
+  }
+
+  String generated;
+  if (action == "generate") {
+    char buf[33];
+    for (int i = 0; i < 16; ++i) {
+      snprintf(buf + i * 2, 3, "%02x", static_cast<unsigned>(esp_random() & 0xFF));
+    }
+    buf[32] = 0;
+    generated = String(buf);
+    keys[name] = generated;
+  } else if (action == "revoke") {
+    keys.remove(name);
+  } else {
+    server_.send(400, "application/json", "{\"error\":\"unknown action\"}");
+    return;
+  }
+
+  String outKeys;
+  serializeJson(keys, outKeys);
+  next.security.extraKeys = outKeys;
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
+
+  DynamicJsonDocument resp(256);
+  resp["ok"] = true;
+  resp["name"] = name;
+  if (generated.length()) {
+    resp["key"] = generated;
+  }
+  String out;
+  serializeJson(resp, out);
   server_.send(200, "application/json", out);
 }
 

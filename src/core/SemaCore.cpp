@@ -117,7 +117,11 @@ void SemaCore::setup() {
   wifi_.begin(config_.get().network.mode,
               config_.get().network.ssid,
               config_.get().network.password,
-              config_.get().network.hostname);
+              config_.get().network.hostname,
+              config_.get().network.ip,
+              config_.get().network.gateway,
+              config_.get().network.subnet,
+              config_.get().network.dns);
 
   // Sincronización NTP (D-0044): reloj UTC; nowEpoch() cae a uptime hasta sincronizar.
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");

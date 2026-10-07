@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.40.0] - 2026-10-07
+
+### Added
+
+- Multi-pagina: rutas /network, /security, /system con navbar compartida.
+- IP estatica/DNS/gateway en la config de red.
+- Claves API adicionales con nombre (generar/revocar).
+
 ## [1.39.0] - 2026-10-07
 
 ### Fixed
@@ -737,6 +745,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.40.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.40.0
 [1.39.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.39.0
 [1.38.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.38.0
 [1.37.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.37.0

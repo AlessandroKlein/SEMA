@@ -117,6 +117,10 @@ bool ConfigManager::serialize(String& out) const {
   doc["network"]["password"] = config_.network.password;
   doc["network"]["hostname"] = config_.network.hostname;
   doc["network"]["mdns"] = config_.network.mdns;
+  doc["network"]["ip"] = config_.network.ip;
+  doc["network"]["gateway"] = config_.network.gateway;
+  doc["network"]["subnet"] = config_.network.subnet;
+  doc["network"]["dns"] = config_.network.dns;
   doc["system"]["timezone"] = config_.system.timezone;
   doc["system"]["log_level"] = config_.system.logLevel;
   doc["system"]["units"] = config_.system.units;
@@ -135,6 +139,7 @@ bool ConfigManager::serialize(String& out) const {
   doc["security"]["server_key"] = config_.security.serverKey;
   doc["security"]["username"] = config_.security.username;
   doc["security"]["password"] = config_.security.password;
+  doc["security"]["extra_keys"] = config_.security.extraKeys;
   doc["energy"]["rain_pin"] = config_.energy.rainPin;
   doc["publishers"]["webhook_url"] = config_.publishers.webhookUrl;
   doc["publishers"]["mqtt_host"] = config_.publishers.mqttHost;
@@ -246,6 +251,10 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.network.password = doc["network"]["password"] | "";
   c.network.hostname = doc["network"]["hostname"] | "sema-001";
   c.network.mdns = doc["network"]["mdns"] | true;
+  c.network.ip = doc["network"]["ip"] | "";
+  c.network.gateway = doc["network"]["gateway"] | "";
+  c.network.subnet = doc["network"]["subnet"] | "";
+  c.network.dns = doc["network"]["dns"] | "";
   c.system.timezone = doc["system"]["timezone"] | "America/Argentina/Buenos_Aires";
   c.system.logLevel = doc["system"]["log_level"] | "INFO";
   c.system.units = doc["system"]["units"] | "metric";
@@ -264,6 +273,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.security.serverKey = doc["security"]["server_key"] | "";
   c.security.username = doc["security"]["username"] | "";
   c.security.password = doc["security"]["password"] | "";
+  c.security.extraKeys = doc["security"]["extra_keys"] | "";
   c.energy.rainPin = doc["energy"]["rain_pin"] | 0;
   c.publishers.webhookUrl = doc["publishers"]["webhook_url"] | "";
   c.publishers.mqttHost = doc["publishers"]["mqtt_host"] | "";

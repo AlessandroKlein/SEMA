@@ -6,10 +6,20 @@
 namespace sema {
 
 void WiFiManager::begin(const String& mode, const String& ssid,
-                        const String& password, const String& hostname) {
+                        const String& password, const String& hostname,
+                        const String& ip, const String& gateway,
+                        const String& subnet, const String& dns) {
   if (mode == "STA" && ssid.length() > 0) {
     staMode_ = true;
     WiFi.mode(WIFI_STA);
+    if (ip.length() > 0 && gateway.length() > 0 && subnet.length() > 0) {
+      // IP estática (D-0090): IP, gateway, máscara y DNS.
+      IPAddress aip, agw, asub, adns;
+      if (aip.fromString(ip) && agw.fromString(gateway) &&
+          asub.fromString(subnet) && adns.fromString(dns)) {
+        WiFi.config(aip, agw, asub, adns);
+      }
+    }
     if (password.length() > 0) {
       WiFi.begin(ssid.c_str(), password.c_str());
     } else {
