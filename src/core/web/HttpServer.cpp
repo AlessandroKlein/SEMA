@@ -957,14 +957,6 @@ function renderIo(){
     h+='</div>';
     h+='<button class="sec" onclick="addSh()">➕ Añadir registro</button>';
   }
-  // GPIO
-  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Salidas / entradas GPIO <span class="q" title="Pines GPIO nativos del ESP32 (3.3V, no toleran 5V). MCP = pin del MCP23S17 (0 = nativo).">?</span></div>';
-  h+='<div class="catalog" id="gpioList">';
-  (cfg.gpio||[]).forEach((g,i)=>{
-    h+='<div class="cat-item"><span><input id="gid'+i+'" value="'+(g.id||'')+'" placeholder="id" style="width:80px"></span><span class="muted">PIN<input id="gpin'+i+'" value="'+(g.pin||0)+'" style="width:44px"> MODO<select id="gmode'+i+'" style="width:96px"><option value="output"'+(g.mode==='output'?' selected':'')+'>output</option><option value="input"'+(g.mode==='input'?' selected':'')+'>input</option><option value="input_pullup"'+(g.mode==='input_pullup'?' selected':'')+'>pullup</option></select> MCP<input id="gexp'+i+'" value="'+(g.expander||g.expander_addr||0)+'" style="width:44px" placeholder="0=nativo"></span><button class="sec" onclick="delGpio('+i+')">🗑️</button></div>';
-  });
-  h+='</div>';
-  h+='<button class="sec" onclick="addGpio()">➕ Añadir GPIO</button>';
   list.innerHTML=h;
 }
 function sel(id,val,label){return '<span style="margin-right:.3rem">'+label+'<select id="'+id+'" style="width:80px"><option value="0"'+(val==0?' selected':'')+'>—</option><option value="1"'+(val==1?' selected':'')+'>out</option><option value="2"'+(val==2?' selected':'')+'>in</option></select></span>';}
@@ -975,15 +967,7 @@ function addSh(){
   renderIo();
 }
 function delSh(i){cfg.shift_registers.splice(i,1);renderIo();}
-function addGpio(){cfg.gpio=cfg.gpio||[];cfg.gpio.push({id:'out'+(cfg.gpio.length+1),pin:0,mode:'output',expander:0});renderIo();}
-function delGpio(i){cfg.gpio.splice(i,1);renderIo();}
 function saveIo(){
-  const gpio=[];
-  document.querySelectorAll('#gpioList .cat-item').forEach((row,idx)=>{
-    const gid=row.querySelector('input[id^=gid]'),gpin=row.querySelector('input[id^=gpin]'),gexp=row.querySelector('input[id^=gexp]'),gmode=row.querySelector('select');
-    if(!gid)return;
-    gpio.push({id:gid.value,pin:parseInt(gpin.value)||0,mode:gmode.value,expander:parseInt(gexp.value)||0});
-  });
   const pins=[];
   for(let i=0;i<16;i++){ pins.push(parseInt(document.getElementById('mp'+i).value)||0); }
   const shift=[];
@@ -995,7 +979,7 @@ function saveIo(){
       shift.push({type:t.value,latch:parseInt(l.value)||0,pins:sp});
     });
   }
-  const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift_registers:shift,gpio:gpio};
+  const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift_registers:shift,gpio:[]};
   fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
 }
 load();

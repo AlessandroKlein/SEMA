@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.71.0] - 2026-10-07
+
+### Removed
+
+- Seccion Salidas/entradas GPIO de /config/sensors.
+
 ## [1.70.0] - 2026-10-07
 
 ### Added
@@ -971,6 +977,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.71.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.71.0
 [1.70.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.70.0
 [1.69.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.69.0
 [1.68.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.68.0
