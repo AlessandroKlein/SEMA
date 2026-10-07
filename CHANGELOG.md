@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.56.0] - 2026-10-07
+
+### Added
+
+- Fuente ADC (ESP32 nativo o ADS1115) para sensores analogicos.
+- Multiples DS18B20 (agregar/eliminar con nombre).
+
 ## [1.55.0] - 2026-10-07
 
 ### Changed
@@ -875,6 +882,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.56.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.56.0
 [1.55.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.55.0
 [1.54.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.54.0
 [1.53.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.53.0

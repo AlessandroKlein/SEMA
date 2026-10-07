@@ -819,6 +819,7 @@ function render(){
   const list=document.getElementById('sensorList');
   let h='<div class="catalog">';
   for(const t of TYPES){
+    if(t.multi) continue;  // DS18B20 se renderiza en su propia sección
     const key=t.m+(t.ch?'|'+t.ch:'');
     const cur=(cfg.sensors||[]).find(s=>s.model===t.m && (s.channel||'')===(t.ch||''))||{};
     const en=!!cur.enabled;
@@ -833,27 +834,49 @@ function render(){
     }else if(t.i==='uart'){
       h+='<span class="muted">RX<input class="p" data-k="'+key+'" data-p="rx" value="'+rx+'" style="width:44px"> TX<input class="p" data-k="'+key+'" data-p="tx" value="'+tx+'" style="width:44px"></span>';
     }else{
+      const src=cur.channel&&cur.channel.startsWith('ads')?'ads':'native';
+      h+='<span class="muted">FUENTE<select class="src" data-k="'+key+'" style="width:84px"><option value="native"'+(src==='native'?' selected':'')+'>ADC ESP32</option><option value="ads"'+(src==='ads'?' selected':'')+'>ADS1115</option></select></span>';
       h+='<span class="muted">PIN<input class="p" data-k="'+key+'" data-p="pin" value="'+pin+'" style="width:44px"></span>';
     }
     h+='</div>';
   }
   h+='</div>';
+  h+='<div class="muted" style="margin:.6rem 0 .2rem">DS18B20 (bus 1-Wire) — podés agregar varios</div>';
+  h+='<div class="catalog" id="dsList">';
+  const ds=(cfg.sensors||[]).filter(s=>s.model==='DS18B20');
+  ds.forEach((s,i)=>{
+    h+='<div class="cat-item"><label class="switch"><input type="checkbox" data-ds="'+i+'" '+(s.enabled!==false?'checked':'')+'><span class="sl"></span></label><span style="flex:1;margin:0 .4rem"><input class="dsid" data-ds="'+i+'" value="'+(s.id||'')+'" placeholder="nombre (ej. interior)" style="width:130px"></span><span class="muted">PIN<input class="dspin" data-ds="'+i+'" value="'+(s.pin||0)+'" style="width:44px"></span><button class="sec" onclick="delDs('+i+')">🗑️</button></div>';
+  });
+  h+='</div>';
+  h+='<button class="sec" onclick="addDs()">➕ Añadir DS18B20</button>';
   list.innerHTML=h;
 }
+function addDs(){cfg.sensors=cfg.sensors||[];cfg.sensors.push({id:'ds18b20_'+(cfg.sensors.filter(s=>s.model==='DS18B20').length+1),model:'DS18B20',enabled:true,pin:0});render();}
+function delDs(i){const idx=(cfg.sensors||[]).indexOf((cfg.sensors||[]).filter(s=>s.model==='DS18B20')[i]);if(idx>=0)cfg.sensors.splice(idx,1);render();}
 function save(){
   const sensors=[];
-  document.querySelectorAll('#sensorList input[type=checkbox]').forEach(cb=>{
-    if(!cb.checked) return;  // solo se guardan los sensores habilitados
+  document.querySelectorAll('#sensorList input[type=checkbox][data-k]').forEach(cb=>{
+    if(!cb.checked) return;
     const key=cb.getAttribute('data-k');
     const t=TYPES.find(x=>(x.m+(x.ch?'|'+x.ch:''))===key);
     if(!t)return;
-    const spec={id:t.name.toLowerCase().replace(/[^a-z0-9]/g,''),model:t.m,enabled:true,address:0,sda:21,scl:22,pin:0,rx:0,tx:0,channel:t.ch||''};
+    const src=document.querySelector('#sensorList select.src[data-k="'+key+'"]');
+    const isAds=src&&src.value==='ads';
+    const spec={id:t.name.toLowerCase().replace(/[^a-z0-9]/g,''),model:isAds?'ADS1115':t.m,enabled:true,address:0,sda:21,scl:22,pin:0,rx:0,tx:0,channel:t.ch||''};
+    if(isAds) spec.channel='ads_a0';
     document.querySelectorAll('#sensorList input.p[data-k="'+key+'"]').forEach(p=>{
       const k=p.getAttribute('data-p');spec[k]=parseInt(p.value)||0;
     });
     const a=document.querySelector('#sensorList select.a[data-k="'+key+'"]');
     if(a) spec.address=parseInt(a.value)||0;
     sensors.push(spec);
+  });
+  document.querySelectorAll('#dsList input[type=checkbox][data-ds]').forEach(cb=>{
+    if(!cb.checked) return;
+    const i=parseInt(cb.getAttribute('data-ds'),10);
+    const id=document.querySelector('#dsList input.dsid[data-ds="'+i+'"]');
+    const pin=document.querySelector('#dsList input.dspin[data-ds="'+i+'"]');
+    sensors.push({id:id?id.value:('ds'+i),model:'DS18B20',enabled:true,pin:pin?parseInt(pin.value)||0:0});
   });
   fetch('/api/v1/config/sensors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sensors:sensors})}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
 }
