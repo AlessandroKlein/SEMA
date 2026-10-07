@@ -68,6 +68,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/backup", HTTP_GET, [this]() { onBackup(); });
   server_.on("/api/v1/backup", HTTP_POST, [this]() { onConfigPut(); });
   server_.on("/login", HTTP_POST, [this]() { onLoginPost(); });
+  server_.on("/login", HTTP_GET, [this]() { onLoginPage(); });
   server_.on("/logout", HTTP_GET, [this]() { onLogout(); });
   server_.on("/api/v1/restart", HTTP_POST, [this]() { onRestart(); });
   server_.on("/api/v1/ota", HTTP_POST, [this]() { onOta(); }, [this]() { onOtaUpload(); });
@@ -150,14 +151,9 @@ void HttpServer::broadcastMeasurements(const std::vector<Measurement>& measureme
 }
 
 void HttpServer::onRoot() {
-  // Protección del dashboard (login por sesión); sin claves configuradas queda
-  // abierto para la primera configuración.
-  const SecurityConfig& sec = core_->config().get().security;
-  const bool noPass = sec.password.length() == 0;
-  if (!noPass && !sessionAuthorized()) {
-    server_.send(200, "text/html", kLoginHtml);
-    return;
-  }
+  // Dashboard siempre visible. Si no hay sesión, se inyecta SEMA_AUTH=false y el
+  // JS oculta el menú/los controles de edición (solo tema + login).
+  const bool authed = webAuthed();
 
   static const char kIndexHtml[] PROGMEM = R"html(
 <!DOCTYPE html>
@@ -219,9 +215,13 @@ body.light input{background:#fff;color:#24292f}
 </head>
 <body>
 <h1>SEMA</h1>
-<div id="status" class="muted">Cargando…</div>
 
-<nav class="nav">
+<div id="publicBar" style="display:none;align-items:center;gap:.5rem;margin:.4rem 0">
+  <button class="sec" onclick="toggleTheme()" style="margin:0">🌓</button>
+  <a href="/login" style="color:var(--acc);text-decoration:none">🔐 Login</a>
+</div>
+
+<nav class="nav" id="mainNav">
   <a href="/">📊 Dashboard</a>
   <a href="/config/network">🌐 Red</a>
   <a href="/config/sensors">🔌 Sensores</a>
@@ -234,7 +234,7 @@ body.light input{background:#fff;color:#24292f}
   </div>
 </nav>
 
-<div class="bar" id="grid">
+<div class="bar" id="editBar">
   <button class="edit-only" onclick="openCatalog()">➕ Añadir tarjeta</button>
   <button class="sec" onclick="toggleEdit()">✏️ Editar layout</button>
   <button class="sec edit-only" onclick="saveLayout()">💾 Guardar layout</button>
@@ -437,8 +437,10 @@ async function drawCharts(){
 async function refresh(){
   try{
     const s=await(await fetch('/api/v1/status')).json();
-    document.getElementById('status').textContent=s.name+' — v'+s.firmware+' — '+s.board;
-  }catch(e){document.getElementById('status').textContent='Sin conexión';}
+    const y=await(await fetch('/api/v1/system')).json();
+    const foot=document.getElementById('foot');
+    if(foot) foot.textContent=s.name+' — v'+s.firmware+' — '+y.board;
+  }catch(e){const foot=document.getElementById('foot'); if(foot) foot.textContent='Sin conexión';}
   try{
     const r=await(await fetch('/api/v1/sensors')).json();
     lastMeasurements=r.measurements||[];
@@ -530,12 +532,20 @@ async function boot(){
   setInterval(refresh,5000);
   setInterval(drawCharts,60000);
 }
+if(!window.SEMA_AUTH){
+  document.getElementById('mainNav').style.display='none';
+  document.getElementById('editBar').style.display='none';
+  document.getElementById('publicBar').style.display='flex';
+}
 boot();
 </script>
+<footer id="foot" class="muted" style="margin-top:1rem;padding-top:.6rem;border-top:1px solid var(--bd);text-align:center;font-size:.8rem">—</footer>
 </body>
 </html>
 )html";
-  server_.send(200, "text/html", kIndexHtml);
+  String html = kIndexHtml;
+  html.replace("<script>", String("<script>window.SEMA_AUTH=") + (authed ? "true" : "false") + ";");
+  server_.send(200, "text/html", html);
 }
 
 namespace {
@@ -816,6 +826,10 @@ bool HttpServer::sessionAuthorized() {
   }
   sessionStartMs_ = millis();  // sesión deslizante: refresca al validar
   return true;
+}
+
+void HttpServer::onLoginPage() {
+  server_.send(200, "text/html", kLoginHtml);
 }
 
 void HttpServer::onLoginPost() {

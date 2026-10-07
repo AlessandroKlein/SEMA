@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.50.0] - 2026-10-07
+
+### Added
+
+- Dashboard publico sin sesion (solo tema + login, sin menu ni edicion).
+- Footer con nombre/version/board (adaptable).
+- Ruta GET /login.
+
 ## [1.49.0] - 2026-10-07
 
 ### Changed
@@ -830,6 +838,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.50.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.50.0
 [1.49.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.49.0
 [1.48.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.48.0
 [1.47.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.47.0

@@ -43,6 +43,7 @@ private:
   void onUpdateCheck();
   void onBackup();
   void onLoginPost();
+  void onLoginPage();
   void onLogout();
   void onRestart();
   void onOta();
