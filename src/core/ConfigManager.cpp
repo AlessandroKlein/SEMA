@@ -205,8 +205,16 @@ bool ConfigManager::serialize(String& out) const {
   for (int i = 0; i < 16; ++i) {
     mp.add(config_.mcp23s17.pinModes[i]);
   }
-  doc["shift_register"]["type"] = config_.shiftRegister.type;
-  doc["shift_register"]["latch_pin"] = config_.shiftRegister.latchPin;
+  JsonArray sr = doc.createNestedArray("shift_registers");
+  for (const ShiftRegisterConfig& s : config_.shiftRegisters) {
+    JsonObject o = sr.createNestedObject();
+    o["type"] = s.type;
+    o["latch_pin"] = s.latchPin;
+    JsonArray pm = o.createNestedArray("pins");
+    for (int i = 0; i < 8; ++i) {
+      pm.add(s.pinModes[i]);
+    }
+  }
   doc["modbus"]["enabled"] = config_.modbus.enabled;
   doc["modbus"]["rx"] = config_.modbus.rxPin;
   doc["modbus"]["tx"] = config_.modbus.txPin;
@@ -349,8 +357,18 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   for (int i = 0; i < 16 && i < static_cast<int>(mp.size()); ++i) {
     c.mcp23s17.pinModes[i] = mp[i] | 0;
   }
-  c.shiftRegister.type = doc["shift_register"]["type"] | "74HC595";
-  c.shiftRegister.latchPin = doc["shift_register"]["latch_pin"] | 0;
+  c.shiftRegisters.clear();
+  JsonArray sr = doc["shift_registers"].as<JsonArray>();
+  for (JsonObject o : sr) {
+    ShiftRegisterConfig s;
+    s.type = o["type"] | "74HC595";
+    s.latchPin = o["latch_pin"] | 0;
+    JsonArray pm = o["pins"].as<JsonArray>();
+    for (int i = 0; i < 8 && i < static_cast<int>(pm.size()); ++i) {
+      s.pinModes[i] = pm[i] | 0;
+    }
+    c.shiftRegisters.push_back(s);
+  }
   c.modbus.enabled = doc["modbus"]["enabled"] | false;
   c.modbus.rxPin = doc["modbus"]["rx"] | 16;
   c.modbus.txPin = doc["modbus"]["tx"] | 17;

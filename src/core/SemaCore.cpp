@@ -91,7 +91,7 @@ void SemaCore::setup() {
 
   applyCalibrations();
   gpio_.apply(config_.get().gpio);
-  shift_.apply(config_.get().shiftRegister);
+  shift_.apply(config_.get().shiftRegisters);
 
   // Bus SPI compartido (W5500 + LoRa): inicializar una única vez.
 #if SEMA_USE_LORA || SEMA_USE_ETHERNET
@@ -277,7 +277,7 @@ void SemaCore::applyGpio() {
 }
 
 void SemaCore::applyShift() {
-  shift_.apply(config_.get().shiftRegister);
+  shift_.apply(config_.get().shiftRegisters);
 }
 
 #if SEMA_USE_MODBUS

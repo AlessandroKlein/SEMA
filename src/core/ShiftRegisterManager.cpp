@@ -6,37 +6,54 @@
 
 namespace sema {
 
-void ShiftRegisterManager::apply(const ShiftRegisterConfig& cfg) {
+void ShiftRegisterManager::apply(const std::vector<ShiftRegisterConfig>& cfg) {
   cfg_ = cfg;
-  if (cfg_.latchPin == 0) {
-    return;
+  for (const ShiftRegisterConfig& c : cfg_) {
+    if (c.latchPin == 0) {
+      continue;
+    }
+    pinMode(SEMA_SPI_MOSI, c.type == "74HC165" ? INPUT : OUTPUT);
+    pinMode(SEMA_SPI_SCK, OUTPUT);
+    pinMode(c.latchPin, OUTPUT);
   }
-  // DAT (SER/QH) y CLK (SRCLK/CLK) son los pines SPI del bus (fijos).
-  pinMode(SEMA_SPI_MOSI, cfg_.type == "74HC165" ? INPUT : OUTPUT);
-  pinMode(SEMA_SPI_SCK, OUTPUT);
-  pinMode(cfg_.latchPin, OUTPUT);
-  if (isOutput()) {
-    digitalWrite(cfg_.latchPin, LOW);
+}
+
+bool ShiftRegisterManager::hasOutput() const {
+  for (const ShiftRegisterConfig& c : cfg_) {
+    if (c.type != "74HC165" && c.latchPin != 0) return true;
   }
+  return false;
+}
+
+bool ShiftRegisterManager::hasInput() const {
+  for (const ShiftRegisterConfig& c : cfg_) {
+    if (c.type == "74HC165" && c.latchPin != 0) return true;
+  }
+  return false;
 }
 
 void ShiftRegisterManager::writeByte(uint8_t value) {
-  if (!configured() || !isOutput()) {
-    return;
+  for (const ShiftRegisterConfig& c : cfg_) {
+    if (c.type == "74HC165" || c.latchPin == 0) {
+      continue;
+    }
+    digitalWrite(c.latchPin, LOW);
+    shiftOut(SEMA_SPI_MOSI, SEMA_SPI_SCK, MSBFIRST, value);
+    digitalWrite(c.latchPin, HIGH);
   }
-  digitalWrite(cfg_.latchPin, LOW);
-  shiftOut(SEMA_SPI_MOSI, SEMA_SPI_SCK, MSBFIRST, value);
-  digitalWrite(cfg_.latchPin, HIGH);
 }
 
 uint8_t ShiftRegisterManager::readByte() {
-  if (!configured() || isOutput()) {
-    return 0;
+  for (const ShiftRegisterConfig& c : cfg_) {
+    if (c.type != "74HC165" || c.latchPin == 0) {
+      continue;
+    }
+    digitalWrite(c.latchPin, LOW);  // SH/LD: carga en paralelo
+    delayMicroseconds(5);
+    digitalWrite(c.latchPin, HIGH);
+    return shiftIn(SEMA_SPI_MOSI, SEMA_SPI_SCK, MSBFIRST);
   }
-  digitalWrite(cfg_.latchPin, LOW);  // SH/LD: carga en paralelo
-  delayMicroseconds(5);
-  digitalWrite(cfg_.latchPin, HIGH);
-  return shiftIn(SEMA_SPI_MOSI, SEMA_SPI_SCK, MSBFIRST);
+  return 0;
 }
 
 }  // namespace sema

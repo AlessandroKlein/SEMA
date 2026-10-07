@@ -914,12 +914,11 @@ async function loadPins(r){
 }
 function renderIo(){
   const list=document.getElementById('ioList');
-  const sh=cfg.shift_register||{};
   const mCs=cfg.mcp23s17_cs||0;
   const mPins=cfg.mcp23s17_pins||[];
   let h='';
   // MCP23S17 (expansor GPIO SPI)
-  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">MCP23S17 — expansor GPIO SPI (16 pines)</div>';
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">MCP23S17 — expansor GPIO SPI (16 pines) <span class="q" title="Expansor GPIO por SPI de 16 pines (2 puertos A/B). Tensión 1.8-5.5V (lógica del bus 3.3V del ESP32).">?</span></div>';
   h+='<div class="catalog">';
   h+='<div class="cat-item"><span>Chip Select (CS)</span><input id="mcpCs" value="'+mCs+'" placeholder="0 = no usar" style="width:70px"></div>';
   h+='<div class="cat-item"><span>Pines A0-A7</span><span class="muted">';
@@ -929,14 +928,19 @@ function renderIo(){
   for(let i=0;i<8;i++){ h+=sel('mp'+(i+8), mPins[i+8]!==undefined?mPins[i+8]:0, 'B'+i); }
   h+='</span></div>';
   h+='</div>';
-  // Registro de desplazamiento
-  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Registro de desplazamiento (DAT/CLK = MOSI/SCLK del bus SPI)</div>';
-  h+='<div class="catalog">';
-  h+='<div class="cat-item"><span>Tipo</span><select id="shType" style="width:140px"><option value="74HC595"'+(sh.type!=='74HC165'?' selected':'')+'>74HC595 (salida)</option><option value="74HC165"'+(sh.type==='74HC165'?' selected':'')+'>74HC165 (entrada)</option></select></div>';
-  h+='<div class="cat-item"><span>LATCH (RCLK / SH-LD)</span><input id="shLatch" value="'+(sh.latch_pin||0)+'" style="width:70px"></div>';
+  // Registros de desplazamiento (cascada)
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Registros de desplazamiento (cascada) <span class="q" title="74HC595 = 8 salidas; 74HC165 = 8 entradas. Alimentación típica 5V, pero las señales al ESP32 deben ser de 3.3V. DAT/CLK usan MOSI/SCLK del bus SPI; cada chip tiene su propio LATCH.">?</span></div>';
+  h+='<div class="catalog" id="shList">';
+  (cfg.shift_registers||[]).forEach((s,i)=>{
+    const isOut=s.type!=='74HC165';
+    h+='<div class="cat-item"><span>Tipo<select class="sht" data-sh="'+i+'" style="width:120px"><option value="74HC595"'+(isOut?' selected':'')+'>74HC595 (salida)</option><option value="74HC165"'+(s.type==='74HC165'?' selected':'')+'>74HC165 (entrada)</option></select></span><span class="muted">LATCH<input class="shl" data-sh="'+i+'" value="'+(s.latch_pin||0)+'" style="width:44px"></span><span class="muted">Pines ';
+    for(let p=0;p<8;p++){ h+='<label style="font-size:.62rem;margin-right:.2rem">'+(isOut?'Q':'D')+p+'<input type="checkbox" class="shp" data-sh="'+i+'" data-p="'+p+'" '+((s.pins&&s.pins[p])?'checked':'')+'></label>'; }
+    h+='</span><button class="sec" onclick="delSh('+i+')">🗑️</button></div>';
+  });
   h+='</div>';
+  h+='<button class="sec" onclick="addSh()">➕ Añadir registro</button>';
   // GPIO
-  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Salidas / entradas GPIO</div>';
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Salidas / entradas GPIO <span class="q" title="Pines GPIO nativos del ESP32 (3.3V, no toleran 5V). MCP = pin del MCP23S17 (0 = nativo).">?</span></div>';
   h+='<div class="catalog" id="gpioList">';
   (cfg.gpio||[]).forEach((g,i)=>{
     h+='<div class="cat-item"><span><input id="gid'+i+'" value="'+(g.id||'')+'" placeholder="id" style="width:80px"></span><span class="muted">PIN<input id="gpin'+i+'" value="'+(g.pin||0)+'" style="width:44px"> MODO<select id="gmode'+i+'" style="width:96px"><option value="output"'+(g.mode==='output'?' selected':'')+'>output</option><option value="input"'+(g.mode==='input'?' selected':'')+'>input</option><option value="input_pullup"'+(g.mode==='input_pullup'?' selected':'')+'>pullup</option></select> MCP<input id="gexp'+i+'" value="'+(g.expander||g.expander_addr||0)+'" style="width:44px" placeholder="0=nativo"></span><button class="sec" onclick="delGpio('+i+')">🗑️</button></div>';
@@ -946,6 +950,13 @@ function renderIo(){
   list.innerHTML=h;
 }
 function sel(id,val,label){return '<span style="margin-right:.3rem">'+label+'<select id="'+id+'" style="width:80px"><option value="0"'+(val==0?' selected':'')+'>—</option><option value="1"'+(val==1?' selected':'')+'>out</option><option value="2"'+(val==2?' selected':'')+'>in</option></select></span>';}
+function addSh(){
+  const out=confirm('¿Qué chip agregar?\n\nAceptar = 74HC595 (8 salidas)\nCancelar = 74HC165 (8 entradas)');
+  cfg.shift_registers=cfg.shift_registers||[];
+  cfg.shift_registers.push({type:out?'74HC595':'74HC165',latch_pin:0,pins:[0,0,0,0,0,0,0,0]});
+  renderIo();
+}
+function delSh(i){cfg.shift_registers.splice(i,1);renderIo();}
 function addGpio(){cfg.gpio=cfg.gpio||[];cfg.gpio.push({id:'out'+(cfg.gpio.length+1),pin:0,mode:'output',expander:0});renderIo();}
 function delGpio(i){cfg.gpio.splice(i,1);renderIo();}
 function saveIo(){
@@ -957,7 +968,14 @@ function saveIo(){
   });
   const pins=[];
   for(let i=0;i<16;i++){ pins.push(parseInt(document.getElementById('mp'+i).value)||0); }
-  const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift:{type:document.getElementById('shType').value,latch:parseInt(document.getElementById('shLatch').value)||0},gpio:gpio};
+  const shift=[];
+  document.querySelectorAll('#shList .cat-item').forEach((row,i)=>{
+    const t=row.querySelector('select.sht'), l=row.querySelector('input.shl');
+    const sp=[];
+    row.querySelectorAll('input.shp').forEach(cb=>sp.push(cb.checked?1:0));
+    shift.push({type:t.value,latch:parseInt(l.value)||0,pins:sp});
+  });
+  const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift_registers:shift,gpio:gpio};
   fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
 }
 load();
@@ -1244,9 +1262,19 @@ void HttpServer::onConfigIo() {
       next.mcp23s17.pinModes[i] = mp[i] | 0;
     }
   }
-  if (doc.containsKey("shift")) {
-    next.shiftRegister.type = doc["shift"]["type"] | "74HC595";
-    next.shiftRegister.latchPin = doc["shift"]["latch"] | 0;
+  if (doc.containsKey("shift_registers")) {
+    next.shiftRegisters.clear();
+    JsonArray sr = doc["shift_registers"].as<JsonArray>();
+    for (JsonObject o : sr) {
+      ShiftRegisterConfig s;
+      s.type = o["type"] | "74HC595";
+      s.latchPin = o["latch"] | 0;
+      JsonArray pm = o["pins"].as<JsonArray>();
+      for (int i = 0; i < 8 && i < static_cast<int>(pm.size()); ++i) {
+        s.pinModes[i] = pm[i] | 0;
+      }
+      next.shiftRegisters.push_back(s);
+    }
   }
   if (doc.containsKey("gpio")) {
     next.gpio.clear();
@@ -1983,7 +2011,6 @@ void HttpServer::onGpioWrite() {
 
 void HttpServer::onShift() {
   DynamicJsonDocument doc(256);
-  doc["type"] = core_->shift().config().type;
   doc["value"] = core_->shift().readByte();
   String out;
   serializeJson(doc, out);

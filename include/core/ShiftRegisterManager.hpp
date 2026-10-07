@@ -13,16 +13,16 @@ namespace sema {
 
 class ShiftRegisterManager {
 public:
-  void apply(const ShiftRegisterConfig& cfg);
-  void writeByte(uint8_t value);   // 74HC595 (salida)
-  uint8_t readByte();              // 74HC165 (entrada)
+  void apply(const std::vector<ShiftRegisterConfig>& cfg);
+  void writeByte(uint8_t value);   // escribe en todos los 74HC595
+  uint8_t readByte();              // lee del primer 74HC165
 
-  bool configured() const { return cfg_.latchPin != 0; }
-  bool isOutput() const { return cfg_.type != "74HC165"; }
-  const ShiftRegisterConfig& config() const { return cfg_; }
+  bool configured() const { return !cfg_.empty(); }
+  bool hasOutput() const;
+  bool hasInput() const;
 
 private:
-  ShiftRegisterConfig cfg_;
+  std::vector<ShiftRegisterConfig> cfg_;
 };
 
 }  // namespace sema
