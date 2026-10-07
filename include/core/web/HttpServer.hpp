@@ -31,6 +31,8 @@ private:
   void onSystemPage();
   void onWindPage();
   void onSensorsPage();
+  void onSensorsViewPage();
+  void onEventsPage();
   void onStatus();
   void onHealth();
   void onSystem();

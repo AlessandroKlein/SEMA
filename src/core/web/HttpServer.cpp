@@ -55,6 +55,8 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/config/system", HTTP_GET, [this]() { onSystemPage(); });
   server_.on("/config/wind", HTTP_GET, [this]() { onWindPage(); });
   server_.on("/config/sensors", HTTP_GET, [this]() { onSensorsPage(); });
+  server_.on("/sensors", HTTP_GET, [this]() { onSensorsViewPage(); });
+  server_.on("/events", HTTP_GET, [this]() { onEventsPage(); });
   server_.on("/api/v1/status", HTTP_GET, [this]() { onStatus(); });
   server_.on("/api/v1/health", HTTP_GET, [this]() { onHealth(); });
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
@@ -594,8 +596,10 @@ const char kNav[] PROGMEM = R"html(
 <nav class="nav">
 <div class="nav-links">
 <a href="/">📊 Dashboard</a>
+<a href="/sensors">🌡️ Sensores</a>
+<a href="/events">🔔 Eventos</a>
 <a href="/config/network">🌐 Red</a>
-<a href="/config/sensors">🔌 Sensores</a>
+<a href="/config/sensors">🔌 Config</a>
 <a href="/config/security">🔐 Seguridad</a>
 <a href="/config/wind">🧭 Veleta</a>
 <a href="/config/system">⚙️ Sistema</a>
@@ -625,6 +629,67 @@ void serveAuthedPage(WebServer& srv, bool authed, const String& body) {
   srv.send(200, "text/html", html);
 }
 }  // namespace
+
+void HttpServer::onSensorsViewPage() {
+  const bool authed = webAuthed();
+  const String body = R"html(
+<section><h2>Sensores</h2>
+<p class="muted">Estado en vivo de los sensores y sus mediciones (se actualiza cada 5 s).</p>
+<div id="list" class="muted">Cargando…</div>
+<button onclick="refresh()">🔄 Actualizar</button></section>
+<script>
+async function refresh(){
+  try{
+    const r=await(await fetch('/api/v1/sensors')).json();
+    const cat=r.catalog||[], ms=r.measurements||[];
+    let h='<table><thead><tr><th>Sensor</th><th>Modelo</th><th>Bus</th><th>Salud</th></tr></thead><tbody>';
+    for(const s of cat){
+      h+='<tr><td>'+s.id+'</td><td>'+s.model+'</td><td>'+s.interface+'</td><td>'+(s.healthy?'✅':'⚠️')+'</td></tr>';
+    }
+    h+='</tbody></table>';
+    if(!cat.length)h+='<p class="muted">Sin sensores activos</p>';
+    h+='<h3>Mediciones</h3><table><thead><tr><th>Sensor</th><th>Magnitud</th><th>Valor</th><th>Unidad</th></tr></thead><tbody>';
+    for(const m of ms){
+      h+='<tr><td>'+m.sensor_id+'</td><td>'+m.measurement+'</td><td>'+Number(m.value).toFixed(2)+'</td><td>'+m.unit+'</td></tr>';
+    }
+    h+='</tbody></table>';
+    if(!ms.length)h+='<p class="muted">Sin mediciones</p>';
+    document.getElementById('list').innerHTML=h;
+  }catch(e){document.getElementById('list').innerHTML='<p class="muted">Error al cargar</p>'}
+}
+refresh();setInterval(refresh,5000);
+</script>
+)html";
+  serveAuthedPage(server_, authed, body);
+}
+
+void HttpServer::onEventsPage() {
+  const bool authed = webAuthed();
+  const String body = R"html(
+<section><h2>Eventos y alarmas</h2>
+<p class="muted">Últimos eventos del sistema (se actualiza cada 5 s).</p>
+<div id="list" class="muted">Cargando…</div>
+<button onclick="refresh()">🔄 Actualizar</button></section>
+<script>
+async function refresh(){
+  try{
+    const r=await(await fetch('/api/v1/events')).json();
+    const ev=r.events||[];
+    let h='<table><thead><tr><th>Hora</th><th>Origen</th><th>Tipo</th><th>Severidad</th><th>Regla</th><th>Valor</th></tr></thead><tbody>';
+    for(const e of ev){
+      const d=new Date(e.ts).toLocaleString();
+      h+='<tr><td>'+d+'</td><td>'+(e.source||'')+'</td><td>'+(e.type||'')+'</td><td>'+(e.severity||'')+'</td><td>'+(e.rule||'')+'</td><td>'+(e.value!==undefined?e.value:'')+'</td></tr>';
+    }
+    h+='</tbody></table>';
+    if(!ev.length)h+='<p class="muted">Sin eventos</p>';
+    document.getElementById('list').innerHTML=h;
+  }catch(e){document.getElementById('list').innerHTML='<p class="muted">Error al cargar</p>'}
+}
+refresh();setInterval(refresh,5000);
+</script>
+)html";
+  serveAuthedPage(server_, authed, body);
+}
 
 void HttpServer::onNetworkPage() {
   const bool authed = webAuthed();
