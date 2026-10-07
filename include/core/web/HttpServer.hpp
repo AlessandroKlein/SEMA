@@ -31,6 +31,7 @@ private:
   void onSystem();
   void onConfig();
   void onConfigPut();
+  void onConfigNetwork();
   void onBackup();
   void onLoginPost();
   void onLogout();

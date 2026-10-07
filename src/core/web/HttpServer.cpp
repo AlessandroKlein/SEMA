@@ -50,6 +50,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
+  server_.on("/api/v1/config/network", HTTP_POST, [this]() { onConfigNetwork(); });
   server_.on("/api/v1/backup", HTTP_GET, [this]() { onBackup(); });
   server_.on("/api/v1/backup", HTTP_POST, [this]() { onConfigPut(); });
   server_.on("/login", HTTP_POST, [this]() { onLoginPost(); });
@@ -228,12 +229,24 @@ body.light .cat-item:hover{background:#f6f8fa}
 </section>
 
 <section>
-<h2>Configuración</h2>
-<form onsubmit="saveConfig();return false;">
-<input id="cfg_name" placeholder="Nombre de la estación">
+<h2>Red (WiFi)</h2>
+<form onsubmit="saveNetwork();return false;">
+<select id="cfg_mode">
+  <option value="STA">Estación (conectarse a un router)</option>
+  <option value="AP">Punto de acceso (AP propio)</option>
+</select>
 <input id="cfg_ssid" placeholder="WiFi SSID">
 <input id="cfg_pass" type="password" placeholder="WiFi contraseña">
 <input id="cfg_host" placeholder="Hostname (mDNS)">
+<button type="submit">Guardar red</button>
+</form>
+<p class="muted">Al cambiar la red, reiniciá para aplicar.</p>
+</section>
+
+<section>
+<h2>Estación y seguridad</h2>
+<form onsubmit="saveConfig();return false;">
+<input id="cfg_name" placeholder="Nombre de la estación">
 <input id="cfg_apikey" type="password" placeholder="API key (web)">
 <input id="cfg_serverkey" type="password" placeholder="Server key (Central)">
 <button type="submit">Guardar</button>
@@ -466,6 +479,7 @@ async function loadConfig(){
     const r=await(await fetch('/api/v1/config')).json();
     cfg=r;
     document.getElementById('cfg_name').value=r.station?r.station.name:'';
+    document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';
     document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';
     document.getElementById('cfg_pass').value=r.network?r.network.password:'';
     document.getElementById('cfg_host').value=r.network?r.network.hostname:'';
@@ -483,11 +497,16 @@ async function loadConfig(){
   }catch(e){}
 }
 
+async function saveNetwork(){
+  const body={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,hostname:document.getElementById('cfg_host').value};
+  try{
+    const resp=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    alert(resp.ok?'Red guardada (reiniciá para aplicar)':'Error al guardar red');
+  }catch(e){alert('Error de red');}
+}
+
 async function saveConfig(){
   cfg.station=cfg.station||{};cfg.station.name=document.getElementById('cfg_name').value;
-  cfg.network=cfg.network||{};cfg.network.ssid=document.getElementById('cfg_ssid').value;
-  cfg.network.password=document.getElementById('cfg_pass').value;
-  cfg.network.hostname=document.getElementById('cfg_host').value;
   cfg.security=cfg.security||{};cfg.security.api_key=document.getElementById('cfg_apikey').value;
   cfg.security.server_key=document.getElementById('cfg_serverkey').value;
   try{
@@ -687,6 +706,33 @@ bool HttpServer::authorized() {
   const String key = server_.header("X-API-Key");
   return (sec.apiKey.length() > 0 && key == sec.apiKey) ||
          (sec.serverKey.length() > 0 && key == sec.serverKey);
+}
+
+void HttpServer::onConfigNetwork() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"body required\"}");
+    return;
+  }
+  DynamicJsonDocument doc(512);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  Config next = core_->config().get();
+  if (doc.containsKey("mode")) next.network.mode = doc["mode"] | "STA";
+  if (doc.containsKey("ssid")) next.network.ssid = doc["ssid"] | "";
+  if (doc.containsKey("password")) next.network.password = doc["password"] | "";
+  if (doc.containsKey("hostname")) next.network.hostname = doc["hostname"] | "";
+  if (doc.containsKey("mdns")) next.network.mdns = doc["mdns"] | true;
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
+  server_.send(200, "application/json", "{\"ok\":true}");
 }
 
 void HttpServer::onRestart() {

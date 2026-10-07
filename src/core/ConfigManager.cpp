@@ -108,7 +108,7 @@ bool ConfigManager::validate(const Config& c) const {
 }
 
 bool ConfigManager::serialize(String& out) const {
-  DynamicJsonDocument doc(2048);
+  DynamicJsonDocument doc(16384);
   doc["schema_version"] = config_.schemaVersion;
   doc["station"]["id"] = config_.station.id;
   doc["station"]["name"] = config_.station.name;
@@ -231,7 +231,7 @@ bool ConfigManager::serialize(String& out) const {
 }
 
 bool ConfigManager::parseInto(const String& in, Config& c) {
-  DynamicJsonDocument doc(2048);
+  DynamicJsonDocument doc(16384);
   const DeserializationError err = deserializeJson(doc, in);
   if (err) {
     return false;

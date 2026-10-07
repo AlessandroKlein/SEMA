@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.36.0] - 2026-10-07
+
+### Fixed
+
+- Config: buffer JSON ampliado (16 KB) — arregla el error al guardar.
+
+### Changed
+
+- Red WiFi separada de la config de estacion/seguridad (POST /api/v1/config/network).
+
 ## [1.35.0] - 2026-10-07
 
 ### Added
@@ -706,6 +716,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.36.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.36.0
 [1.35.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.35.0
 [1.34.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.34.0
 [1.33.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.33.0
