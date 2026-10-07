@@ -53,6 +53,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/config/security", HTTP_GET, [this]() { onSecurityPage(); });
   server_.on("/config/system", HTTP_GET, [this]() { onSystemPage(); });
   server_.on("/config/wind", HTTP_GET, [this]() { onWindPage(); });
+  server_.on("/config/sensors", HTTP_GET, [this]() { onSensorsPage(); });
   server_.on("/api/v1/status", HTTP_GET, [this]() { onStatus(); });
   server_.on("/api/v1/health", HTTP_GET, [this]() { onHealth(); });
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
@@ -217,6 +218,7 @@ body.light input{background:#fff;color:#24292f}
 <nav class="nav">
   <a href="/">📊 Dashboard</a>
   <a href="/config/network">🌐 Red</a>
+  <a href="/config/sensors">🔌 Sensores</a>
   <a href="/config/security">🔐 Seguridad</a>
   <a href="/config/wind">🧭 Veleta</a>
   <a href="/config/system">⚙️ Sistema</a>
@@ -623,6 +625,7 @@ const char kNav[] PROGMEM = R"html(
 <div class="nav-links">
 <a href="/">📊 Dashboard</a>
 <a href="/config/network">🌐 Red</a>
+<a href="/config/sensors">🔌 Sensores</a>
 <a href="/config/security">🔐 Seguridad</a>
 <a href="/config/wind">🧭 Veleta</a>
 <a href="/config/system">⚙️ Sistema</a>
@@ -663,6 +666,7 @@ void HttpServer::onNetworkPage() {
 <input id="cfg_ssid" placeholder="WiFi SSID">
 <input id="cfg_pass" type="password" placeholder="WiFi contraseña">
 <input id="cfg_host" placeholder="Hostname (mDNS)">
+<button type="button" class="sec" onclick="openMdns()">🔗 Abrir http://&lt;hostname&gt;.local</button>
 <div class="muted">IP estática (dejar vacío = DHCP):</div>
 <div class="row">
 <input id="cfg_ip" placeholder="IP (ej. 192.168.1.50)">
@@ -674,6 +678,7 @@ void HttpServer::onNetworkPage() {
 </form></section>
 <script>
 async function loadNet(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';document.getElementById('cfg_pass').value=r.network?r.network.password:'';document.getElementById('cfg_host').value=r.network?r.network.hostname:'';document.getElementById('cfg_ip').value=r.network?r.network.ip:'';document.getElementById('cfg_gateway').value=r.network?r.network.gateway:'';document.getElementById('cfg_subnet').value=r.network?r.network.subnet:'';document.getElementById('cfg_dns').value=r.network?r.network.dns:''}catch(e){}}
+function openMdns(){const h=document.getElementById('cfg_host').value.trim();if(h)window.open('http://'+h+'.local','_blank');else alert('Poné un hostname primero')}
 async function saveNetwork(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,hostname:document.getElementById('cfg_host').value,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){alert('Error de red')}}
 async function scanWifi(){document.getElementById('wifiList').innerHTML='<p class="muted">Escaneando…</p>';try{const r=await(await fetch('/api/v1/wifi/scan')).json();const n=(r.networks||[]).sort((a,b)=>b.rssi-a.rssi);if(!n.length){document.getElementById('wifiList').innerHTML='<p class="muted">Sin redes</p>';return}let h='';for(const x of n)h+='<div class="cat-item"><span>'+x.ssid+' <span class="muted">('+x.rssi+' dBm)</span></span><button data-ssid="'+x.ssid+'" onclick="pickSsid(this)">Usar</button></div>';document.getElementById('wifiList').innerHTML=h}catch(e){document.getElementById('wifiList').innerHTML='<p class="muted">Error al escanear</p>'}}
 function pickSsid(b){document.getElementById('cfg_ssid').value=b.getAttribute('data-ssid');document.getElementById('cfg_pass').focus()}
@@ -794,6 +799,29 @@ async function loadWind(){try{const r=await(await fetch('/api/v1/config')).json(
 async function saveWind(){const resistors=DIRS.map((d,i)=>parseFloat(document.getElementById('wr'+i).value)||0);const rpull=parseFloat(document.getElementById('wrp').value)||10000;try{const resp=await fetch('/api/v1/wind/resistors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rpull:rpull,resistors:resistors})});alert(resp.ok?'Resistencias guardadas':'Error')}catch(e){alert('Error de red')}}
 async function calibrateNorth(){try{const resp=await fetch('/api/v1/wind/north',{method:'POST'});alert(resp.ok?'Norte calibrado':'Error')}catch(e){alert('Error de red')}}
 renderWind();loadWind();
+</script>
+)html";
+  serveAuthedPage(server_, authed, body);
+}
+
+void HttpServer::onSensorsPage() {
+  const bool authed = webAuthed();
+  const String body = R"html(
+<section><h2>Sensores</h2>
+<div id="sensorList" class="muted">Cargando…</div></section>
+<section><h2>Pines</h2>
+<div id="pinInfo" class="muted">Cargando…</div></section>
+<script>
+async function load(){try{
+  const s=await(await fetch('/api/v1/sensors')).json();
+  let h='<div class="catalog">';
+  (s.catalog||[]).forEach(c=>{h+='<div class="cat-item"><span>'+c.id+' — '+c.model+' <span class="muted">('+c.interface+')</span></span><span class="muted">'+(c.healthy?'✅':'⚠️')+'</span></div>'});
+  h+='</div>';
+  document.getElementById('sensorList').innerHTML=h||'<p class="muted">Sin sensores</p>';
+  const y=await(await fetch('/api/v1/system')).json();
+  document.getElementById('pinInfo').innerHTML='<p>Board: '+y.board+' · Flash: '+y.flash_mb+' MB'+(y.demo?' · <b>DEMO</b>':'')+'</p><p>Origen de pines: <b>'+(y.pins_from_file?'PCB (fijos, no configurables)':'Web (configurables)')+'</b></p>';
+}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
+load();
 </script>
 )html";
   serveAuthedPage(server_, authed, body);
@@ -920,6 +948,8 @@ void HttpServer::onSystem() {
   doc["protocol"] = SEMA_PROTOCOL_VERSION;
   doc["board"] = SEMA_BOARD_ID;
   doc["flash_mb"] = SEMA_FLASH_MB;
+  doc["pins_from_file"] = (SEMA_PINS_FROM_FILE != 0);
+  doc["demo"] = (SEMA_DEMO != 0);
   doc["firmware_file"] =
       String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
   String out;
@@ -1133,19 +1163,16 @@ void HttpServer::onUpdateCheck() {
   HTTPClient http;
   WiFiClientSecure client;
   client.setInsecure();  // solo para leer la versión; el OTA real usa X-SHA256
-  if (http.begin(client, "https://api.github.com/repos/AlessandroKlein/SEMA/releases/latest")) {
+  if (http.begin(client, "https://raw.githubusercontent.com/AlessandroKlein/SEMA/refs/heads/main/firmware_manifest.json")) {
     http.setTimeout(8000);
     const int code = http.GET();
     if (code == 200) {
       DynamicJsonDocument doc(4096);
       if (!deserializeJson(doc, http.getString())) {
-        String tag = doc["tag_name"] | "";
-        if (tag.startsWith("v")) {
-          tag = tag.substring(1);
-        }
-        resp["latest"] = tag;
-        resp["update"] = (tag.length() > 0 && tag != String(SEMA_FW_VERSION));
-        resp["url"] = doc["html_url"] | "";
+        const String ver = doc["version"] | "";
+        resp["latest"] = ver;
+        resp["update"] = (ver.length() > 0 && ver != String(SEMA_FW_VERSION));
+        resp["url"] = String("https://github.com/AlessandroKlein/SEMA/releases/tag/v") + ver;
       }
     }
     http.end();
@@ -1361,6 +1388,55 @@ void HttpServer::onDiagnostics() {
 void HttpServer::onSensors() {
   const String units = core_->config().get().system.units;
   const bool imperial = (units == "imperial");
+
+#if SEMA_DEMO
+  // Modo demo: valores ficticios dentro del rango estándar de cada magnitud.
+  {
+    DynamicJsonDocument ddoc(4096);
+    JsonArray dcat = ddoc.createNestedArray("catalog");
+    const char* models[] = {"BME280", "SHT40", "SCD30", "PMS5003", "VEML6075", "WH-SP-WD", "RG-9"};
+    const char* ids[] = {"ext", "int", "co2", "pm", "uv", "wind", "rain"};
+    for (int i = 0; i < 7; ++i) {
+      JsonObject c = dcat.createNestedObject();
+      c["id"] = ids[i];
+      c["model"] = models[i];
+      c["interface"] = "demo";
+      c["healthy"] = true;
+    }
+    const float t = millis() / 1000.0f;
+    JsonArray darr = ddoc.createNestedArray("measurements");
+    auto wave = [&](float seed, float lo, float hi, float period) {
+      return lo + (hi - lo) * (0.5f + 0.5f * sinf(t * 6.283185f / period + seed));
+    };
+    auto add = [&](const char* id, const char* meas, float v, const char* u) {
+      JsonObject o = darr.createNestedObject();
+      o["sensor_id"] = id;
+      o["channel_id"] = "0";
+      o["measurement"] = meas;
+      o["value"] = v;
+      o["unit"] = u;
+      o["quality"] = "VALID";
+      o["sequence"] = 1;
+    };
+    add("ext", "temperature", wave(0.0f, 18.0f, 28.0f, 3600), imperial ? "°F" : "°C");
+    add("ext", "humidity", wave(1.0f, 45.0f, 75.0f, 5400), "%");
+    add("ext", "pressure", wave(2.0f, 1008.0f, 1018.0f, 7200), "hPa");
+    add("int", "temperature", wave(3.0f, 20.0f, 26.0f, 4200), imperial ? "°F" : "°C");
+    add("int", "humidity", wave(4.0f, 40.0f, 65.0f, 4800), "%");
+    add("uv", "uvi", wave(5.0f, 0.5f, 7.0f, 3000), "");
+    add("uv", "light", wave(6.0f, 200.0f, 9000.0f, 2800), "lux");
+    add("co2", "co2", wave(7.0f, 420.0f, 750.0f, 6000), "ppm");
+    add("pm", "pm25", wave(8.0f, 8.0f, 25.0f, 5000), "µg/m³");
+    add("wind", "wind_speed", wave(9.0f, 2.0f, 12.0f, 2400), imperial ? "mph" : "m/s");
+    add("wind", "wind_direction", fmodf(t * 12.0f, 360.0f), "°");
+    add("rain", "rain", wave(10.0f, 0.0f, 3.0f, 9000), imperial ? "in" : "mm");
+    ddoc["units"] = units;
+    String dout;
+    serializeJson(ddoc, dout);
+    server_.send(200, "application/json", dout);
+  }
+  return;
+#endif
 
   DynamicJsonDocument doc(4096);
 

@@ -6,6 +6,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.44.0] - 2026-10-07
+
+### Added
+
+- Modo demo (SEMA_DEMO): valores ficticios para probar la web sin sensores.
+- Pagina /config/sensors (listado + origen de pines).
+- Enlace mDNS en /config/network y OTA check via firmware_manifest.json.
+
+### Changed
+
+- mDNS: hostname saneado (corroborado contra ESPmDNS core 3.x).
+
 ## [1.43.0] - 2026-10-07
 
 ### Changed
@@ -777,6 +789,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.44.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.44.0
 [1.43.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.43.0
 [1.42.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.42.0
 [1.41.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.41.0

@@ -30,6 +30,7 @@ private:
   void onSecurityPage();
   void onSystemPage();
   void onWindPage();
+  void onSensorsPage();
   void onStatus();
   void onHealth();
   void onSystem();

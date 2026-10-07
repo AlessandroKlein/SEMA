@@ -79,6 +79,12 @@
 #define SEMA_PINS_FROM_FILE SEMA_OFF
 #endif
 
+// Modo demo: muestra todas las páginas y genera valores ficticios dentro del
+// rango estándar de cada magnitud (para probar la web sin sensores conectados).
+#ifndef SEMA_DEMO
+#define SEMA_DEMO SEMA_OFF
+#endif
+
 // =============================================================================
 // Bus SPI y chip-select (CS)
 // =============================================================================
