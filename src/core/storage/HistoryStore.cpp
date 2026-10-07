@@ -1,7 +1,7 @@
 #include "core/storage/HistoryStore.hpp"
 
 #include <ArduinoJson.h>
-#include <LittleFS.h>
+#include <SD.h>
 
 namespace sema {
 
@@ -27,27 +27,37 @@ bool parseMeasurement(const String& line, Measurement& m) {
 
 bool HistoryStore::begin(const char* path) {
   path_ = path;
-  if (!LittleFS.begin(true)) {
-    return false;
-  }
-
-  // Cuenta las entradas ya existentes (una línea JSON por medición).
+  // El histórico vive en la microSD (SPI). Sin SD activa no se almacena nada:
+  // las gráficas quedan vacías para no gastar memoria interna (ver enableSd).
   count_ = 0;
-  File f = LittleFS.open(path_, "r");
-  if (f) {
-    while (f.available()) {
-      f.readStringUntil('\n');
-      ++count_;
-    }
-    f.close();
-  }
   return true;
 }
 
+bool HistoryStore::enableSd(uint8_t csPin) {
+  // SD.begin(cs) usa el bus SPI por defecto (VSPI/FSPI) con su chip-select.
+  sdEnabled_ = SD.begin(csPin);
+  if (sdEnabled_) {
+    // Cuenta las entradas ya existentes (una línea JSON por medición).
+    count_ = 0;
+    File f = SD.open(path_, "r");
+    if (f) {
+      while (f.available()) {
+        f.readStringUntil('\n');
+        ++count_;
+      }
+      f.close();
+    }
+  }
+  return sdEnabled_;
+}
+
 bool HistoryStore::rotate() {
+  if (!sdEnabled_) {
+    return false;
+  }
   // D-0057: conserva la mitad más reciente y reescribe el archivo.
   std::deque<String> lines;
-  File f = LittleFS.open(path_, "r");
+  File f = SD.open(path_, "r");
   if (f) {
     while (f.available()) {
       String line = f.readStringUntil('\n');
@@ -65,7 +75,7 @@ bool HistoryStore::rotate() {
   }
   const size_t skip = lines.size() - keep;
 
-  File w = LittleFS.open(path_, "w");  // trunca
+  File w = SD.open(path_, "w");  // trunca
   if (!w) {
     return false;
   }
@@ -83,6 +93,9 @@ bool HistoryStore::rotate() {
 }
 
 bool HistoryStore::append(const Measurement& m) {
+  if (!sdEnabled_) {
+    return false;  // sin SD → no se guarda histórico (ahorrar memoria)
+  }
   if (count_ >= maxEntries_) {
     if (!rotate()) {
       return false;
@@ -102,7 +115,7 @@ bool HistoryStore::append(const Measurement& m) {
   String line;
   serializeJson(doc, line);
 
-  File f = LittleFS.open(path_, "a");
+  File f = SD.open(path_, "a");
   if (!f) {
     return false;
   }
@@ -114,12 +127,12 @@ bool HistoryStore::append(const Measurement& m) {
 }
 
 bool HistoryStore::prune(uint32_t nowEpoch) {
-  if (retentionSeconds_ == 0) {
+  if (!sdEnabled_ || retentionSeconds_ == 0) {
     return true;
   }
   const uint32_t cutoff = nowEpoch - retentionSeconds_;
   std::deque<String> keep;
-  File f = LittleFS.open(path_, "r");
+  File f = SD.open(path_, "r");
   if (f) {
     while (f.available()) {
       String line = f.readStringUntil('\n');
@@ -135,7 +148,7 @@ bool HistoryStore::prune(uint32_t nowEpoch) {
     f.close();
   }
 
-  File w = LittleFS.open(path_, "w");  // trunca
+  File w = SD.open(path_, "w");  // trunca
   if (!w) {
     return false;
   }
@@ -149,8 +162,11 @@ bool HistoryStore::prune(uint32_t nowEpoch) {
 
 bool HistoryStore::readRecent(std::deque<Measurement>& out, size_t maxCount) {
   out.clear();
+  if (!sdEnabled_) {
+    return false;  // sin SD → sin histórico
+  }
 
-  File f = LittleFS.open(path_, "r");
+  File f = SD.open(path_, "r");
   if (!f) {
     return false;
   }

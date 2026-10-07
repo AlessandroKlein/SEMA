@@ -732,6 +732,15 @@ void HttpServer::onSystemPage() {
 <input id="cfg_ntp_custom" placeholder="Servidor NTP propio">
 <button type="submit">Guardar</button>
 </form></section>
+<section><h2>Almacenamiento (microSD)</h2>
+<p class="muted">La microSD (SPI) guarda el histórico para las gráficas. Si está deshabilitada o no se detecta, las gráficas no muestran nada (no se usa memoria interna).</p>
+<form onsubmit="saveStorage();return false;">
+<label class="switch"><input type="checkbox" id="cfg_sd"><span class="sl"></span></label>
+<label class="muted">Usar microSD para el histórico</label>
+<label class="muted">Chip-select (CS)</label>
+<input id="cfg_sdcs" style="width:70px" value="4">
+<button type="submit">Guardar</button>
+</form></section>
 <section><h2>Actualización (OTA)</h2>
 <div style="text-align:center;margin:.4rem 0 1rem"><button onclick="checkUpdate()">🔎 Comprobar actualización</button></div>
 <div id="upd" class="muted" style="text-align:center;margin-bottom:1rem"></div>
@@ -745,8 +754,9 @@ void HttpServer::onSystemPage() {
 <script>
 function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'')}catch(e){}}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
 async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp()})});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
+async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});alert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){alert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
 function doOta(){const f=document.getElementById('fwfile').files[0];if(!f)return alert('Elegí un archivo .bin');if(!confirm('¿Actualizar con '+f.name+'?'))return;const bar=document.getElementById('otaBar'),fill=document.getElementById('otaFill'),msg=document.getElementById('otaMsg');bar.style.display='block';msg.textContent='Subiendo…';const fd=new FormData();fd.append('firmware',f);const xhr=new XMLHttpRequest();xhr.open('POST','/api/v1/ota');xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);fill.style.width=p+'%';msg.textContent='Subiendo '+p+'%'}};xhr.onload=()=>{fill.style.width='100%';msg.textContent='Flasheado. Reiniciando…';setTimeout(()=>location.href='/',12000)};xhr.onerror=()=>{msg.textContent='Error al subir'};xhr.send(fd)}
 async function doRestart(){if(!confirm('¿Reiniciar?'))return;try{await fetch('/api/v1/restart',{method:'POST'});alert('Reiniciando…')}catch(e){}}
@@ -1127,6 +1137,8 @@ void HttpServer::onSystem() {
   doc["spi_miso"] = SEMA_SPI_MISO;
   doc["spi_mosi"] = SEMA_SPI_MOSI;
   doc["sd_cs"] = SEMA_PIN_SD_CS;
+  doc["sd_enabled"] = core_->config().get().storage.sdEnabled;
+  doc["history_available"] = core_->history().sdEnabled();
   doc["firmware_file"] =
       String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
   String out;
@@ -1422,6 +1434,8 @@ void HttpServer::onConfigSystem() {
   Config next = core_->config().get();
   if (doc.containsKey("timezone")) next.system.timezone = doc["timezone"] | "America/Argentina/Buenos_Aires";
   if (doc.containsKey("ntp_server")) next.system.ntpServer = doc["ntp_server"] | "pool.ntp.org";
+  if (doc.containsKey("sd_enabled")) next.storage.sdEnabled = doc["sd_enabled"] | false;
+  if (doc.containsKey("sd_cs")) next.storage.sdCsPin = doc["sd_cs"] | 4;
   if (!core_->config().apply(next)) {
     server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
     return;

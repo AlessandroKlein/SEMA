@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.68.0] - 2026-10-07
+
+### Added
+
+- microSD (SPI) configurable desde la web: habilitar/deshabilitar + chip-select.
+- Historico guardado en microSD; sin SD las graficas quedan vacias (sin gastar memoria interna).
+
 ## [1.67.0] - 2026-10-07
 
 ### Added
@@ -952,6 +959,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.68.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.68.0
 [1.67.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.67.0
 [1.66.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.66.0
 [1.65.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.65.0

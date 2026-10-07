@@ -154,6 +154,8 @@ bool ConfigManager::serialize(String& out) const {
 
   doc["storage"]["backend"] = config_.storage.backend;
   doc["storage"]["retention_days"] = config_.storage.retentionDays;
+  doc["storage"]["sd_enabled"] = config_.storage.sdEnabled;
+  doc["storage"]["sd_cs"] = config_.storage.sdCsPin;
   doc["security"]["api_key"] = config_.security.apiKey;
   doc["security"]["server_key"] = config_.security.serverKey;
   doc["security"]["username"] = config_.security.username;
@@ -302,6 +304,8 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
 
   c.storage.backend = doc["storage"]["backend"] | "littlefs";
   c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
+  c.storage.sdEnabled = doc["storage"]["sd_enabled"] | false;
+  c.storage.sdCsPin = doc["storage"]["sd_cs"] | 4;
   c.security.apiKey = doc["security"]["api_key"] | "";
   c.security.serverKey = doc["security"]["server_key"] | "";
   c.security.username = doc["security"]["username"] | "";

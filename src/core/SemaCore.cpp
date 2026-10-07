@@ -70,6 +70,14 @@ void SemaCore::setup() {
 
   config_.load();
   history_.setRetentionSeconds(config_.get().storage.retentionDays * 86400);
+  // Histórico en microSD (SPI). Solo se guarda si la SD está habilitada y conectada;
+  // si no, las gráficas quedan vacías para no gastar memoria interna.
+  if (config_.get().storage.sdEnabled) {
+    const bool sd = history_.enableSd(config_.get().storage.sdCsPin);
+    Serial.printf("MicroSD: %s (CS=%u)\n",
+                  sd ? "conectada" : "no detectada",
+                  static_cast<unsigned>(config_.get().storage.sdCsPin));
+  }
 
   Serial.println();
   Serial.printf("SEMA v%s (hw %s, schema %d, protocol %d)\n",

@@ -50,6 +50,8 @@ struct SystemConfig {
 struct StorageConfig {
   String backend;   // "littlefs" | "flash" | "sd"
   uint32_t retentionDays;
+  bool sdEnabled = false;   // microSD (SPI): guarda el histórico para las gráficas
+  uint8_t sdCsPin = 4;      // chip-select de la microSD (SEMA_PIN_SD_CS)
 };
 
 struct SecurityConfig {
