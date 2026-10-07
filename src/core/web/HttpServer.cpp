@@ -907,8 +907,13 @@ async function loadPins(r){
   p+='<div class="cat-item"><span>CAN TX / RX</span><span>'+ca.tx+' / '+ca.rx+'</span></div>';
   p+='<div class="cat-item"><span>LoRa CS / RST / DIO1 / BUSY</span><span>'+l.cs+' / '+l.rst+' / '+l.dio1+' / '+l.busy+'</span></div>';
   p+='<div class="cat-item"><span>Zigbee RX / TX</span><span>'+z.rx+' / '+z.tx+'</span></div>';
-  p+='<div class="cat-item"><span>Ethernet RMII MDC / MDIO</span><span>'+e.mdc+' / '+e.mdio+'</span></div>';
-  p+='<div class="cat-item"><span>Ethernet RMII (fijos)</span><span class="muted">TXD0=19 TXD1=22 TX_EN=21 RXD0=25 RXD1=26 CRS_DV=27 REF_CLK=0</span></div>';
+  p+='<div class="cat-item"><span>SD (SPI) CS / MOSI / MISO / SCK</span><span>'+y.sd_cs+' / '+y.spi_mosi+' / '+y.spi_miso+' / '+y.spi_sck+'</span></div>';
+  if(y.native_eth){
+    p+='<div class="cat-item"><span>Ethernet RMII MDC / MDIO</span><span>'+e.mdc+' / '+e.mdio+'</span></div>';
+    p+='<div class="cat-item"><span>Ethernet RMII (fijos)</span><span class="muted">TXD0=19 TXD1=22 TX_EN=21 RXD0=25 RXD1=26 CRS_DV=27 REF_CLK=0</span></div>';
+  }else{
+    p+='<div class="cat-item"><span>Ethernet W5500 (SPI)</span><span class="muted">CS='+e.cs+' MOSI='+e.mosi+' MISO='+e.miso+' SCK='+e.sck+' RST='+e.rst+' IRQ='+e.irq+'</span></div>';
+  }
   p+='</div>';
   document.getElementById('pinInfo').innerHTML=p;
 }
@@ -1111,6 +1116,11 @@ void HttpServer::onSystem() {
   doc["flash_mb"] = SEMA_FLASH_MB;
   doc["pins_from_file"] = (SEMA_PINS_FROM_FILE != 0);
   doc["demo"] = (SEMA_DEMO != 0);
+  doc["native_eth"] = (SEMA_NATIVE_ETH != 0);
+  doc["spi_sck"] = SEMA_SPI_SCK;
+  doc["spi_miso"] = SEMA_SPI_MISO;
+  doc["spi_mosi"] = SEMA_SPI_MOSI;
+  doc["sd_cs"] = SEMA_PIN_SD_CS;
   doc["firmware_file"] =
       String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
   String out;

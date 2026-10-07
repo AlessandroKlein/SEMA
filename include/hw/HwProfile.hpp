@@ -109,6 +109,15 @@
 #define SEMA_CS_LORA 10
 #define SEMA_CS_ETHERNET_W5500 5
 
+// --- MicroSD (SPI, no SDMMC) ---
+// Los pines SDMMC del ESP32 están compartidos con otras salidas; la microSD se
+// conecta por el bus SPI (SEMA_SPI_MOSI/MISO/SCK) con su propio chip-select.
+#if defined(BOARD_ESP32_S3)
+#define SEMA_PIN_SD_CS 4
+#else  // WROOM / WROOM32U
+#define SEMA_PIN_SD_CS 4
+#endif
+
 // --- W5500 (driver ESP-IDF, periférico SPI dedicado) ---
 #if defined(BOARD_ESP32_S3)
 #define SEMA_ETH_SPI_HOST 2          // SPI3_HOST (HSPI), separado del SPI de Arduino
