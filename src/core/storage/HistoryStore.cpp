@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <SD.h>
+#include <map>
 
 namespace sema {
 
@@ -27,6 +28,7 @@ bool parseMeasurement(const String& line, Measurement& m) {
 
 bool HistoryStore::begin(const char* path) {
   path_ = path;
+  aggPath_ = String(path) + ".agg";
   // El histórico vive en la microSD (SPI). Sin SD activa no se almacena nada:
   // las gráficas quedan vacías para no gastar memoria interna (ver enableSd).
   count_ = 0;
@@ -167,6 +169,116 @@ bool HistoryStore::readRecent(std::deque<Measurement>& out, size_t maxCount) {
   }
 
   File f = SD.open(path_, "r");
+  if (!f) {
+    return false;
+  }
+
+  while (f.available()) {
+    String line = f.readStringUntil('\n');
+    line.trim();
+    if (line.length() == 0) {
+      continue;
+    }
+    Measurement m;
+    if (parseMeasurement(line, m)) {
+      out.push_back(m);
+      if (out.size() > maxCount) {
+        out.pop_front();
+      }
+    }
+  }
+  f.close();
+  return true;
+}
+
+bool HistoryStore::aggregate(uint32_t bucketSeconds, uint32_t cutoffEpoch) {
+  if (!sdEnabled_ || bucketSeconds == 0) {
+    return false;
+  }
+
+  struct Agg {
+    double sum = 0.0;
+    uint32_t count = 0;
+    uint32_t ts = 0;
+  };
+  std::map<String, Agg> buckets;
+  std::deque<String> keep;
+
+  File f = SD.open(path_, "r");
+  if (f) {
+    while (f.available()) {
+      String line = f.readStringUntil('\n');
+      line.trim();
+      if (line.length() == 0) {
+        continue;
+      }
+      Measurement m;
+      if (!parseMeasurement(line, m)) {
+        continue;
+      }
+      if (m.timestamp >= cutoffEpoch) {
+        keep.push_back(line);  // reciente: se conserva en alta resolución
+      } else {
+        const uint32_t bucket = (m.timestamp / bucketSeconds) * bucketSeconds;
+        const String key = String(m.sensorId) + "|" + m.measurement + "|" + String(bucket);
+        Agg& a = buckets[key];
+        a.sum += m.value;
+        ++a.count;
+        a.ts = bucket;
+      }
+    }
+    f.close();
+  }
+
+  // Reescribe el raw solo con lo reciente (reduce almacenamiento).
+  File w = SD.open(path_, "w");
+  if (!w) {
+    return false;
+  }
+  for (const String& line : keep) {
+    w.println(line);
+  }
+  w.close();
+  count_ = keep.size();
+
+  if (buckets.empty()) {
+    return true;
+  }
+
+  // Appends los promedios al archivo de agregados (baja resolución).
+  File a = SD.open(aggPath_, "a");
+  if (!a) {
+    return false;
+  }
+  for (const auto& kv : buckets) {
+    const Agg& ag = kv.second;
+    const String& key = kv.first;
+    const int p1 = key.indexOf('|');
+    const int p2 = key.indexOf('|', p1 + 1);
+    DynamicJsonDocument doc(256);
+    doc["ts"] = ag.ts;
+    doc["sensor"] = key.substring(0, p1);
+    doc["channel"] = "";
+    doc["measurement"] = key.substring(p1 + 1, p2);
+    doc["value"] = ag.sum / static_cast<double>(ag.count);
+    doc["unit"] = "";
+    doc["quality"] = "VALID";
+    doc["seq"] = 0;
+    String line;
+    serializeJson(doc, line);
+    a.println(line);
+  }
+  a.close();
+  return true;
+}
+
+bool HistoryStore::readAggregated(std::deque<Measurement>& out, size_t maxCount) {
+  out.clear();
+  if (!sdEnabled_) {
+    return false;
+  }
+
+  File f = SD.open(aggPath_, "r");
   if (!f) {
     return false;
   }

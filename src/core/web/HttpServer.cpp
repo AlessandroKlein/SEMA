@@ -1939,7 +1939,12 @@ void HttpServer::onHistory() {
 #endif
 
   std::deque<Measurement> items;
-  core_->history().readRecent(items, limit);
+  const String series = server_.hasArg("series") ? server_.arg("series") : "recent";
+  if (series == "aggregated") {
+    core_->history().readAggregated(items, limit);
+  } else {
+    core_->history().readRecent(items, limit);
+  }
 
   if (format == "csv") {
     // Export CSV (descarga del histórico).

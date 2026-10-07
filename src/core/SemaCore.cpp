@@ -366,11 +366,14 @@ void SemaCore::loop() {
 #endif
   // Retención por tiempo: poda el histórico periódicamente (cada hora).
   {
-    static uint32_t lastPrune = 0;
+    static uint32_t lastAgg = 0;
     const uint32_t now = nowEpoch();
-    if (now - lastPrune >= 3600) {
-      lastPrune = now;
-      history_.prune(now);
+    if (now - lastAgg >= 3600) {
+      lastAgg = now;
+      // Agregación por niveles: lo más viejo que la retención se baja a promedios
+      // horarios (en el archivo de agregados) en lugar de descartarse.
+      const uint32_t cutoff = now - config_.get().storage.retentionDays * 86400;
+      history_.aggregate(3600, cutoff);
     }
   }
   scheduler_.run();
