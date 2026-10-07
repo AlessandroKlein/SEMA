@@ -793,23 +793,25 @@ void HttpServer::onSensorsPage() {
 <button onclick="saveIo()">💾 Guardar expansores/salidas</button></section>
 <script>
 const TYPES=[
- {m:'BME280',i:'i2c',d:'Temperatura, humedad y presión barométrica (I²C).'},
- {m:'BMP280',i:'i2c',d:'Presión barométrica y temperatura (I²C).'},
- {m:'SHT40',i:'i2c',d:'Temperatura y humedad (I²C).'},
- {m:'SHT31',i:'i2c',d:'Temperatura y humedad (I²C).'},
- {m:'AHT20',i:'i2c',d:'Temperatura y humedad (I²C).'},
- {m:'BH1750',i:'i2c',d:'Luz ambiente en lux (I²C).'},
- {m:'VEML6075',i:'i2c',d:'Luz ultravioleta UVA y UVB (I²C).'},
- {m:'SCD30',i:'i2c',d:'CO₂, temperatura y humedad (I²C).'},
- {m:'SGP30',i:'i2c',d:'Calidad de aire: CO₂ y TVOC (I²C).'},
- {m:'ADS1115',i:'i2c',d:'ADC 16 bits por I²C (4 canales).'},
- {m:'AS3935',i:'i2c',d:'Detector de rayos / relámpagos (I²C).'},
- {m:'DS18B20',i:'1w',d:'Temperatura por bus 1-Wire (Dallas).'},
- {m:'ADC',i:'ana',d:'Entrada analógica nativa: veleta, batería, etc.'},
- {m:'PCNT',i:'pulse',d:'Contador de pulsos: pluviómetro (lluvia) y anemómetro (viento).'},
- {m:'PMS5003',i:'uart',d:'Partículas PM1/PM2.5/PM10 (UART).'},
- {m:'CO',i:'ana',d:'Monóxido de carbono (analógico).'},
- {m:'SOLAR',i:'ana',d:'Radiación solar (analógico).'}
+ {m:'BME280',name:'BME280',i:'i2c',d:'Temperatura, humedad y presión barométrica (I²C).'},
+ {m:'BMP280',name:'BMP280',i:'i2c',d:'Presión barométrica y temperatura (I²C).'},
+ {m:'SHT40',name:'SHT40',i:'i2c',d:'Temperatura y humedad (I²C).'},
+ {m:'SHT31',name:'SHT31',i:'i2c',d:'Temperatura y humedad (I²C).'},
+ {m:'AHT20',name:'AHT20',i:'i2c',d:'Temperatura y humedad (I²C).'},
+ {m:'BH1750',name:'BH1750',i:'i2c',d:'Luz ambiente en lux (I²C).'},
+ {m:'VEML6075',name:'VEML6075',i:'i2c',d:'Luz ultravioleta UVA y UVB (I²C).'},
+ {m:'SCD30',name:'SCD30',i:'i2c',d:'CO₂, temperatura y humedad (I²C).'},
+ {m:'SGP30',name:'SGP30',i:'i2c',d:'Calidad de aire: CO₂ y TVOC (I²C).'},
+ {m:'ADS1115',name:'ADS1115',i:'i2c',d:'ADC externo 16 bits por I²C (4 canales A0-A3).'},
+ {m:'AS3935',name:'AS3935',i:'i2c',d:'Detector de rayos / relámpagos (I²C).'},
+ {m:'DS18B20',name:'DS18B20',i:'1w',d:'Temperatura por bus 1-Wire (Dallas).',multi:true},
+ {m:'ADC',name:'Veleta',i:'ana',ch:'wind_direction',d:'Dirección del viento (veleta, entrada analógica).'},
+ {m:'ADC',name:'Batería',i:'ana',ch:'voltage',d:'Tensión de batería (entrada analógica).'},
+ {m:'PCNT',name:'Anemómetro',i:'pulse',ch:'wind_speed',d:'Velocidad del viento (contador de pulsos).'},
+ {m:'PCNT',name:'Pluviómetro',i:'pulse',ch:'rain',d:'Lluvia (contador de pulsos).'},
+ {m:'PMS5003',name:'PMS5003',i:'uart',d:'Partículas PM1/PM2.5/PM10 (UART).'},
+ {m:'CO',name:'CO',i:'ana',d:'Monóxido de carbono (analógico).'},
+ {m:'SOLAR',name:'SOLAR',i:'ana',d:'Radiación solar (analógico).'}
 ];
 let cfg={};
 async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
@@ -817,20 +819,21 @@ function render(){
   const list=document.getElementById('sensorList');
   let h='<div class="catalog">';
   for(const t of TYPES){
-    const cur=(cfg.sensors||[]).find(s=>s.model===t.m)||{};
+    const key=t.m+(t.ch?'|'+t.ch:'');
+    const cur=(cfg.sensors||[]).find(s=>s.model===t.m && (s.channel||'')===(t.ch||''))||{};
     const en=!!cur.enabled;
     const addr=cur.address||0;
     const sda=cur.sda||21,scl=cur.scl||22,pin=cur.pin||0,rx=cur.rx||0,tx=cur.tx||0;
     h+='<div class="cat-item">';
-    h+='<label class="switch"><input type="checkbox" data-m="'+t.m+'" '+(en?'checked':'')+'><span class="sl"></span></label>';
-    h+='<label style="flex:1;margin:0 .4rem">'+t.m+' <span class="muted">('+t.i+')</span></label><span class="q" title="'+t.d+'">?</span>';
+    h+='<label class="switch"><input type="checkbox" data-k="'+key+'" '+(en?'checked':'')+'><span class="sl"></span></label>';
+    h+='<label style="flex:1;margin:0 .4rem">'+t.name+' <span class="muted">('+t.i+')</span></label><span class="q" title="'+t.d+'">?</span>';
     if(t.i==='i2c'){
-      h+='<span class="muted">ID<select class="a" data-m="'+t.m+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option></select></span>';
-      h+='<span class="muted">SDA<input class="p" data-m="'+t.m+'" data-p="sda" value="'+sda+'" style="width:44px"> SCL<input class="p" data-m="'+t.m+'" data-p="scl" value="'+scl+'" style="width:44px"></span>';
+      h+='<span class="muted">ID<select class="a" data-k="'+key+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option></select></span>';
+      h+='<span class="muted">SDA<input class="p" data-k="'+key+'" data-p="sda" value="'+sda+'" style="width:44px"> SCL<input class="p" data-k="'+key+'" data-p="scl" value="'+scl+'" style="width:44px"></span>';
     }else if(t.i==='uart'){
-      h+='<span class="muted">RX<input class="p" data-m="'+t.m+'" data-p="rx" value="'+rx+'" style="width:44px"> TX<input class="p" data-m="'+t.m+'" data-p="tx" value="'+tx+'" style="width:44px"></span>';
+      h+='<span class="muted">RX<input class="p" data-k="'+key+'" data-p="rx" value="'+rx+'" style="width:44px"> TX<input class="p" data-k="'+key+'" data-p="tx" value="'+tx+'" style="width:44px"></span>';
     }else{
-      h+='<span class="muted">PIN<input class="p" data-m="'+t.m+'" data-p="pin" value="'+pin+'" style="width:44px"></span>';
+      h+='<span class="muted">PIN<input class="p" data-k="'+key+'" data-p="pin" value="'+pin+'" style="width:44px"></span>';
     }
     h+='</div>';
   }
@@ -841,12 +844,14 @@ function save(){
   const sensors=[];
   document.querySelectorAll('#sensorList input[type=checkbox]').forEach(cb=>{
     if(!cb.checked) return;  // solo se guardan los sensores habilitados
-    const m=cb.getAttribute('data-m');
-    const spec={id:m.toLowerCase(),model:m,enabled:true,address:0,sda:21,scl:22,pin:0,rx:0,tx:0};
-    document.querySelectorAll('#sensorList input.p[data-m="'+m+'"]').forEach(p=>{
+    const key=cb.getAttribute('data-k');
+    const t=TYPES.find(x=>(x.m+(x.ch?'|'+x.ch:''))===key);
+    if(!t)return;
+    const spec={id:t.name.toLowerCase().replace(/[^a-z0-9]/g,''),model:t.m,enabled:true,address:0,sda:21,scl:22,pin:0,rx:0,tx:0,channel:t.ch||''};
+    document.querySelectorAll('#sensorList input.p[data-k="'+key+'"]').forEach(p=>{
       const k=p.getAttribute('data-p');spec[k]=parseInt(p.value)||0;
     });
-    const a=document.querySelector('#sensorList select.a[data-m="'+m+'"]');
+    const a=document.querySelector('#sensorList select.a[data-k="'+key+'"]');
     if(a) spec.address=parseInt(a.value)||0;
     sensors.push(spec);
   });
