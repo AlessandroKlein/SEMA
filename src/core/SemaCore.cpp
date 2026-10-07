@@ -17,6 +17,19 @@
 
 namespace sema {
 
+// Mapea la zona horaria IANA (config) a una cadena POSIX TZ que entiende newlib.
+static const char* posixTz(const String& tz) {
+  if (tz == "America/Argentina/Buenos_Aires" || tz == "America/Sao_Paulo") return "<-03>3";
+  if (tz == "America/Santiago") return "<-04>4<-03>,M9.1.0/24,M4.1.0/24";
+  if (tz == "America/Bogota") return "<-05>5";
+  if (tz == "America/Mexico_City") return "<-06>6";
+  if (tz == "America/New_York") return "EST5EDT,M3.2.0,M11.1.0";
+  if (tz == "America/Los_Angeles") return "PST8PDT,M3.2.0,M11.1.0";
+  if (tz == "Europe/Madrid" || tz == "Europe/Berlin") return "CET-1CEST,M3.5.0,M10.5.0/3";
+  if (tz == "Europe/London") return "GMT0BST,M3.5.0/1,M10.5.0";
+  return "UTC0";
+}
+
 SemaCore& SemaCore::instance() {
   static SemaCore core;
   return core;
@@ -123,8 +136,10 @@ void SemaCore::setup() {
               config_.get().network.subnet,
               config_.get().network.dns);
 
-  // Sincronización NTP (D-0044): reloj UTC; nowEpoch() cae a uptime hasta sincronizar.
-  configTime(0, 0, config_.get().system.ntpServer.c_str(), "time.nist.gov");
+  // Sincronización NTP (D-0044): configura la zona horaria local; nowEpoch()
+  // devuelve la época local y cae a uptime hasta sincronizar.
+  configTzTime(posixTz(config_.get().system.timezone),
+               config_.get().system.ntpServer.c_str(), "time.nist.gov");
 
   http_.begin(*this);
 

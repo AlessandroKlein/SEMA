@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.65.0] - 2026-10-07
+
+### Added
+
+- Zona horaria en timestamps (configTzTime + epoch local).
+- Config fail-safe: respaldo config_bak y restauracion automatica.
+
 ## [1.64.0] - 2026-10-07
 
 ### Added
@@ -932,6 +939,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.65.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.65.0
 [1.64.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.64.0
 [1.63.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.63.0
 [1.62.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.62.0
