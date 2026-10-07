@@ -73,7 +73,6 @@ Se corrigieron dos inconsistencias de documentación:
 
 **Fiabilidad y operación**
 - RTC hardware (DS3231) con batería.
-- Watchdog jerárquico por tarea.
 
 **Plataforma**
 - Multi-estación en un dashboard.
