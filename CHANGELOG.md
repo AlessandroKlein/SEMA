@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.53.0] - 2026-10-07
+
+### Fixed
+
+- Switches de sensores (toggle) ahora conmutan (label).
+
+### Added
+
+- Seccion Expansores y salidas: registro 74HC595/74HC165 + GPIO (nativo o MCP23017).
+- Endpoint POST /api/v1/config/io.
+
 ## [1.52.0] - 2026-10-07
 
 ### Changed
@@ -852,6 +863,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.53.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.53.0
 [1.52.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.52.0
 [1.51.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.51.0
 [1.50.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.50.0

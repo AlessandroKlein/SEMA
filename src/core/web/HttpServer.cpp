@@ -63,6 +63,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config/network", HTTP_POST, [this]() { onConfigNetwork(); });
   server_.on("/api/v1/config/system", HTTP_POST, [this]() { onConfigSystem(); });
   server_.on("/api/v1/config/sensors", HTTP_POST, [this]() { onConfigSensors(); });
+  server_.on("/api/v1/config/io", HTTP_POST, [this]() { onConfigIo(); });
   server_.on("/api/v1/wifi/scan", HTTP_GET, [this]() { onWifiScan(); });
   server_.on("/api/v1/security/keys", HTTP_POST, [this]() { onApiKeys(); });
   server_.on("/api/v1/update/check", HTTP_GET, [this]() { onUpdateCheck(); });
@@ -785,6 +786,10 @@ void HttpServer::onSensorsPage() {
 <button onclick="save()">💾 Guardar sensores</button></section>
 <section><h2>Pines de buses</h2>
 <div id="pinInfo" class="muted">Cargando…</div></section>
+<section><h2>Expansores y salidas</h2>
+<p class="muted">Registro de desplazamiento (74HC595/74HC165) y salidas GPIO (nativas o por MCP23017).</p>
+<div id="ioList" class="muted">Cargando…</div>
+<button onclick="saveIo()">💾 Guardar expansores/salidas</button></section>
 <script>
 const TYPES=[
  {m:'BME280',i:'i2c'},{m:'SHT40',i:'i2c'},{m:'SHT31',i:'i2c'},{m:'BMP280',i:'i2c'},
@@ -793,7 +798,7 @@ const TYPES=[
  {m:'ADC',i:'ana'},{m:'PCNT',i:'pulse'},{m:'PMS5003',i:'uart'},{m:'CO',i:'ana'},{m:'SOLAR',i:'ana'}
 ];
 let cfg={};
-async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;render();loadPins(r)}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
+async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
 function render(){
   const list=document.getElementById('sensorList');
   let h='<div class="catalog">';
@@ -803,7 +808,7 @@ function render(){
     const addr=cur.address||0;
     const sda=cur.sda||21,scl=cur.scl||22,pin=cur.pin||0,rx=cur.rx||0,tx=cur.tx||0;
     h+='<div class="cat-item">';
-    h+='<span class="switch"><input type="checkbox" data-m="'+t.m+'" '+(en?'checked':'')+'><span class="sl"></span></span>';
+    h+='<label class="switch"><input type="checkbox" data-m="'+t.m+'" '+(en?'checked':'')+'><span class="sl"></span></label>';
     h+='<label style="flex:1;margin:0 .4rem">'+t.m+' <span class="muted">('+t.i+')</span></label>';
     if(t.i==='i2c'){
       h+='<span class="muted">ID<select class="a" data-m="'+t.m+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option></select></span>';
@@ -847,6 +852,34 @@ async function loadPins(r){
   p+='<div class="cat-item"><span>Ethernet MDC / MDIO / PHY</span><span>'+e.mdc+' / '+e.mdio+' / '+e.phy_addr+'</span></div>';
   p+='</div>';
   document.getElementById('pinInfo').innerHTML=p;
+}
+function renderIo(){
+  const list=document.getElementById('ioList');
+  const sh=cfg.shift_register||{};
+  let h='<div class="catalog">';
+  h+='<div class="cat-item"><span>Registro</span><select id="shType" style="width:110px"><option value="74HC595"'+(sh.type!=='74HC165'?' selected':'')+'>74HC595 (salida)</option><option value="74HC165"'+(sh.type==='74HC165'?' selected':'')+'>74HC165 (entrada)</option></select></div>';
+  h+='<div class="cat-item"><span>Pines</span><span class="muted">DAT<input id="shData" value="'+(sh.data_pin||0)+'" style="width:44px"> CLK<input id="shClock" value="'+(sh.clock_pin||0)+'" style="width:44px"> LAT<input id="shLatch" value="'+(sh.latch_pin||0)+'" style="width:44px"></span></div>';
+  h+='</div>';
+  h+='<div class="muted" style="margin:.6rem 0 .2rem">Salidas GPIO (expander = dirección MCP23017, 0 = pin nativo)</div>';
+  h+='<div class="catalog" id="gpioList">';
+  (cfg.gpio||[]).forEach((g,i)=>{
+    h+='<div class="cat-item"><span><input id="gid'+i+'" value="'+(g.id||'')+'" placeholder="id" style="width:80px"></span><span class="muted">PIN<input id="gpin'+i+'" value="'+(g.pin||0)+'" style="width:44px"> MODE<select id="gmode'+i+'" style="width:100px"><option value="output"'+(g.mode==='output'?' selected':'')+'>output</option><option value="input"'+(g.mode==='input'?' selected':'')+'>input</option><option value="input_pullup"'+(g.mode==='input_pullup'?' selected':'')+'>pullup</option></select> EXP<input id="gexp'+i+'" value="'+(g.expander||g.expander_addr||0)+'" style="width:44px"></span><button class="sec" onclick="delGpio('+i+')">🗑️</button></div>';
+  });
+  h+='</div>';
+  h+='<button class="sec" onclick="addGpio()">➕ Añadir salida GPIO</button>';
+  list.innerHTML=h;
+}
+function addGpio(){cfg.gpio=cfg.gpio||[];cfg.gpio.push({id:'out'+(cfg.gpio.length+1),pin:0,mode:'output',expander:0});renderIo();}
+function delGpio(i){cfg.gpio.splice(i,1);renderIo();}
+function saveIo(){
+  const gpio=[];
+  document.querySelectorAll('#gpioList .cat-item').forEach((row,idx)=>{
+    const gid=row.querySelector('input[id^=gid]'),gpin=row.querySelector('input[id^=gpin]'),gexp=row.querySelector('input[id^=gexp]'),gmode=row.querySelector('select');
+    if(!gid)return;
+    gpio.push({id:gid.value,pin:parseInt(gpin.value)||0,mode:gmode.value,expander:parseInt(gexp.value)||0});
+  });
+  const body={shift:{type:document.getElementById('shType').value,data:parseInt(document.getElementById('shData').value)||0,clock:parseInt(document.getElementById('shClock').value)||0,latch:parseInt(document.getElementById('shLatch').value)||0},gpio:gpio};
+  fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
 }
 load();
 </script>
@@ -1106,6 +1139,49 @@ void HttpServer::onConfigSensors() {
     return;
   }
   core_->applySensors();
+  server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onConfigIo() {
+  if (!webAuthed()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"body required\"}");
+    return;
+  }
+  DynamicJsonDocument doc(4096);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  Config next = core_->config().get();
+  if (doc.containsKey("shift")) {
+    next.shiftRegister.type = doc["shift"]["type"] | "74HC595";
+    next.shiftRegister.dataPin = doc["shift"]["data"] | 0;
+    next.shiftRegister.clockPin = doc["shift"]["clock"] | 0;
+    next.shiftRegister.latchPin = doc["shift"]["latch"] | 0;
+  }
+  if (doc.containsKey("gpio")) {
+    next.gpio.clear();
+    JsonArray arr = doc["gpio"].as<JsonArray>();
+    for (JsonObject o : arr) {
+      GpioSpec g;
+      g.id = o["id"] | "";
+      g.pin = o["pin"] | 0;
+      g.mode = o["mode"] | "output";
+      g.initial = o["initial"] | 0;
+      g.expanderAddr = o["expander"] | 0;
+      next.gpio.push_back(g);
+    }
+  }
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
+  core_->applyGpio();
+  core_->applyShift();
   server_.send(200, "application/json", "{\"ok\":true}");
 }
 
