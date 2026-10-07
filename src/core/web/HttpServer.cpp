@@ -3,6 +3,9 @@
 #include <ArduinoJson.h>
 #include <Update.h>
 #include <esp_system.h>
+#include <esp_ota_ops.h>
+#include <esp_partition.h>
+#include <mbedtls/md.h>
 #include <LittleFS.h>
 
 #include "core/SemaCore.hpp"
@@ -735,10 +738,51 @@ void HttpServer::onConfigPut() {
   }
 }
 
+namespace {
+// Calcula el SHA-256 (32 bytes) de la partición OTA recién escrita.
+bool otaPartitionSha256(uint8_t out[32]) {
+  const esp_partition_t* part = esp_ota_get_next_update_partition(nullptr);
+  if (part == nullptr) {
+    return false;
+  }
+  mbedtls_md_context_t ctx;
+  mbedtls_md_init(&ctx);
+  if (mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(MBEDTLS_MD_SHA256), 0) != 0) {
+    return false;
+  }
+  mbedtls_md_starts(&ctx);
+  uint8_t buf[1024];
+  for (size_t off = 0; off < part->size; off += sizeof(buf)) {
+    const size_t n = (part->size - off < sizeof(buf)) ? (part->size - off) : sizeof(buf);
+    if (esp_partition_read(part, off, buf, n) != ESP_OK) {
+      mbedtls_md_free(&ctx);
+      return false;
+    }
+    mbedtls_md_update(&ctx, buf, n);
+  }
+  mbedtls_md_finish(&ctx, out);
+  mbedtls_md_free(&ctx);
+  return true;
+}
+
+String toHex(const uint8_t* data, size_t len) {
+  static const char* hex = "0123456789abcdef";
+  String s;
+  s.reserve(len * 2);
+  for (size_t i = 0; i < len; ++i) {
+    s += hex[(data[i] >> 4) & 0xF];
+    s += hex[data[i] & 0xF];
+  }
+  return s;
+}
+}  // namespace
+
 void HttpServer::onOtaUpload() {
   HTTPUpload& upload = server_.upload();
   if (upload.status == UPLOAD_FILE_START) {
     otaAuthorized_ = authorized();
+    otaShaOk_ = true;
+    otaExpectedSha_ = server_.hasHeader("X-SHA256") ? server_.header("X-SHA256") : "";
     if (!otaAuthorized_) {
       return;  // no escribir nada si no está autorizado
     }
@@ -753,6 +797,15 @@ void HttpServer::onOtaUpload() {
   } else if (upload.status == UPLOAD_FILE_END) {
     if (otaAuthorized_) {
       Update.end(true);
+      // Verificación de integridad (opcional, cabecera X-SHA256).
+      if (otaExpectedSha_.length() == 64) {
+        uint8_t sha[32] = {0};
+        if (otaPartitionSha256(sha)) {
+          otaShaOk_ = (toHex(sha, 32) == otaExpectedSha_);
+        } else {
+          otaShaOk_ = false;
+        }
+      }
     }
   }
 }
@@ -760,6 +813,11 @@ void HttpServer::onOtaUpload() {
 void HttpServer::onOta() {
   if (!otaAuthorized_) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    otaAuthorized_ = false;
+    return;
+  }
+  if (!otaShaOk_) {
+    server_.send(400, "application/json", "{\"error\":\"sha256 mismatch\"}");
     otaAuthorized_ = false;
     return;
   }

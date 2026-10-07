@@ -1,6 +1,6 @@
 {
   "name": "sema",
-  "version": "1.34.0",
+  "version": "1.35.0",
   "hw_version": "rev0",
   "config_schema_version": 1,
   "protocol_version": 1,
@@ -9,18 +9,18 @@
       "board": "esp32-wroom-4mb",
       "chip": "esp32",
       "flash_mb": 4,
-      "firmware": "sema_1.34.0_esp32-wroom-4mb.bin",
-      "sha256": "8e8bd0ca6c84d140d762f180b3c0da42d3307aaf66cd93b1856680605a5b681e",
-      "filesystem": "sema_1.34.0_esp32-wroom-4mb_littlefs.bin",
+      "firmware": "sema_1.35.0_esp32-wroom-4mb.bin",
+      "sha256": "665b6c265d6814daf0e999739f261edc0974583787a1a72fadba053515388b2f",
+      "filesystem": "sema_1.35.0_esp32-wroom-4mb_littlefs.bin",
       "filesystem_sha256": "e2a7768e68b459dfb1167ef7015e65e7ad84530c02450baa2091673083137346"
     },
     {
       "board": "esp32-s3-8mb",
       "chip": "esp32s3",
       "flash_mb": 8,
-      "firmware": "sema_1.34.0_esp32-s3-8mb.bin",
-      "sha256": "69477b6cd64cccad86144d1a8294a66423c0cd04030123787a26f3c58a15dff5",
-      "filesystem": "sema_1.34.0_esp32-s3-8mb_littlefs.bin",
+      "firmware": "sema_1.35.0_esp32-s3-8mb.bin",
+      "sha256": "5b8e7a6013d7fd8e42a1a4ff7acd5bc8a1439e10d07c4784c84723943560ebaa",
+      "filesystem": "sema_1.35.0_esp32-s3-8mb_littlefs.bin",
       "filesystem_sha256": "a7e9997adf1c8129d8e22cd4b71cbc4f76a9eea2a1a66f210fca988d4ef698ad"
     }
   ]

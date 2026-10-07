@@ -77,6 +77,8 @@ private:
   ::WebSocketsServer ws_{81};
   SemaCore* core_ = nullptr;
   bool otaAuthorized_ = false;
+  String otaExpectedSha_;  // SHA-256 esperado del firmware (cabecera X-SHA256)
+  bool otaShaOk_ = true;   // false = checksum no coincide → no reiniciar
   String sessionToken_;
   uint32_t failedLogins_ = 0;
   uint32_t lockoutUntilMs_ = 0;
