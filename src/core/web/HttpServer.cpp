@@ -165,46 +165,48 @@ void HttpServer::onRoot() {
 <title>SEMA</title>
 <link rel="stylesheet" href="/gridstack.min.css">
 <style>
-body{font-family:system-ui,sans-serif;margin:1rem;background:#0d1117;color:#e6edf3}
+:root{--bg:#0d1117;--fg:#e6edf3;--card:#161b22;--bd:#30363d;--muted:#8b949e;--acc:#1f6feb}
+body{font-family:system-ui,sans-serif;margin:1rem;background:var(--bg);color:var(--fg)}
 h1{margin:0 0 .25rem}h2{margin:1.25rem 0 .5rem}
-.muted{color:#8b949e}
-a{color:#8b949e}
-.card{height:100%;box-sizing:border-box;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:.5rem;position:relative}
-.card .t{font-size:.72rem;color:#8b949e;text-transform:uppercase}
+.muted{color:var(--muted)}
+a{color:var(--muted);text-decoration:none}
+.card{height:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:.5rem;position:relative}
+.card .t{font-size:.72rem;color:var(--muted);text-transform:uppercase}
 .card .v{font-size:1.35rem;font-weight:600;margin:.1rem 0}
-.card .v span{font-size:.75rem;color:#8b949e;font-weight:400}
+.card .v span{font-size:.75rem;color:var(--muted);font-weight:400}
 .card .s{font-size:.68rem;color:#58a6ff}
 .card .del{position:absolute;top:.2rem;right:.2rem;background:#30363d;color:#f85149;border:0;border-radius:4px;width:22px;height:22px;line-height:1;cursor:pointer;font-size:.8rem;padding:0}
 canvas.chart{width:100%;height:100%;display:block}
-.grid-stack{background:#0d1117}
+.grid-stack{background:var(--bg)}
 .grid-stack>.grid-stack-item>.grid-stack-item-content{overflow:hidden}
-input,button{box-sizing:border-box;padding:.45rem;margin:.3rem 0;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#e6edf3;font-size:.9rem}
+input,button{box-sizing:border-box;padding:.45rem;margin:.3rem 0;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg);font-size:.9rem}
 input{display:block;width:100%}
-button{width:100%;background:#1f6feb;color:#fff;border:0;cursor:pointer}
-button.sec{background:#30363d}
+button{width:100%;background:var(--acc);color:#fff;border:0;cursor:pointer;border-radius:6px}
+button.sec{background:#21262d}
 .bar{display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0}
 .bar button{flex:1;min-width:130px}
+.nav{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.55rem 1rem;margin:0 0 1rem;border:1px solid var(--bd);border-radius:12px;background:var(--card)}
+.nav a{color:var(--muted);text-decoration:none;padding:.3rem .6rem;border-radius:7px;font-size:.9rem}
+.nav a:hover{color:var(--fg);background:#21262d}
+.nav .out{color:#f85149}
+.nav-right{margin-left:auto;display:flex;gap:.4rem;align-items:center}
 .grid-wind{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
-label{font-size:.75rem;color:#8b949e;display:block}
-section{border:1px solid #30363d;border-radius:8px;padding:1rem;margin:1rem 0}
+label{font-size:.75rem;color:var(--muted);display:block}
+section{border:1px solid var(--bd);border-radius:8px;padding:1rem;margin:1rem 0;background:var(--card)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;overflow:auto}
 .modal.open{display:block}
-.modal-box{background:#0d1117;border:1px solid #30363d;border-radius:8px;max-width:520px;margin:2rem auto;padding:1rem}
-.catalog{max-height:60vh;overflow:auto;border:1px solid #30363d;border-radius:6px;padding:.5rem}
+.modal-box{background:var(--bg);border:1px solid var(--bd);border-radius:8px;max-width:520px;margin:2rem auto;padding:1rem}
+.catalog{max-height:60vh;overflow:auto;border:1px solid var(--bd);border-radius:6px;padding:.5rem}
 .cat-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem;border-bottom:1px solid #21262d;cursor:pointer}
-.cat-item:hover{background:#161b22}
+.cat-item:hover{background:var(--card)}
 .cat-item .add{background:#238636;border:0;border-radius:4px;color:#fff;padding:.2rem .6rem;cursor:pointer;width:auto}
-.cat-group{font-size:.72rem;color:#8b949e;text-transform:uppercase;margin:.6rem 0 .2rem}
+.cat-group{font-size:.72rem;color:var(--muted);text-transform:uppercase;margin:.6rem 0 .2rem}
 .range{display:flex;gap:2px;margin:.2rem 0}
-.rbtn{width:auto;padding:.1rem .5rem;font-size:.68rem;background:#21262d;border:1px solid #30363d;border-radius:3px;cursor:pointer;margin:0;color:#8b949e}
-.rbtn.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
-.legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.68rem;color:#8b949e;margin-top:.2rem}
-body.light{background:#f6f8fa;color:#24292f}
-body.light .card{background:#ffffff;border-color:#d0d7de}
-body.light input{background:#ffffff;color:#24292f;border-color:#d0d7de}
-body.light .muted,body.light a{color:#57606a}
-body.light section{border-color:#d0d7de}
-body.light .cat-item:hover{background:#f6f8fa}
+.rbtn{width:auto;padding:.1rem .5rem;font-size:.68rem;background:#21262d;border:1px solid var(--bd);border-radius:3px;cursor:pointer;margin:0;color:var(--muted)}
+.rbtn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.68rem;color:var(--muted);margin-top:.2rem}
+body.light{--bg:#f6f8fa;--fg:#24292f;--card:#fff;--bd:#d0d7de;--muted:#57606a}
+body.light input{background:#fff;color:#24292f}
 </style>
 <script src="/gridstack-all.min.js"></script>
 </head>
@@ -212,16 +214,16 @@ body.light .cat-item:hover{background:#f6f8fa}
 <h1>SEMA</h1>
 <div id="status" class="muted">Cargando…</div>
 
-<nav style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0;padding-bottom:.5rem;border-bottom:1px solid #30363d">
-  <a href="/" style="color:#8b949e;text-decoration:none">📊 Dashboard</a>
-  <a href="/config/network" style="color:#8b949e;text-decoration:none">🌐 Red</a>
-  <a href="/config/security" style="color:#8b949e;text-decoration:none">🔐 Seguridad</a>
-  <a href="/config/wind" style="color:#8b949e;text-decoration:none">🧭 Veleta</a>
-  <a href="/config/system" style="color:#8b949e;text-decoration:none">⚙️ Sistema</a>
-  <span style="margin-left:auto;display:flex;align-items:center;gap:.4rem">
-    <button class="sec" onclick="toggleTheme()" style="margin:0">🌓</button>
-    <a href="/logout" style="color:#f85149;text-decoration:none">Salir</a>
-  </span>
+<nav class="nav">
+  <a href="/">📊 Dashboard</a>
+  <a href="/config/network">🌐 Red</a>
+  <a href="/config/security">🔐 Seguridad</a>
+  <a href="/config/wind">🧭 Veleta</a>
+  <a href="/config/system">⚙️ Sistema</a>
+  <div class="nav-right">
+    <button class="sec" onclick="toggleTheme()">🌓</button>
+    <a href="/logout" class="out">Salir</a>
+  </div>
 </nav>
 
 <div class="bar" id="grid">

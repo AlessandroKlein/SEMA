@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.43.0] - 2026-10-07
+
+### Changed
+
+- CSS unificado: dashboard usa las mismas variables/navbar que /config.
+- mDNS: saneamiento del hostname (solo alfanumerico y guiones).
+
 ## [1.42.0] - 2026-10-07
 
 ### Fixed
@@ -770,6 +777,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.43.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.43.0
 [1.42.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.42.0
 [1.41.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.41.0
 [1.40.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.40.0

@@ -29,9 +29,19 @@ void WiFiManager::begin(const String& mode, const String& ssid,
     startAp(hostname);
   }
 
-  // mDNS (README §61): resuelve <hostname>.local.
+  // mDNS (README §61): resuelve <hostname>.local. Se sanea el nombre (solo
+  // letras, dígitos y guiones; sin espacios ni caracteres especiales).
   if (hostname.length() > 0) {
-    mdnsStarted_ = MDNS.begin(hostname.c_str());
+    String safe;
+    safe.reserve(hostname.length());
+    for (size_t i = 0; i < hostname.length(); ++i) {
+      const char c = hostname[i];
+      safe += (isalnum(static_cast<unsigned char>(c)) || c == '-') ? c : '-';
+    }
+    if (safe.length() == 0) {
+      safe = "sema";
+    }
+    mdnsStarted_ = MDNS.begin(safe.c_str());
     if (mdnsStarted_) {
       MDNS.addService("http", "tcp", 80);
     }
