@@ -12,6 +12,7 @@
 #include <LittleFS.h>
 
 #include "core/SemaCore.hpp"
+#include "core/Time.hpp"
 
 namespace sema {
 
@@ -315,8 +316,9 @@ function cardContent(it){
            '<button class="del" onclick="deleteCard(\''+cid(it.type,it.key)+'\')">✕</button></div>';
   }
   const m=findValue(it.key);
-  const v=m?(+m.value).toFixed(2):'—';
-  const u=m?m.unit:'';
+  const isClock=m&&m.measurement==='clock';
+  const v=m?(isClock?new Date((+m.value)*1000).toLocaleTimeString():(+m.value).toFixed(2)):'—';
+  const u=m&&!isClock?m.unit:'';
   const q=m?m.quality:'';
   const nm=m?m.measurement:it.key;
   return '<div class="card"><div class="t">'+nm+'</div>'+
@@ -1183,7 +1185,7 @@ void HttpServer::onUpdateCheck() {
 }
 
 void HttpServer::onRestart() {
-  if (!authorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1193,7 +1195,7 @@ void HttpServer::onRestart() {
 }
 
 void HttpServer::onConfigPut() {
-  if (!authorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1430,6 +1432,7 @@ void HttpServer::onSensors() {
     add("wind", "wind_speed", wave(9.0f, 2.0f, 12.0f, 2400), imperial ? "mph" : "m/s");
     add("wind", "wind_direction", fmodf(t * 12.0f, 360.0f), "°");
     add("rain", "rain", wave(10.0f, 0.0f, 3.0f, 9000), imperial ? "in" : "mm");
+    add("clock", "clock", static_cast<float>(nowEpoch()), "epoch");
     ddoc["units"] = units;
     String dout;
     serializeJson(ddoc, dout);
@@ -1478,6 +1481,18 @@ void HttpServer::onSensors() {
     o["unit"] = m.unit;
     o["quality"] = qualityName(m.quality);
     o["sequence"] = m.sequence;
+  }
+
+  // Reloj (hora NTP/UTC) para la tarjeta de reloj del dashboard.
+  {
+    JsonObject o = arr.createNestedObject();
+    o["sensor_id"] = "clock";
+    o["channel_id"] = "0";
+    o["measurement"] = "clock";
+    o["value"] = static_cast<float>(nowEpoch());
+    o["unit"] = "epoch";
+    o["quality"] = "VALID";
+    o["sequence"] = 0;
   }
 
   doc["units"] = units;
