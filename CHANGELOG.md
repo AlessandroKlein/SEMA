@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.73.0] - 2026-10-07
+
+### Added
+
+- Selector de unidades (metrico/imperial) en /config/system.
+
 ## [1.72.0] - 2026-10-07
 
 ### Added
@@ -983,6 +989,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.73.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.73.0
 [1.72.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.72.0
 [1.71.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.71.0
 [1.70.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.70.0
