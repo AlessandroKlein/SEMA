@@ -139,10 +139,24 @@
 #define SEMA_PIN_LORA_DIO1 26
 #define SEMA_PIN_LORA_BUSY 27
 
-#define SEMA_PIN_ETH_MDC 23
-#define SEMA_PIN_ETH_MDIO 18
+// =============================================================================
+// Ethernet LAN8720A (RMII) — pines oficiales Espressif para ESP32 WROOM
+// =============================================================================
+// MDC y MDIO son configurables por software (ETH.begin). El resto son fijos del
+// MAC EMAC interno del ESP32 y NO se pueden reasignar.
+#define SEMA_PIN_ETH_MDC 23      // IO23_RMII_MDC
+#define SEMA_PIN_ETH_MDIO 18     // IO18_RMII_MDIO
 #define SEMA_PIN_ETH_PHY_ADDR 1
 #define SEMA_PIN_ETH_POWER -1
+// Fijos RMII (hardware EMAC, solo informativo):
+#define SEMA_PIN_ETH_TXD0 19     // IO19_RMII_EMAC_TXD0
+#define SEMA_PIN_ETH_TXD1 22     // IO22_RMII_EMAC_TXD1
+#define SEMA_PIN_ETH_TX_EN 21    // IO21_RMII_EMAC_TX_EN
+#define SEMA_PIN_ETH_RXD0 25     // IO25_RMII_EMAC_RXD0
+#define SEMA_PIN_ETH_RXD1 26     // IO26_RMII_EMAC_RXD1
+#define SEMA_PIN_ETH_CRS_DV 27   // IO27_RMII_EMAC_CRS_DV
+#define SEMA_PIN_ETH_RX_ER 13    // IO13_RMII_EMAC_RX_ER
+#define SEMA_PIN_ETH_REF_CLK 0   // IO0_RMII_EMAC_REF_CLK (50 MHz, GPIO0_IN)
 
 #define SEMA_PIN_ETH_W5500_RST -1
 #define SEMA_PIN_ETH_W5500_IRQ 4

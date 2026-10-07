@@ -907,7 +907,8 @@ async function loadPins(r){
   p+='<div class="cat-item"><span>CAN TX / RX</span><span>'+ca.tx+' / '+ca.rx+'</span></div>';
   p+='<div class="cat-item"><span>LoRa CS / RST / DIO1 / BUSY</span><span>'+l.cs+' / '+l.rst+' / '+l.dio1+' / '+l.busy+'</span></div>';
   p+='<div class="cat-item"><span>Zigbee RX / TX</span><span>'+z.rx+' / '+z.tx+'</span></div>';
-  p+='<div class="cat-item"><span>Ethernet MDC / MDIO / PHY</span><span>'+e.mdc+' / '+e.mdio+' / '+e.phy_addr+'</span></div>';
+  p+='<div class="cat-item"><span>Ethernet RMII MDC / MDIO</span><span>'+e.mdc+' / '+e.mdio+'</span></div>';
+  p+='<div class="cat-item"><span>Ethernet RMII (fijos)</span><span class="muted">TXD0=19 TXD1=22 TX_EN=21 RXD0=25 RXD1=26 CRS_DV=27 REF_CLK=0</span></div>';
   p+='</div>';
   document.getElementById('pinInfo').innerHTML=p;
 }
