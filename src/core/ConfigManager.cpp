@@ -200,10 +200,12 @@ bool ConfigManager::serialize(String& out) const {
     o["initial"] = g.initial;
     o["expander_addr"] = g.expanderAddr;
   }
-  doc["mcp23017_addr"] = config_.mcp23017Addr;
+  doc["mcp23s17_cs"] = config_.mcp23s17.csPin;
+  JsonArray mp = doc.createNestedArray("mcp23s17_pins");
+  for (int i = 0; i < 16; ++i) {
+    mp.add(config_.mcp23s17.pinModes[i]);
+  }
   doc["shift_register"]["type"] = config_.shiftRegister.type;
-  doc["shift_register"]["data_pin"] = config_.shiftRegister.dataPin;
-  doc["shift_register"]["clock_pin"] = config_.shiftRegister.clockPin;
   doc["shift_register"]["latch_pin"] = config_.shiftRegister.latchPin;
   doc["modbus"]["enabled"] = config_.modbus.enabled;
   doc["modbus"]["rx"] = config_.modbus.rxPin;
@@ -342,10 +344,12 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     g.expanderAddr = o["expander_addr"] | 0;
     c.gpio.push_back(g);
   }
-  c.mcp23017Addr = doc["mcp23017_addr"] | 0;
+  c.mcp23s17.csPin = doc["mcp23s17_cs"] | 0;
+  JsonArray mp = doc["mcp23s17_pins"].as<JsonArray>();
+  for (int i = 0; i < 16 && i < static_cast<int>(mp.size()); ++i) {
+    c.mcp23s17.pinModes[i] = mp[i] | 0;
+  }
   c.shiftRegister.type = doc["shift_register"]["type"] | "74HC595";
-  c.shiftRegister.dataPin = doc["shift_register"]["data_pin"] | 0;
-  c.shiftRegister.clockPin = doc["shift_register"]["clock_pin"] | 0;
   c.shiftRegister.latchPin = doc["shift_register"]["latch_pin"] | 0;
   c.modbus.enabled = doc["modbus"]["enabled"] | false;
   c.modbus.rxPin = doc["modbus"]["rx"] | 16;

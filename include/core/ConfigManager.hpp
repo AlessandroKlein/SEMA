@@ -121,11 +121,17 @@ struct GpioSpec {
 };
 
 // Shift register standalone (74HC595 salida / 74HC165 entrada).
+// DAT (MOSI) y CLK (SCLK) son los pines SPI del bus, ya configurados; cada chip
+// solo tiene su propio LATCH (RCLK / SH-LD).
 struct ShiftRegisterConfig {
   String type = "74HC595";  // "74HC595" (salida) | "74HC165" (entrada)
-  uint8_t dataPin = 0;      // SER (595) / QH (165)
-  uint8_t clockPin = 0;     // SRCLK (595) / CLK (165)
   uint8_t latchPin = 0;     // RCLK (595) / SH-LD (165)
+};
+
+// MCP23S17 — expansor GPIO por SPI (16 pines A0-A7, B0-B7). CS por chip.
+struct Mcp23s17Config {
+  uint8_t csPin = 0;           // chip select SPI (0 = no usar)
+  uint8_t pinModes[16] = {0};  // 0=no usado, 1=salida, 2=entrada
 };
 
 // RS485 / Modbus RTU (maestro de un esclavo).
@@ -201,7 +207,7 @@ struct Config {
   std::vector<RuleSpec> rules;              // vacío = usar regla por defecto
   std::vector<CalibrationSpec> calibrations; // vacío = usar calibración por defecto
   std::vector<GpioSpec> gpio;              // GPIO standalone (opcional)
-  uint8_t mcp23017Addr = 0;                // dirección I²C del MCP23017 (0 = no usar)
+  Mcp23s17Config mcp23s17;                 // expansor GPIO SPI MCP23S17 (opcional)
   ShiftRegisterConfig shiftRegister;       // shift register (opcional)
   ModbusConfig modbus;                     // RS485/Modbus (opcional)
   CanConfig can;                           // CAN/TWAI (opcional)

@@ -914,17 +914,25 @@ async function loadPins(r){
 function renderIo(){
   const list=document.getElementById('ioList');
   const sh=cfg.shift_register||{};
+  const mCs=cfg.mcp23s17_cs||0;
+  const mPins=cfg.mcp23s17_pins||[];
   let h='';
-  // MCP23017 (expansor GPIO I²C)
-  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">MCP23017 — expansor GPIO I²C</div>';
-  h+='<div class="catalog"><div class="cat-item"><span>Dirección I²C (0x20-0x27)</span><select id="mcpAddr" style="width:110px"><option value="0">— no usar —</option>';
-  for(let a=32;a<=39;a++){ h+='<option value="'+a+'"'+((cfg.mcp23017_addr||0)===a?' selected':'')+'>0x'+a.toString(16).toUpperCase()+'</option>'; }
-  h+='</select></div></div>';
+  // MCP23S17 (expansor GPIO SPI)
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">MCP23S17 — expansor GPIO SPI (16 pines)</div>';
+  h+='<div class="catalog">';
+  h+='<div class="cat-item"><span>Chip Select (CS)</span><input id="mcpCs" value="'+mCs+'" placeholder="0 = no usar" style="width:70px"></div>';
+  h+='<div class="cat-item"><span>Pines A0-A7</span><span class="muted">';
+  for(let i=0;i<8;i++){ h+=sel('mp'+i, mPins[i]!==undefined?mPins[i]:0, 'A'+i); }
+  h+='</span></div>';
+  h+='<div class="cat-item"><span>Pines B0-B7</span><span class="muted">';
+  for(let i=0;i<8;i++){ h+=sel('mp'+(i+8), mPins[i+8]!==undefined?mPins[i+8]:0, 'B'+i); }
+  h+='</span></div>';
+  h+='</div>';
   // Registro de desplazamiento
-  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Registro de desplazamiento</div>';
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Registro de desplazamiento (DAT/CLK = MOSI/SCLK del bus SPI)</div>';
   h+='<div class="catalog">';
   h+='<div class="cat-item"><span>Tipo</span><select id="shType" style="width:140px"><option value="74HC595"'+(sh.type!=='74HC165'?' selected':'')+'>74HC595 (salida)</option><option value="74HC165"'+(sh.type==='74HC165'?' selected':'')+'>74HC165 (entrada)</option></select></div>';
-  h+='<div class="cat-item"><span>Pines</span><span class="muted">DAT<input id="shData" value="'+(sh.data_pin||0)+'" style="width:44px"> CLK<input id="shClock" value="'+(sh.clock_pin||0)+'" style="width:44px"> LAT<input id="shLatch" value="'+(sh.latch_pin||0)+'" style="width:44px"></span></div>';
+  h+='<div class="cat-item"><span>LATCH (RCLK / SH-LD)</span><input id="shLatch" value="'+(sh.latch_pin||0)+'" style="width:70px"></div>';
   h+='</div>';
   // GPIO
   h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Salidas / entradas GPIO</div>';
@@ -936,6 +944,7 @@ function renderIo(){
   h+='<button class="sec" onclick="addGpio()">➕ Añadir GPIO</button>';
   list.innerHTML=h;
 }
+function sel(id,val,label){return '<span style="margin-right:.3rem">'+label+'<select id="'+id+'" style="width:80px"><option value="0"'+(val==0?' selected':'')+'>—</option><option value="1"'+(val==1?' selected':'')+'>out</option><option value="2"'+(val==2?' selected':'')+'>in</option></select></span>';}
 function addGpio(){cfg.gpio=cfg.gpio||[];cfg.gpio.push({id:'out'+(cfg.gpio.length+1),pin:0,mode:'output',expander:0});renderIo();}
 function delGpio(i){cfg.gpio.splice(i,1);renderIo();}
 function saveIo(){
@@ -945,7 +954,9 @@ function saveIo(){
     if(!gid)return;
     gpio.push({id:gid.value,pin:parseInt(gpin.value)||0,mode:gmode.value,expander:parseInt(gexp.value)||0});
   });
-  const body={mcp23017_addr:parseInt(document.getElementById('mcpAddr').value)||0,shift:{type:document.getElementById('shType').value,data:parseInt(document.getElementById('shData').value)||0,clock:parseInt(document.getElementById('shClock').value)||0,latch:parseInt(document.getElementById('shLatch').value)||0},gpio:gpio};
+  const pins=[];
+  for(let i=0;i<16;i++){ pins.push(parseInt(document.getElementById('mp'+i).value)||0); }
+  const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift:{type:document.getElementById('shType').value,latch:parseInt(document.getElementById('shLatch').value)||0},gpio:gpio};
   fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
 }
 load();
@@ -1225,13 +1236,15 @@ void HttpServer::onConfigIo() {
     return;
   }
   Config next = core_->config().get();
-  if (doc.containsKey("mcp23017_addr")) {
-    next.mcp23017Addr = doc["mcp23017_addr"] | 0;
+  if (doc.containsKey("mcp23s17_cs")) {
+    next.mcp23s17.csPin = doc["mcp23s17_cs"] | 0;
+    JsonArray mp = doc["mcp23s17_pins"].as<JsonArray>();
+    for (int i = 0; i < 16 && i < static_cast<int>(mp.size()); ++i) {
+      next.mcp23s17.pinModes[i] = mp[i] | 0;
+    }
   }
   if (doc.containsKey("shift")) {
     next.shiftRegister.type = doc["shift"]["type"] | "74HC595";
-    next.shiftRegister.dataPin = doc["shift"]["data"] | 0;
-    next.shiftRegister.clockPin = doc["shift"]["clock"] | 0;
     next.shiftRegister.latchPin = doc["shift"]["latch"] | 0;
   }
   if (doc.containsKey("gpio")) {

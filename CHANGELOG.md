@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.62.0] - 2026-10-07
+
+### Changed
+
+- MCP23017 -> MCP23S17 (SPI) con CS y configuracion de los 16 pines.
+- Registro de desplazamiento: usa MOSI/SCLK del bus SPI y solo LATCH por chip.
+
 ## [1.61.0] - 2026-10-07
 
 ### Changed
@@ -912,6 +919,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.62.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.62.0
 [1.61.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.61.0
 [1.60.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.60.0
 [1.59.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.59.0

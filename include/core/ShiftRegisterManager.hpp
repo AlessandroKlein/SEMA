@@ -17,7 +17,7 @@ public:
   void writeByte(uint8_t value);   // 74HC595 (salida)
   uint8_t readByte();              // 74HC165 (entrada)
 
-  bool configured() const { return cfg_.dataPin != 0; }
+  bool configured() const { return cfg_.latchPin != 0; }
   bool isOutput() const { return cfg_.type != "74HC165"; }
   const ShiftRegisterConfig& config() const { return cfg_; }
 
