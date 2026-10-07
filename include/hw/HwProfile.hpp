@@ -63,6 +63,11 @@
 #ifndef SEMA_USE_ZIGBEE
 #define SEMA_USE_ZIGBEE SEMA_ON
 #endif
+// Registro de desplazamiento en cascada (74HC595/74HC165). Beta: deshabilitado
+// por defecto hasta completar su driver (cascada, niveles lógicos, etc.).
+#ifndef SEMA_USE_SHIFT
+#define SEMA_USE_SHIFT SEMA_OFF
+#endif
 
 // --- Transceiver RS485 ---
 #ifndef SEMA_MODBUS_ISOLATED

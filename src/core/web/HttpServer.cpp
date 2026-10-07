@@ -824,7 +824,8 @@ const TYPES=[
  {m:'SOLAR',name:'SOLAR',i:'ana',d:'Radiación solar (analógico).'}
 ];
 let cfg={};
-async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
+let shiftEnabled=false;
+async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;try{const y=await(await fetch('/api/v1/system')).json();shiftEnabled=!!y.shift_enabled}catch(e){}render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
 function render(){
   const list=document.getElementById('sensorList');
   let h='<div class="catalog">';
@@ -943,17 +944,19 @@ function renderIo(){
   for(let i=0;i<8;i++){ h+=sel('mp'+(i+8), mPins[i+8]!==undefined?mPins[i+8]:0, 'B'+i); }
   h+='</span></div>';
   h+='</div>';
-  // Registros de desplazamiento (cascada)
-  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Registros de desplazamiento (cascada) <span class="q" title="74HC595 = 8 salidas; 74HC165 = 8 entradas. Alimentación típica 5V, pero las señales al ESP32 deben ser de 3.3V. DAT/CLK usan MOSI/SCLK del bus SPI; cada chip tiene su propio LATCH.">?</span></div>';
-  h+='<div class="catalog" id="shList">';
-  (cfg.shift_registers||[]).forEach((s,i)=>{
-    const isOut=s.type!=='74HC165';
-    h+='<div class="cat-item"><span>Tipo<select class="sht" data-sh="'+i+'" style="width:120px"><option value="74HC595"'+(isOut?' selected':'')+'>74HC595 (salida)</option><option value="74HC165"'+(s.type==='74HC165'?' selected':'')+'>74HC165 (entrada)</option></select></span><span class="muted">LATCH<input class="shl" data-sh="'+i+'" value="'+(s.latch_pin||0)+'" style="width:44px"></span><span class="muted">Pines ';
-    for(let p=0;p<8;p++){ h+='<label style="font-size:.62rem;margin-right:.2rem">'+(isOut?'Q':'D')+p+'<input type="checkbox" class="shp" data-sh="'+i+'" data-p="'+p+'" '+((s.pins&&s.pins[p])?'checked':'')+'></label>'; }
-    h+='</span><button class="sec" onclick="delSh('+i+')">🗑️</button></div>';
-  });
-  h+='</div>';
-  h+='<button class="sec" onclick="addSh()">➕ Añadir registro</button>';
+  // Registros de desplazamiento (cascada) — solo si está habilitado por flag.
+  if(shiftEnabled){
+    h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Registros de desplazamiento (cascada) <span class="q" title="74HC595 = 8 salidas; 74HC165 = 8 entradas. Alimentación típica 5V, pero las señales al ESP32 deben ser de 3.3V. DAT/CLK usan MOSI/SCLK del bus SPI; cada chip tiene su propio LATCH.">?</span></div>';
+    h+='<div class="catalog" id="shList">';
+    (cfg.shift_registers||[]).forEach((s,i)=>{
+      const isOut=s.type!=='74HC165';
+      h+='<div class="cat-item"><span>Tipo<select class="sht" data-sh="'+i+'" style="width:120px"><option value="74HC595"'+(isOut?' selected':'')+'>74HC595 (salida)</option><option value="74HC165"'+(s.type==='74HC165'?' selected':'')+'>74HC165 (entrada)</option></select></span><span class="muted">LATCH<input class="shl" data-sh="'+i+'" value="'+(s.latch_pin||0)+'" style="width:44px"></span><span class="muted">Pines ';
+      for(let p=0;p<8;p++){ h+='<label style="font-size:.62rem;margin-right:.2rem">'+(isOut?'Q':'D')+p+'<input type="checkbox" class="shp" data-sh="'+i+'" data-p="'+p+'" '+((s.pins&&s.pins[p])?'checked':'')+'></label>'; }
+      h+='</span><button class="sec" onclick="delSh('+i+')">🗑️</button></div>';
+    });
+    h+='</div>';
+    h+='<button class="sec" onclick="addSh()">➕ Añadir registro</button>';
+  }
   // GPIO
   h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Salidas / entradas GPIO <span class="q" title="Pines GPIO nativos del ESP32 (3.3V, no toleran 5V). MCP = pin del MCP23S17 (0 = nativo).">?</span></div>';
   h+='<div class="catalog" id="gpioList">';
@@ -984,12 +987,14 @@ function saveIo(){
   const pins=[];
   for(let i=0;i<16;i++){ pins.push(parseInt(document.getElementById('mp'+i).value)||0); }
   const shift=[];
-  document.querySelectorAll('#shList .cat-item').forEach((row,i)=>{
-    const t=row.querySelector('select.sht'), l=row.querySelector('input.shl');
-    const sp=[];
-    row.querySelectorAll('input.shp').forEach(cb=>sp.push(cb.checked?1:0));
-    shift.push({type:t.value,latch:parseInt(l.value)||0,pins:sp});
-  });
+  if(shiftEnabled){
+    document.querySelectorAll('#shList .cat-item').forEach((row,i)=>{
+      const t=row.querySelector('select.sht'), l=row.querySelector('input.shl');
+      const sp=[];
+      row.querySelectorAll('input.shp').forEach(cb=>sp.push(cb.checked?1:0));
+      shift.push({type:t.value,latch:parseInt(l.value)||0,pins:sp});
+    });
+  }
   const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift_registers:shift,gpio:gpio};
   fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
 }
@@ -1139,6 +1144,7 @@ void HttpServer::onSystem() {
   doc["sd_cs"] = SEMA_PIN_SD_CS;
   doc["sd_enabled"] = core_->config().get().storage.sdEnabled;
   doc["history_available"] = core_->history().sdEnabled();
+  doc["shift_enabled"] = (SEMA_USE_SHIFT != 0);
   doc["firmware_file"] =
       String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
   String out;
@@ -1290,6 +1296,7 @@ void HttpServer::onConfigIo() {
       next.mcp23s17.pinModes[i] = mp[i] | 0;
     }
   }
+#if SEMA_USE_SHIFT
   if (doc.containsKey("shift_registers")) {
     next.shiftRegisters.clear();
     JsonArray sr = doc["shift_registers"].as<JsonArray>();
@@ -1304,6 +1311,7 @@ void HttpServer::onConfigIo() {
       next.shiftRegisters.push_back(s);
     }
   }
+#endif
   if (doc.containsKey("gpio")) {
     next.gpio.clear();
     JsonArray arr = doc["gpio"].as<JsonArray>();
