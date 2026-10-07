@@ -62,6 +62,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
   server_.on("/api/v1/config/network", HTTP_POST, [this]() { onConfigNetwork(); });
   server_.on("/api/v1/config/system", HTTP_POST, [this]() { onConfigSystem(); });
+  server_.on("/api/v1/config/sensors", HTTP_POST, [this]() { onConfigSensors(); });
   server_.on("/api/v1/wifi/scan", HTTP_GET, [this]() { onWifiScan(); });
   server_.on("/api/v1/security/keys", HTTP_POST, [this]() { onApiKeys(); });
   server_.on("/api/v1/update/check", HTTP_GET, [this]() { onUpdateCheck(); });
@@ -772,25 +773,57 @@ renderWind();loadWind();
 void HttpServer::onSensorsPage() {
   const bool authed = webAuthed();
   const String body = R"html(
-<section><h2>Sensores</h2>
-<div id="sensorList" class="muted">Cargando…</div></section>
-<section><h2>Pines</h2>
+<section><h2>Configuración de sensores</h2>
+<p class="muted">Marcá los sensores que tenés conectados y asigná los pines. Guardar aplica y reinicia los sensores.</p>
+<div id="sensorList" class="muted">Cargando…</div>
+<button onclick="save()">💾 Guardar sensores</button></section>
+<section><h2>Pines de buses</h2>
 <div id="pinInfo" class="muted">Cargando…</div></section>
 <script>
-async function load(){try{
-  const s=await(await fetch('/api/v1/sensors')).json();
+const TYPES=[
+ {m:'BME280',i:'i2c'},{m:'SHT40',i:'i2c'},{m:'SHT31',i:'i2c'},{m:'BMP280',i:'i2c'},
+ {m:'AHT20',i:'i2c'},{m:'BH1750',i:'i2c'},{m:'VEML6075',i:'i2c'},{m:'SCD30',i:'i2c'},
+ {m:'SGP30',i:'i2c'},{m:'ADS1115',i:'i2c'},{m:'AS3935',i:'i2c'},{m:'DS18B20',i:'1w'},
+ {m:'ADC',i:'ana'},{m:'PCNT',i:'pulse'},{m:'PMS5003',i:'uart'},{m:'CO',i:'ana'},{m:'SOLAR',i:'ana'}
+];
+let cfg={};
+async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;render();loadPins(r)}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
+function render(){
+  const list=document.getElementById('sensorList');
   let h='<div class="catalog">';
-  (s.catalog||[]).forEach(c=>{h+='<div class="cat-item"><span>'+c.id+' — '+c.model+' <span class="muted">('+c.interface+')</span></span><span class="muted">'+(c.healthy?'✅':'⚠️')+'</span></div>'});
+  for(const t of TYPES){
+    const cur=(cfg.sensors||[]).find(s=>s.model===t.m)||{};
+    const en=cur.enabled!==false;
+    const sda=cur.sda||21,scl=cur.scl||22,pin=cur.pin||0,rx=cur.rx||0,tx=cur.tx||0;
+    h+='<div class="cat-item">';
+    h+='<label style="flex:1"><input type="checkbox" data-m="'+t.m+'" '+(en?'checked':'')+'> '+t.m+' <span class="muted">('+t.i+')</span></label>';
+    if(t.i==='i2c') h+='<span class="muted">SDA<input class="p" data-m="'+t.m+'" data-p="sda" value="'+sda+'" style="width:46px"> SCL<input class="p" data-m="'+t.m+'" data-p="scl" value="'+scl+'" style="width:46px"></span>';
+    else if(t.i==='uart') h+='<span class="muted">RX<input class="p" data-m="'+t.m+'" data-p="rx" value="'+rx+'" style="width:46px"> TX<input class="p" data-m="'+t.m+'" data-p="tx" value="'+tx+'" style="width:46px"></span>';
+    else h+='<span class="muted">PIN<input class="p" data-m="'+t.m+'" data-p="pin" value="'+pin+'" style="width:46px"></span>';
+    h+='</div>';
+  }
   h+='</div>';
-  document.getElementById('sensorList').innerHTML=h||'<p class="muted">Sin sensores</p>';
+  list.innerHTML=h;
+}
+function save(){
+  const sensors=[];
+  document.querySelectorAll('#sensorList input[type=checkbox]').forEach(cb=>{
+    const m=cb.getAttribute('data-m');
+    const spec={id:m.toLowerCase(),model:m,enabled:cb.checked,sda:21,scl:22,pin:0,rx:0,tx:0};
+    document.querySelectorAll('#sensorList input.p[data-m="'+m+'"]').forEach(p=>{
+      const k=p.getAttribute('data-p');spec[k]=parseInt(p.value)||0;
+    });
+    sensors.push(spec);
+  });
+  fetch('/api/v1/config/sensors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sensors:sensors})}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
+}
+async function loadPins(r){
   const y=await(await fetch('/api/v1/system')).json();
-  const cfg=await(await fetch('/api/v1/config')).json();
   let p='<p>Board: '+y.board+' · Flash: '+y.flash_mb+' MB'+(y.demo?' · <b>DEMO</b>':'')+'</p>';
-  p+='<p>Origen de pines: <b>'+(y.pins_from_file?'PCB (fijos, no configurables)':'Web (configurables)')+'</b></p>';
-  const n=cfg.network||{}, m=cfg.modbus||{}, ca=cfg.can||{}, l=cfg.lora||{}, z=cfg.zigbee||{}, e=cfg.ethernet||{};
-  const ss=cfg.sensors||[];
+  p+='<p>Origen de pines: <b>'+(y.pins_from_file?'PCB (fijos)':'Web (configurables)')+'</b></p>';
+  const n=r.network||{},m=r.modbus||{},ca=r.can||{},l=r.lora||{},z=r.zigbee||{},e=r.ethernet||{};
   p+='<div class="catalog">';
-  p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>'+((ss[0]&&ss[0].sda)||'—')+' / '+((ss[0]&&ss[0].scl)||'—')+'</span></div>';
+  p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>21 / 22</span></div>';
   p+='<div class="cat-item"><span>Modbus RX / TX (DE/RE)</span><span>'+m.rx+' / '+m.tx+' ('+m.de_re+')</span></div>';
   p+='<div class="cat-item"><span>CAN TX / RX</span><span>'+ca.tx+' / '+ca.rx+'</span></div>';
   p+='<div class="cat-item"><span>LoRa CS / RST / DIO1 / BUSY</span><span>'+l.cs+' / '+l.rst+' / '+l.dio1+' / '+l.busy+'</span></div>';
@@ -798,7 +831,7 @@ async function load(){try{
   p+='<div class="cat-item"><span>Ethernet MDC / MDIO / PHY</span><span>'+e.mdc+' / '+e.mdio+' / '+e.phy_addr+'</span></div>';
   p+='</div>';
   document.getElementById('pinInfo').innerHTML=p;
-}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
+}
 load();
 </script>
 )html";
@@ -1016,6 +1049,47 @@ void HttpServer::onConfigNetwork() {
   // Auto-reinicio para aplicar el cambio de red (AP → STA o viceversa).
   delay(300);
   ESP.restart();
+}
+
+void HttpServer::onConfigSensors() {
+  if (!webAuthed()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"body required\"}");
+    return;
+  }
+  DynamicJsonDocument doc(8192);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  Config next = core_->config().get();
+  next.sensors.clear();
+  JsonArray arr = doc["sensors"].as<JsonArray>();
+  for (JsonObject o : arr) {
+    SensorSpec s;
+    s.id = o["id"] | "";
+    s.model = o["model"] | "";
+    s.enabled = o["enabled"] | true;
+    s.sda = o["sda"] | 21;
+    s.scl = o["scl"] | 22;
+    s.pin = o["pin"] | 0;
+    s.rxPin = o["rx"] | 0;
+    s.txPin = o["tx"] | 0;
+    s.channel = o["channel"] | "";
+    s.unit = o["unit"] | "";
+    s.scale = o["scale"] | 1.0f;
+    s.offset = o["offset"] | 0.0f;
+    next.sensors.push_back(s);
+  }
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
+  core_->applySensors();
+  server_.send(200, "application/json", "{\"ok\":true}");
 }
 
 void HttpServer::onWifiScan() {
