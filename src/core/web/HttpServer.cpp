@@ -579,6 +579,7 @@ a{color:var(--acc);text-decoration:none}
 .switch .sl:before{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
 .switch input:checked+.sl{background:#238636}
 .switch input:checked+.sl:before{transform:translateX(17px)}
+.q{display:inline-block;width:16px;height:16px;border:1px solid var(--bd);border-radius:50%;text-align:center;line-height:14px;font-size:.68rem;color:var(--muted);cursor:help;margin-left:.25rem;font-style:normal}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 .cat-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.5rem .6rem;border-bottom:1px solid var(--bd);font-size:.9rem}
 .cat-item:last-child{border-bottom:0}
@@ -792,10 +793,23 @@ void HttpServer::onSensorsPage() {
 <button onclick="saveIo()">💾 Guardar expansores/salidas</button></section>
 <script>
 const TYPES=[
- {m:'BME280',i:'i2c'},{m:'SHT40',i:'i2c'},{m:'SHT31',i:'i2c'},{m:'BMP280',i:'i2c'},
- {m:'AHT20',i:'i2c'},{m:'BH1750',i:'i2c'},{m:'VEML6075',i:'i2c'},{m:'SCD30',i:'i2c'},
- {m:'SGP30',i:'i2c'},{m:'ADS1115',i:'i2c'},{m:'AS3935',i:'i2c'},{m:'DS18B20',i:'1w'},
- {m:'ADC',i:'ana'},{m:'PCNT',i:'pulse'},{m:'PMS5003',i:'uart'},{m:'CO',i:'ana'},{m:'SOLAR',i:'ana'}
+ {m:'BME280',i:'i2c',d:'Temperatura, humedad y presión barométrica (I²C).'},
+ {m:'BMP280',i:'i2c',d:'Presión barométrica y temperatura (I²C).'},
+ {m:'SHT40',i:'i2c',d:'Temperatura y humedad (I²C).'},
+ {m:'SHT31',i:'i2c',d:'Temperatura y humedad (I²C).'},
+ {m:'AHT20',i:'i2c',d:'Temperatura y humedad (I²C).'},
+ {m:'BH1750',i:'i2c',d:'Luz ambiente en lux (I²C).'},
+ {m:'VEML6075',i:'i2c',d:'Luz ultravioleta UVA y UVB (I²C).'},
+ {m:'SCD30',i:'i2c',d:'CO₂, temperatura y humedad (I²C).'},
+ {m:'SGP30',i:'i2c',d:'Calidad de aire: CO₂ y TVOC (I²C).'},
+ {m:'ADS1115',i:'i2c',d:'ADC 16 bits por I²C (4 canales).'},
+ {m:'AS3935',i:'i2c',d:'Detector de rayos / relámpagos (I²C).'},
+ {m:'DS18B20',i:'1w',d:'Temperatura por bus 1-Wire (Dallas).'},
+ {m:'ADC',i:'ana',d:'Entrada analógica nativa: veleta, batería, etc.'},
+ {m:'PCNT',i:'pulse',d:'Contador de pulsos: pluviómetro (lluvia) y anemómetro (viento).'},
+ {m:'PMS5003',i:'uart',d:'Partículas PM1/PM2.5/PM10 (UART).'},
+ {m:'CO',i:'ana',d:'Monóxido de carbono (analógico).'},
+ {m:'SOLAR',i:'ana',d:'Radiación solar (analógico).'}
 ];
 let cfg={};
 async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
@@ -809,7 +823,7 @@ function render(){
     const sda=cur.sda||21,scl=cur.scl||22,pin=cur.pin||0,rx=cur.rx||0,tx=cur.tx||0;
     h+='<div class="cat-item">';
     h+='<label class="switch"><input type="checkbox" data-m="'+t.m+'" '+(en?'checked':'')+'><span class="sl"></span></label>';
-    h+='<label style="flex:1;margin:0 .4rem">'+t.m+' <span class="muted">('+t.i+')</span></label>';
+    h+='<label style="flex:1;margin:0 .4rem">'+t.m+' <span class="muted">('+t.i+')</span></label><span class="q" title="'+t.d+'">?</span>';
     if(t.i==='i2c'){
       h+='<span class="muted">ID<select class="a" data-m="'+t.m+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option></select></span>';
       h+='<span class="muted">SDA<input class="p" data-m="'+t.m+'" data-p="sda" value="'+sda+'" style="width:44px"> SCL<input class="p" data-m="'+t.m+'" data-p="scl" value="'+scl+'" style="width:44px"></span>';

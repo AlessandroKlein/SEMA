@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.54.0] - 2026-10-07
+
+### Changed
+
+- Sensores con descripcion (tooltip ?) y nombres aclarados (veleta, pluviometro, anemometro).
+
 ## [1.53.0] - 2026-10-07
 
 ### Fixed
@@ -863,6 +869,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.54.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.54.0
 [1.53.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.53.0
 [1.52.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.52.0
 [1.51.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.51.0
