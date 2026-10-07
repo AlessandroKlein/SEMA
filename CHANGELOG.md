@@ -6,6 +6,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.42.0] - 2026-10-07
+
+### Fixed
+
+- Autenticacion de las paginas /config/*: acceso web unificado (sin login configurado = abierto).
+- Paginas de config ahora muestran y guardan valores correctamente.
+
+### Changed
+
+- NTP/zona horaria con listados (offsets + servidores + personalizado).
+- Dashboard: navbar compartida + boton tema en el header.
+
 ## [1.41.0] - 2026-10-07
 
 ### Changed
@@ -758,6 +770,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.42.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.42.0
 [1.41.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.41.0
 [1.40.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.40.0
 [1.39.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.39.0

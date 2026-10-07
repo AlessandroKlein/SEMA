@@ -212,22 +212,22 @@ body.light .cat-item:hover{background:#f6f8fa}
 <h1>SEMA</h1>
 <div id="status" class="muted">Cargando…</div>
 
-<nav style="display:flex;gap:.6rem;flex-wrap:wrap;margin:.5rem 0;padding-bottom:.5rem;border-bottom:1px solid #30363d">
+<nav style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0;padding-bottom:.5rem;border-bottom:1px solid #30363d">
   <a href="/" style="color:#8b949e;text-decoration:none">📊 Dashboard</a>
   <a href="/config/network" style="color:#8b949e;text-decoration:none">🌐 Red</a>
   <a href="/config/security" style="color:#8b949e;text-decoration:none">🔐 Seguridad</a>
   <a href="/config/wind" style="color:#8b949e;text-decoration:none">🧭 Veleta</a>
   <a href="/config/system" style="color:#8b949e;text-decoration:none">⚙️ Sistema</a>
-  <a href="/logout" style="color:#f85149;text-decoration:none">Salir</a>
+  <span style="margin-left:auto;display:flex;align-items:center;gap:.4rem">
+    <button class="sec" onclick="toggleTheme()" style="margin:0">🌓</button>
+    <a href="/logout" style="color:#f85149;text-decoration:none">Salir</a>
+  </span>
 </nav>
 
 <div class="bar" id="grid">
   <button onclick="openCatalog()">➕ Añadir tarjeta</button>
   <button class="sec" onclick="toggleEdit()">✏️ Editar layout</button>
   <button class="sec" onclick="saveLayout()">💾 Guardar layout</button>
-  <button class="sec" onclick="calibrateNorth()">🧭 Norte de la veleta</button>
-  <button class="sec" onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV</button>
-  <button class="sec" onclick="toggleTheme()">🌓 Tema</button>
 </div>
 
 <div class="grid-stack" id="grid"></div>
@@ -652,7 +652,7 @@ void serveAuthedPage(WebServer& srv, bool authed, const String& body) {
 }  // namespace
 
 void HttpServer::onNetworkPage() {
-  const bool authed = core_->config().get().security.password.length() == 0 || sessionAuthorized();
+  const bool authed = webAuthed();
   const String body = R"html(
 <section><h2>Red (WiFi)</h2>
 <button class="sec" onclick="scanWifi()">🔍 Buscar redes</button><div id="wifiList"></div>
@@ -682,7 +682,7 @@ loadNet();
 }
 
 void HttpServer::onSecurityPage() {
-  const bool authed = core_->config().get().security.password.length() == 0 || sessionAuthorized();
+  const bool authed = webAuthed();
   const String body = R"html(
 <section><h2>Estación</h2>
 <form onsubmit="saveStation();return false;">
@@ -720,27 +720,53 @@ loadSec();
 }
 
 void HttpServer::onSystemPage() {
-  const bool authed = core_->config().get().security.password.length() == 0 || sessionAuthorized();
+  const bool authed = webAuthed();
   const String body = R"html(
 <section><h2>Sistema</h2>
 <div id="status" class="muted">Cargando…</div>
 <pre id="sysinfo" class="muted"></pre></section>
 <section><h2>NTP y zona horaria</h2>
 <form onsubmit="saveSystem();return false;">
-<input id="cfg_timezone" placeholder="Zona horaria (IANA, ej. America/Argentina/Buenos_Aires)">
-<input id="cfg_ntp" placeholder="Servidor NTP (ej. pool.ntp.org)">
+<label class="muted">Zona horaria</label>
+<select id="cfg_timezone">
+<option value="UTC">UTC (0)</option>
+<option value="America/Argentina/Buenos_Aires">Buenos Aires (-3)</option>
+<option value="America/Sao_Paulo">Sao Paulo (-3)</option>
+<option value="America/Santiago">Santiago (-4/-3)</option>
+<option value="America/Bogota">Bogotá (-5)</option>
+<option value="America/Mexico_City">Ciudad de México (-6)</option>
+<option value="America/New_York">Nueva York (-5/-4)</option>
+<option value="America/Los_Angeles">Los Ángeles (-8/-7)</option>
+<option value="Europe/Madrid">Madrid (+1/+2)</option>
+<option value="Europe/London">Londres (0/+1)</option>
+<option value="Europe/Berlin">Berlín (+1/+2)</option>
+<option value="Asia/Tokyo">Tokio (+9)</option>
+<option value="Australia/Sydney">Sídney (+10/+11)</option>
+</select>
+<label class="muted">Servidor NTP</label>
+<select id="cfg_ntp">
+<option value="pool.ntp.org">pool.ntp.org (mundial)</option>
+<option value="time.google.com">time.google.com</option>
+<option value="time.nist.gov">time.nist.gov</option>
+<option value="time.windows.com">time.windows.com</option>
+<option value="0.south-america.pool.ntp.org">Sudamérica</option>
+<option value="__custom__">Personalizado…</option>
+</select>
+<input id="cfg_ntp_custom" placeholder="Servidor NTP propio">
 <button type="submit">Guardar</button>
 </form></section>
 <section><h2>Actualización (OTA)</h2>
-<button onclick="checkUpdate()">🔎 Comprobar actualización</button>
-<div id="upd" class="muted"></div>
+<div style="text-align:center;margin:.4rem 0 1rem"><button onclick="checkUpdate()">🔎 Comprobar actualización</button></div>
+<div id="upd" class="muted" style="text-align:center;margin-bottom:1rem"></div>
 <form method="POST" action="/api/v1/ota" enctype="multipart/form-data"><input type="file" name="firmware"><button type="submit">Subir firmware</button></form></section>
 <section><h2>Acciones</h2>
 <button onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV histórico</button>
 <button class="sec" onclick="doRestart()">🔄 Reiniciar</button></section>
 <script>
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_timezone').value=c.system?c.system.timezone:'';document.getElementById('cfg_ntp').value=c.system?c.system.ntp_server:''}catch(e){}}
-async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:document.getElementById('cfg_ntp').value})});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
+function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
+function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'')}catch(e){}}
+async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp()})});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
 async function doRestart(){if(!confirm('¿Reiniciar?'))return;try{await fetch('/api/v1/restart',{method:'POST'});alert('Reiniciando…')}catch(e){}}
 load();
@@ -750,7 +776,7 @@ load();
 }
 
 void HttpServer::onWindPage() {
-  const bool authed = core_->config().get().security.password.length() == 0 || sessionAuthorized();
+  const bool authed = webAuthed();
   const String body = R"html(
 <section><h2>Calibración de la veleta (WH-SP-WD)</h2>
 <p class="muted">Ingresá los valores de las 8 resistencias en el orden del datasheet (empezando por N) y el pull-up. Las 16 posiciones (8 directas + 8 en paralelo) se calculan automáticamente.</p>
@@ -769,6 +795,14 @@ renderWind();loadWind();
 </script>
 )html";
   serveAuthedPage(server_, authed, body);
+}
+
+bool HttpServer::webAuthed() {
+  const SecurityConfig& sec = core_->config().get().security;
+  if (sec.password.length() == 0) {
+    return true;  // sin login configurado → abierto (primera configuración)
+  }
+  return sessionAuthorized() || authorized();
 }
 
 bool HttpServer::sessionAuthorized() {
@@ -849,7 +883,7 @@ void HttpServer::onHealth() {
 }
 
 void HttpServer::onBackup() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -893,7 +927,7 @@ void HttpServer::onSystem() {
 
 void HttpServer::onConfig() {
   // La config expone claves (api_key/server_key): requiere autenticación.
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -937,7 +971,7 @@ bool HttpServer::authorized() {
 }
 
 void HttpServer::onConfigNetwork() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -971,7 +1005,7 @@ void HttpServer::onConfigNetwork() {
 }
 
 void HttpServer::onWifiScan() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -998,7 +1032,7 @@ void HttpServer::onWifiScan() {
 }
 
 void HttpServer::onApiKeys() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1062,7 +1096,7 @@ void HttpServer::onApiKeys() {
 }
 
 void HttpServer::onConfigSystem() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1086,7 +1120,7 @@ void HttpServer::onConfigSystem() {
 }
 
 void HttpServer::onUpdateCheck() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1376,7 +1410,7 @@ void HttpServer::onSensors() {
 }
 
 void HttpServer::onWindNorth() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1400,7 +1434,7 @@ void HttpServer::onWindNorth() {
 }
 
 void HttpServer::onWindResistors() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1428,7 +1462,7 @@ void HttpServer::onWindResistors() {
 }
 
 void HttpServer::onDashboardLayout() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1559,7 +1593,7 @@ void HttpServer::onGpio() {
 }
 
 void HttpServer::onGpioWrite() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1588,7 +1622,7 @@ void HttpServer::onShift() {
 }
 
 void HttpServer::onShiftWrite() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1647,7 +1681,7 @@ void HttpServer::onCan() {
 }
 
 void HttpServer::onCanWrite() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1695,7 +1729,7 @@ void HttpServer::onLora() {
 }
 
 void HttpServer::onLoraWrite() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }
@@ -1745,7 +1779,7 @@ void HttpServer::onZigbee() {
 }
 
 void HttpServer::onZigbeeWrite() {
-  if (!authorized() && !sessionAuthorized()) {
+  if (!webAuthed()) {
     server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
     return;
   }

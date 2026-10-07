@@ -81,6 +81,7 @@ private:
 
   bool authorized();
   bool sessionAuthorized();
+  bool webAuthed();  // acceso web: sin login configurado, o sesión, o API key
 
   ::WebServer server_;
   ::WebSocketsServer ws_{81};
