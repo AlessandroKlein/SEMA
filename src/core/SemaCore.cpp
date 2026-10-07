@@ -241,7 +241,7 @@ void SemaCore::applySensors() {
     // Catálogo por defecto con los pines del Board Profile.
     static Bme280Sensor bme280("EXT", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
     static Sht40Sensor sht40("INT", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
-    static Ds18b20Sensor ds18b20("SOIL", SEMA_PIN_ONEWIRE);  // pull-up 4,7 kΩ (README §12)
+    static Ds18b20Sensor ds18b20("SOIL", SEMA_PIN_ONEWIRE, nullptr);  // pull-up 4,7 kΩ (README §12)
     static Bh1750Sensor bh1750("LUX", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
     static Aht20Sensor aht20("AUX", SEMA_PIN_I2C_SDA, SEMA_PIN_I2C_SCL);
     // Batería (ADC interno): divisor 11:1 para 12 V (README §37).

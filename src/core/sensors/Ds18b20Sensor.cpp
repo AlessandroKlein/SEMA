@@ -5,7 +5,31 @@
 
 namespace sema {
 
-Ds18b20Sensor::Ds18b20Sensor(const char* id, uint8_t pin) : id_(id), pin_(pin) {}
+namespace {
+bool parseRom(const char* hex, uint8_t out[8]) {
+  if (hex == nullptr || strlen(hex) != 16) {
+    return false;
+  }
+  auto hval = [](char c) -> int {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    return -1;
+  };
+  for (int i = 0; i < 8; ++i) {
+    const int h = hval(hex[i * 2]);
+    const int l = hval(hex[i * 2 + 1]);
+    if (h < 0 || l < 0) return false;
+    out[i] = static_cast<uint8_t>((h << 4) | l);
+  }
+  return true;
+}
+}  // namespace
+
+Ds18b20Sensor::Ds18b20Sensor(const char* id, uint8_t pin, const char* rom)
+    : id_(id), pin_(pin) {
+  hasRom_ = parseRom(rom, rom_);
+}
 
 Ds18b20Sensor::~Ds18b20Sensor() {
   delete ds_;
@@ -32,12 +56,29 @@ uint8_t Ds18b20Sensor::measure(Measurement out[], uint8_t max) {
     return 0;
   }
 
-  ds_->requestTemperatures();  // ~750 ms en resolución por defecto
-  const uint8_t count = ds_->getDeviceCount();
-  const uint8_t n = count < max ? count : max;
   // TODO(D-0044): sustituir por epoch UTC real vía NTP/RTC.
   const uint32_t ts = nowEpoch();
 
+  if (hasRom_) {
+    // Lectura por dirección ROM (cada sensor mapeado a su propia magnitud).
+    ds_->requestTemperaturesByAddress(rom_);
+    const float t = ds_->getTempC(rom_);
+    out[0].sensorId = id_;
+    out[0].channelId = "temperature";
+    out[0].measurement = "temperature";
+    out[0].value = t;
+    out[0].unit = "degC";
+    out[0].quality = (t == DEVICE_DISCONNECTED_C) ? Quality::SensorDisconnected
+                                                  : Quality::Valid;
+    out[0].sequence = ++sequence_;
+    out[0].timestamp = ts;
+    return 1;
+  }
+
+  // Sin ROM: autodetección (todos los dispositivos del bus).
+  ds_->requestTemperatures();  // ~750 ms en resolución por defecto
+  const uint8_t count = ds_->getDeviceCount();
+  const uint8_t n = count < max ? count : max;
   for (uint8_t i = 0; i < n; ++i) {
     const float t = ds_->getTempCByIndex(i);
     out[i].sensorId = (i == 0) ? id_ : (String(id_) + "_" + String((int)i));

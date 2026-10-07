@@ -17,7 +17,7 @@ namespace sema {
 
 class Ds18b20Sensor : public Sensor {
 public:
-  Ds18b20Sensor(const char* id, uint8_t pin);
+  Ds18b20Sensor(const char* id, uint8_t pin, const char* rom);
   ~Ds18b20Sensor() override;
 
   const char* id() const override;
@@ -31,6 +31,8 @@ public:
 private:
   const char* id_;
   uint8_t pin_;
+  uint8_t rom_[8] = {0};
+  bool hasRom_ = false;
   OneWire* oneWire_ = nullptr;
   DallasTemperature* ds_ = nullptr;
   bool ok_ = false;

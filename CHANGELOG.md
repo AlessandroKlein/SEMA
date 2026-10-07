@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.58.0] - 2026-10-07
+
+### Added
+
+- DS18B20: lectura por direccion ROM (getTempC por DeviceAddress).
+
 ## [1.57.0] - 2026-10-07
 
 ### Changed
@@ -888,6 +894,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.58.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.58.0
 [1.57.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.57.0
 [1.56.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.56.0
 [1.55.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.55.0

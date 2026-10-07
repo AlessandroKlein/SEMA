@@ -36,7 +36,7 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
     return new Bmp280Sensor(spec.id.c_str(), spec.sda, spec.scl);
   }
   if (spec.model == "DS18B20") {
-    return new Ds18b20Sensor(spec.id.c_str(), spec.pin);
+    return new Ds18b20Sensor(spec.id.c_str(), spec.pin, spec.rom.c_str());
   }
   if (spec.model == "BH1750") {
     return new Bh1750Sensor(spec.id.c_str(), spec.sda, spec.scl);
