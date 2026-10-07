@@ -208,6 +208,10 @@ section{border:1px solid var(--bd);border-radius:8px;padding:1rem;margin:1rem 0;
 .rbtn{width:auto;padding:.1rem .5rem;font-size:.68rem;background:#21262d;border:1px solid var(--bd);border-radius:3px;cursor:pointer;margin:0;color:var(--muted)}
 .rbtn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.68rem;color:var(--muted);margin-top:.2rem}
+canvas.chart{width:100%;height:120px;min-height:110px;display:block}
+.edit-only{display:none}
+body.editing .edit-only{display:inline-block}
+body:not(.editing) .del{display:none}
 body.light{--bg:#f6f8fa;--fg:#24292f;--card:#fff;--bd:#d0d7de;--muted:#57606a}
 body.light input{background:#fff;color:#24292f}
 </style>
@@ -231,9 +235,9 @@ body.light input{background:#fff;color:#24292f}
 </nav>
 
 <div class="bar" id="grid">
-  <button onclick="openCatalog()">➕ Añadir tarjeta</button>
+  <button class="edit-only" onclick="openCatalog()">➕ Añadir tarjeta</button>
   <button class="sec" onclick="toggleEdit()">✏️ Editar layout</button>
-  <button class="sec" onclick="saveLayout()">💾 Guardar layout</button>
+  <button class="sec edit-only" onclick="saveLayout()">💾 Guardar layout</button>
 </div>
 
 <div class="grid-stack" id="grid"></div>
@@ -257,6 +261,7 @@ function mkey(m){ return m.sensor_id+'|'+m.measurement; }
 
 function setEdit(on){
   editMode=on;
+  document.body.classList.toggle('editing', on);
   if(!grid)return;
   grid.setStatic(!on);
   grid.enableMove(on);
@@ -339,7 +344,6 @@ function renderCards(){
       content:cardContent(it)
     });
   }
-  grid.compact();
   setEdit(editMode);
   drawCharts();
 }
@@ -475,8 +479,10 @@ function closeCatalog(){ document.getElementById('modal').classList.remove('open
 
 function addCard(type,key){
   if(layout.some(it=>it.type===type && it.key===key)) return;
-  // y=99: se coloca al fondo; grid.compact() lo acomoda en el hueco libre.
-  layout.push({type:type,key:key,x:0,y:99,w:type==='chart'?6:3,h:type==='chart'?3:1});
+  // Colocar al fondo de la columna más baja para no superponer.
+  let y=0;
+  layout.forEach(it=>{ y=Math.max(y, it.y+it.h); });
+  layout.push({type:type,key:key,x:0,y:y,w:type==='chart'?6:3,h:type==='chart'?3:1});
   closeCatalog();
   renderCards();
   saveLayout();

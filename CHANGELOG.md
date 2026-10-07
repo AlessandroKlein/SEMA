@@ -6,6 +6,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.49.0] - 2026-10-07
+
+### Changed
+
+- Layout: posiciones preservadas al recargar (sin compact).
+- Botones de edicion/borrar solo visibles en modo Editar.
+- Graficas con altura fija.
+
+### Debug
+
+- Log serial de fallo al guardar config (putString).
+
 ## [1.48.0] - 2026-10-07
 
 ### Fixed
@@ -818,6 +830,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.49.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.49.0
 [1.48.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.48.0
 [1.47.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.47.0
 [1.46.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.46.0

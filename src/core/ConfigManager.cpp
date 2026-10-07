@@ -71,9 +71,14 @@ bool ConfigManager::load() {
 bool ConfigManager::save() {
   String raw;
   if (!serialize(raw)) {
+    Serial.println("[cfg] serialize failed");
     return false;
   }
-  return store_.putString(kConfigKey, raw.c_str());
+  const bool ok = store_.putString(kConfigKey, raw.c_str());
+  if (!ok) {
+    Serial.printf("[cfg] putString failed (len=%u)\n", static_cast<unsigned>(raw.length()));
+  }
+  return ok;
 }
 
 bool ConfigManager::apply(const Config& next) {
