@@ -52,7 +52,6 @@ Se corrigieron dos inconsistencias de documentación:
 - Tokens/API keys revocables.
 
 **Dashboard y web**
-- Páginas por sección (sensores, red, alarmas, energía, OTA).
 - Multi-idioma (es/en).
 - Tema claro/oscuro persistente.
 
