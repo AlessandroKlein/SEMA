@@ -56,9 +56,6 @@ Se corrigieron dos inconsistencias de documentación:
 - Multi-idioma (es/en).
 - Tema claro/oscuro persistente.
 
-**Almacenamiento y datos**
-- Agregación por niveles (alta resolución reciente + resumen a largo plazo).
-
 **Comunicaciones**
 - LoRaWAN (red sobre LoRa).
 - Red Zigbee multi-dispositivo.
