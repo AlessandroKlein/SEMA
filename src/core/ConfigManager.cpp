@@ -179,6 +179,7 @@ bool ConfigManager::serialize(String& out) const {
     o["id"] = s.id;
     o["model"] = s.model;
     o["enabled"] = s.enabled;
+    o["address"] = s.address;
     o["sda"] = s.sda;
     o["scl"] = s.scl;
     o["pin"] = s.pin;
@@ -315,7 +316,8 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     SensorSpec s;
     s.id = o["id"] | "";
     s.model = o["model"] | "";
-    s.enabled = o["enabled"] | true;
+    s.enabled = o["enabled"] | false;
+    s.address = o["address"] | 0;
     s.sda = o["sda"] | 21;
     s.scl = o["scl"] | 22;
     s.pin = o["pin"] | 0;
