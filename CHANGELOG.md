@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.67.0] - 2026-10-07
+
+### Added
+
+- Watchdog jerarquico por tarea: cada tarea late con su timeout y se expone en /api/v1/health.
+
 ## [1.66.0] - 2026-10-07
 
 ### Changed
@@ -946,6 +952,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.67.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.67.0
 [1.66.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.66.0
 [1.65.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.65.0
 [1.64.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.64.0

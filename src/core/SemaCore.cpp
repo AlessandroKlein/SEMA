@@ -155,13 +155,20 @@ void SemaCore::setup() {
     Serial.printf("[ALARM] %s → %s = %d\n", e.correlationId.c_str(), e.source.c_str(), e.value);
   });
 
+  // Watchdog jerárquico por tarea: cada tarea registra su timeout y late en cada
+  // ejecución. Si una tarea se estanca, HealthMonitor degrada el estado.
+  health_.registerTask("core.heartbeat", 30000);
+  health_.registerTask("sensors.read", 60000);
+
   scheduler_.add("core.heartbeat", 5000, [this]() {
     health_.tick();  // Health Monitor (D-0020)
+    health_.taskHeartbeat("core.heartbeat");
   });
 
   scheduler_.add("sensors.read", 10000, [this]() {
     sensors_.readAll();
     health_.setSensorStats(sensors_.onlineCount(), sensors_.count());
+    health_.taskHeartbeat("sensors.read");
     http_.broadcastMeasurements(sensors_.measurements());
     for (const Measurement& m : sensors_.measurements()) {
       history_.append(m);

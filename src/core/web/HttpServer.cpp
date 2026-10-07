@@ -1065,7 +1065,7 @@ void HttpServer::onStatus() {
 }
 
 void HttpServer::onHealth() {
-  DynamicJsonDocument doc(384);
+  DynamicJsonDocument doc(768);
   const HealthMonitor& h = core_->health();
   doc["status"] = h.status();
   doc["uptime_s"] = h.uptimeSeconds();
@@ -1073,6 +1073,12 @@ void HttpServer::onHealth() {
   doc["sensors"]["total"] = core_->sensors().count();
   doc["sensors"]["online"] = core_->sensors().onlineCount();
   doc["sensors"]["error"] = core_->sensors().count() - core_->sensors().onlineCount();
+  JsonArray tasks = doc.createNestedArray("tasks");
+  for (size_t i = 0; i < h.taskCount(); ++i) {
+    JsonObject o = tasks.createNestedObject();
+    o["name"] = h.taskName(i);
+    o["healthy"] = h.taskHealthy(h.taskName(i));
+  }
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);
