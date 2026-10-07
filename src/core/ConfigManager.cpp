@@ -200,6 +200,7 @@ bool ConfigManager::serialize(String& out) const {
     o["initial"] = g.initial;
     o["expander_addr"] = g.expanderAddr;
   }
+  doc["mcp23017_addr"] = config_.mcp23017Addr;
   doc["shift_register"]["type"] = config_.shiftRegister.type;
   doc["shift_register"]["data_pin"] = config_.shiftRegister.dataPin;
   doc["shift_register"]["clock_pin"] = config_.shiftRegister.clockPin;
@@ -341,6 +342,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     g.expanderAddr = o["expander_addr"] | 0;
     c.gpio.push_back(g);
   }
+  c.mcp23017Addr = doc["mcp23017_addr"] | 0;
   c.shiftRegister.type = doc["shift_register"]["type"] | "74HC595";
   c.shiftRegister.dataPin = doc["shift_register"]["data_pin"] | 0;
   c.shiftRegister.clockPin = doc["shift_register"]["clock_pin"] | 0;

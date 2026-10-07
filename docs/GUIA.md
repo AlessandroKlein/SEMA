@@ -1,6 +1,6 @@
 # Guía de inicio — SEMA
 
-> **Tipo:** Guía | **Estado:** Activa | **Fecha:** 2026-10-03 | **Firmware:** v1.60.0
+> **Tipo:** Guía | **Estado:** Activa | **Fecha:** 2026-10-03 | **Firmware:** v1.61.0
 
 Documentación de referencia para **entender y usar SEMA sin conocer el proyecto
 ni el código de antemano**. Se recomienda leer de principio a fin; los apartados

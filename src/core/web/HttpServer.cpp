@@ -914,17 +914,26 @@ async function loadPins(r){
 function renderIo(){
   const list=document.getElementById('ioList');
   const sh=cfg.shift_register||{};
-  let h='<div class="catalog">';
-  h+='<div class="cat-item"><span>Registro</span><select id="shType" style="width:110px"><option value="74HC595"'+(sh.type!=='74HC165'?' selected':'')+'>74HC595 (salida)</option><option value="74HC165"'+(sh.type==='74HC165'?' selected':'')+'>74HC165 (entrada)</option></select></div>';
+  let h='';
+  // MCP23017 (expansor GPIO I²C)
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">MCP23017 — expansor GPIO I²C</div>';
+  h+='<div class="catalog"><div class="cat-item"><span>Dirección I²C (0x20-0x27)</span><select id="mcpAddr" style="width:110px"><option value="0">— no usar —</option>';
+  for(let a=32;a<=39;a++){ h+='<option value="'+a+'"'+((cfg.mcp23017_addr||0)===a?' selected':'')+'>0x'+a.toString(16).toUpperCase()+'</option>'; }
+  h+='</select></div></div>';
+  // Registro de desplazamiento
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Registro de desplazamiento</div>';
+  h+='<div class="catalog">';
+  h+='<div class="cat-item"><span>Tipo</span><select id="shType" style="width:140px"><option value="74HC595"'+(sh.type!=='74HC165'?' selected':'')+'>74HC595 (salida)</option><option value="74HC165"'+(sh.type==='74HC165'?' selected':'')+'>74HC165 (entrada)</option></select></div>';
   h+='<div class="cat-item"><span>Pines</span><span class="muted">DAT<input id="shData" value="'+(sh.data_pin||0)+'" style="width:44px"> CLK<input id="shClock" value="'+(sh.clock_pin||0)+'" style="width:44px"> LAT<input id="shLatch" value="'+(sh.latch_pin||0)+'" style="width:44px"></span></div>';
   h+='</div>';
-  h+='<div class="muted" style="margin:.6rem 0 .2rem">Salidas GPIO (expander = dirección MCP23017, 0 = pin nativo)</div>';
+  // GPIO
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Salidas / entradas GPIO</div>';
   h+='<div class="catalog" id="gpioList">';
   (cfg.gpio||[]).forEach((g,i)=>{
-    h+='<div class="cat-item"><span><input id="gid'+i+'" value="'+(g.id||'')+'" placeholder="id" style="width:80px"></span><span class="muted">PIN<input id="gpin'+i+'" value="'+(g.pin||0)+'" style="width:44px"> MODE<select id="gmode'+i+'" style="width:100px"><option value="output"'+(g.mode==='output'?' selected':'')+'>output</option><option value="input"'+(g.mode==='input'?' selected':'')+'>input</option><option value="input_pullup"'+(g.mode==='input_pullup'?' selected':'')+'>pullup</option></select> EXP<input id="gexp'+i+'" value="'+(g.expander||g.expander_addr||0)+'" style="width:44px"></span><button class="sec" onclick="delGpio('+i+')">🗑️</button></div>';
+    h+='<div class="cat-item"><span><input id="gid'+i+'" value="'+(g.id||'')+'" placeholder="id" style="width:80px"></span><span class="muted">PIN<input id="gpin'+i+'" value="'+(g.pin||0)+'" style="width:44px"> MODO<select id="gmode'+i+'" style="width:96px"><option value="output"'+(g.mode==='output'?' selected':'')+'>output</option><option value="input"'+(g.mode==='input'?' selected':'')+'>input</option><option value="input_pullup"'+(g.mode==='input_pullup'?' selected':'')+'>pullup</option></select> MCP<input id="gexp'+i+'" value="'+(g.expander||g.expander_addr||0)+'" style="width:44px" placeholder="0=nativo"></span><button class="sec" onclick="delGpio('+i+')">🗑️</button></div>';
   });
   h+='</div>';
-  h+='<button class="sec" onclick="addGpio()">➕ Añadir salida GPIO</button>';
+  h+='<button class="sec" onclick="addGpio()">➕ Añadir GPIO</button>';
   list.innerHTML=h;
 }
 function addGpio(){cfg.gpio=cfg.gpio||[];cfg.gpio.push({id:'out'+(cfg.gpio.length+1),pin:0,mode:'output',expander:0});renderIo();}
@@ -936,7 +945,7 @@ function saveIo(){
     if(!gid)return;
     gpio.push({id:gid.value,pin:parseInt(gpin.value)||0,mode:gmode.value,expander:parseInt(gexp.value)||0});
   });
-  const body={shift:{type:document.getElementById('shType').value,data:parseInt(document.getElementById('shData').value)||0,clock:parseInt(document.getElementById('shClock').value)||0,latch:parseInt(document.getElementById('shLatch').value)||0},gpio:gpio};
+  const body={mcp23017_addr:parseInt(document.getElementById('mcpAddr').value)||0,shift:{type:document.getElementById('shType').value,data:parseInt(document.getElementById('shData').value)||0,clock:parseInt(document.getElementById('shClock').value)||0,latch:parseInt(document.getElementById('shLatch').value)||0},gpio:gpio};
   fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
 }
 load();
@@ -1216,6 +1225,9 @@ void HttpServer::onConfigIo() {
     return;
   }
   Config next = core_->config().get();
+  if (doc.containsKey("mcp23017_addr")) {
+    next.mcp23017Addr = doc["mcp23017_addr"] | 0;
+  }
   if (doc.containsKey("shift")) {
     next.shiftRegister.type = doc["shift"]["type"] | "74HC595";
     next.shiftRegister.dataPin = doc["shift"]["data"] | 0;

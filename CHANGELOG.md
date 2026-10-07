@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.61.0] - 2026-10-07
+
+### Changed
+
+- Expansores separados: MCP23017 (direccion), 74HC595/74HC165 (tipo+pines) y GPIO, cada uno con su entrada.
+
 ## [1.60.0] - 2026-10-07
 
 ### Changed
@@ -906,6 +912,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.61.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.61.0
 [1.60.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.60.0
 [1.59.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.59.0
 [1.58.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.58.0

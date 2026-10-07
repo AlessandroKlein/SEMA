@@ -201,6 +201,7 @@ struct Config {
   std::vector<RuleSpec> rules;              // vacío = usar regla por defecto
   std::vector<CalibrationSpec> calibrations; // vacío = usar calibración por defecto
   std::vector<GpioSpec> gpio;              // GPIO standalone (opcional)
+  uint8_t mcp23017Addr = 0;                // dirección I²C del MCP23017 (0 = no usar)
   ShiftRegisterConfig shiftRegister;       // shift register (opcional)
   ModbusConfig modbus;                     // RS485/Modbus (opcional)
   CanConfig can;                           // CAN/TWAI (opcional)
