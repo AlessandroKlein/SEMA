@@ -821,7 +821,20 @@ async function load(){try{
   h+='</div>';
   document.getElementById('sensorList').innerHTML=h||'<p class="muted">Sin sensores</p>';
   const y=await(await fetch('/api/v1/system')).json();
-  document.getElementById('pinInfo').innerHTML='<p>Board: '+y.board+' · Flash: '+y.flash_mb+' MB'+(y.demo?' · <b>DEMO</b>':'')+'</p><p>Origen de pines: <b>'+(y.pins_from_file?'PCB (fijos, no configurables)':'Web (configurables)')+'</b></p>';
+  const cfg=await(await fetch('/api/v1/config')).json();
+  let p='<p>Board: '+y.board+' · Flash: '+y.flash_mb+' MB'+(y.demo?' · <b>DEMO</b>':'')+'</p>';
+  p+='<p>Origen de pines: <b>'+(y.pins_from_file?'PCB (fijos, no configurables)':'Web (configurables)')+'</b></p>';
+  const n=cfg.network||{}, m=cfg.modbus||{}, ca=cfg.can||{}, l=cfg.lora||{}, z=cfg.zigbee||{}, e=cfg.ethernet||{};
+  const ss=cfg.sensors||[];
+  p+='<div class="catalog">';
+  p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>'+((ss[0]&&ss[0].sda)||'—')+' / '+((ss[0]&&ss[0].scl)||'—')+'</span></div>';
+  p+='<div class="cat-item"><span>Modbus RX / TX (DE/RE)</span><span>'+m.rx+' / '+m.tx+' ('+m.de_re+')</span></div>';
+  p+='<div class="cat-item"><span>CAN TX / RX</span><span>'+ca.tx+' / '+ca.rx+'</span></div>';
+  p+='<div class="cat-item"><span>LoRa CS / RST / DIO1 / BUSY</span><span>'+l.cs+' / '+l.rst+' / '+l.dio1+' / '+l.busy+'</span></div>';
+  p+='<div class="cat-item"><span>Zigbee RX / TX</span><span>'+z.rx+' / '+z.tx+'</span></div>';
+  p+='<div class="cat-item"><span>Ethernet MDC / MDIO / PHY</span><span>'+e.mdc+' / '+e.mdio+' / '+e.phy_addr+'</span></div>';
+  p+='</div>';
+  document.getElementById('pinInfo').innerHTML=p;
 }catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
 load();
 </script>
@@ -926,7 +939,7 @@ void HttpServer::onBackup() {
     server_.send(500, "application/json", "{\"error\":\"serialization failed\"}");
     return;
   }
-  DynamicJsonDocument doc(4096);
+  DynamicJsonDocument doc(8192);
   if (deserializeJson(doc, cfg)) {
     server_.send(500, "application/json", "{\"error\":\"internal\"}");
     return;
@@ -1051,7 +1064,7 @@ void HttpServer::onWifiScan() {
   if (n < 0) {
     n = 0;
   }
-  DynamicJsonDocument doc(4096);
+  DynamicJsonDocument doc(8192);
   JsonArray arr = doc.createNestedArray("networks");
   for (int i = 0; i < n && i < 40; ++i) {
     JsonObject o = arr.createNestedObject();
@@ -1169,7 +1182,7 @@ void HttpServer::onUpdateCheck() {
     http.setTimeout(8000);
     const int code = http.GET();
     if (code == 200) {
-      DynamicJsonDocument doc(4096);
+      DynamicJsonDocument doc(8192);
       if (!deserializeJson(doc, http.getString())) {
         const String ver = doc["version"] | "";
         resp["latest"] = ver;
@@ -1394,7 +1407,7 @@ void HttpServer::onSensors() {
 #if SEMA_DEMO
   // Modo demo: valores ficticios dentro del rango estándar de cada magnitud.
   {
-    DynamicJsonDocument ddoc(4096);
+    DynamicJsonDocument ddoc(8192);
     JsonArray dcat = ddoc.createNestedArray("catalog");
     const char* models[] = {"BME280", "SHT40", "SCD30", "PMS5003", "VEML6075", "WH-SP-WD", "RG-9"};
     const char* ids[] = {"ext", "int", "co2", "pm", "uv", "wind", "rain"};
@@ -1441,7 +1454,7 @@ void HttpServer::onSensors() {
   return;
 #endif
 
-  DynamicJsonDocument doc(4096);
+  DynamicJsonDocument doc(8192);
 
   JsonArray catalog = doc.createNestedArray("catalog");
   std::vector<SensorInfo> info;
@@ -1634,7 +1647,7 @@ void HttpServer::onHistory() {
 }
 
 void HttpServer::onEvents() {
-  DynamicJsonDocument doc(4096);
+  DynamicJsonDocument doc(8192);
   JsonArray arr = doc.createNestedArray("events");
   for (const Event& e : core_->eventLog().events()) {
     JsonObject o = arr.createNestedObject();
@@ -1651,7 +1664,7 @@ void HttpServer::onEvents() {
 }
 
 void HttpServer::onAlarms() {
-  DynamicJsonDocument doc(4096);
+  DynamicJsonDocument doc(8192);
   JsonArray arr = doc.createNestedArray("alarms");
   for (const Event& e : core_->eventLog().events()) {
     if (e.type != EventType::Alarm) {

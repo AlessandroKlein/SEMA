@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.46.0] - 2026-10-07
+
+### Fixed
+
+- Buffer JSON ampliado (8 KB) en endpoints (posible truncado de mediciones demo).
+- /config/sensors muestra los pines (I2C, Modbus, CAN, LoRa, Zigbee, Ethernet).
+
 ## [1.45.0] - 2026-10-07
 
 ### Fixed
@@ -796,6 +803,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.46.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.46.0
 [1.45.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.45.0
 [1.44.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.44.0
 [1.43.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.43.0
