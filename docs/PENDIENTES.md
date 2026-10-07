@@ -1,6 +1,6 @@
 # Pendientes — SEMA
 
-> **Tipo:** Registro de pendientes | **Fecha:** 2026-10-06 | **Firmware:** v1.32.0
+> **Tipo:** Registro de pendientes | **Fecha:** 2026-10-07 | **Firmware:** v1.65.0
 
 Resultado de la comprobación de `MEJORAS.md`, `FUTURO.md` y `CONTINUACION.md`
 contra el código. Los ítems **no realizados** quedan aquí para retomarlos en otra
@@ -73,13 +73,10 @@ Se corrigieron dos inconsistencias de documentación:
 
 **Fiabilidad y operación**
 - RTC hardware (DS3231) con batería.
-- Config de respaldo (fail-safe).
 - Watchdog jerárquico por tarea.
 
 **Plataforma**
 - Multi-estación en un dashboard.
-- Zona horaria en timestamps (hoy son UTC).
-- Health por sensor (estado individual en la API).
 
 ---
 
