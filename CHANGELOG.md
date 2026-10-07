@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.38.0] - 2026-10-07
+
+### Fixed
+
+- Dashboard Gridstack: arreglo de superposicion al anadir/eliminar tarjetas (removeAll + compact).
+
 ## [1.37.0] - 2026-10-07
 
 ### Added
@@ -724,6 +730,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.38.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.38.0
 [1.37.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.37.0
 [1.36.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.36.0
 [1.35.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.35.0

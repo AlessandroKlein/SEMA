@@ -349,15 +349,16 @@ function cardContent(it){
 
 function renderCards(){
   if(!grid){
-    grid=GridStack.init({column:12, cellHeight:72, margin:6});
+    grid=GridStack.init({column:12, cellHeight:72, margin:6, float:false});
   }
-  grid.removeAll(false);
+  grid.removeAll();
   for(const it of layout){
     grid.addWidget({
       id:cid(it.type,it.key), x:it.x, y:it.y, w:it.w, h:it.h,
       content:cardContent(it)
     });
   }
+  grid.compact();
   setEdit(editMode);
   drawCharts();
 }
@@ -479,9 +480,8 @@ function closeCatalog(){ document.getElementById('modal').classList.remove('open
 
 function addCard(type,key){
   if(layout.some(it=>it.type===type && it.key===key)) return;
-  let x=0,y=0;
-  if(layout.length){ const l=layout[layout.length-1]; x=l.x+l.w; y=l.y; if(x+l.w>12){x=0;y=l.y+1;} }
-  layout.push({type:type,key:key,x:x,y:y,w:type==='chart'?6:3,h:type==='chart'?3:1});
+  // y=99: se coloca al fondo; grid.compact() lo acomoda en el hueco libre.
+  layout.push({type:type,key:key,x:0,y:99,w:type==='chart'?6:3,h:type==='chart'?3:1});
   closeCatalog();
   renderCards();
   saveLayout();
