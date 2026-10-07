@@ -133,7 +133,7 @@ bool ConfigManager::serialize(String& out) const {
   for (uint8_t i = 0; i < 8; ++i) {
     wr.add(config_.system.windResistors[i]);
   }
-  doc["system"]["dashboard_layout"] = config_.system.dashboardLayout;
+
   doc["storage"]["backend"] = config_.storage.backend;
   doc["storage"]["retention_days"] = config_.storage.retentionDays;
   doc["security"]["api_key"] = config_.security.apiKey;
@@ -268,7 +268,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   for (uint8_t i = 0; i < 8 && i < wr.size(); ++i) {
     c.system.windResistors[i] = wr[i] | 0.0f;
   }
-  c.system.dashboardLayout = doc["system"]["dashboard_layout"] | "";
+
   c.storage.backend = doc["storage"]["backend"] | "littlefs";
   c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
   c.security.apiKey = doc["security"]["api_key"] | "";
@@ -387,6 +387,14 @@ bool ConfigManager::applyJson(const String& json) {
     return false;
   }
   return apply(next);
+}
+
+bool ConfigManager::saveDashboardLayout(const String& layout) {
+  return store_.putString("layout", layout.c_str());
+}
+
+bool ConfigManager::loadDashboardLayout(String& out) {
+  return store_.getString("layout", out);
 }
 
 }  // namespace sema

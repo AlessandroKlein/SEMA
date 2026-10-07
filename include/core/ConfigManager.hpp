@@ -220,6 +220,11 @@ public:
   bool toJson(String& out) const { return serialize(out); }
   bool applyJson(const String& json);  // parsea y aplica transaccionalmente
 
+  // Layout del dashboard en una clave NVS separada (no en el JSON de config,
+  // para no exceder el límite de tamaño de una entrada NVS).
+  bool saveDashboardLayout(const String& layout);
+  bool loadDashboardLayout(String& out);
+
 private:
   bool validate(const Config& c) const;
   bool serialize(String& out) const;

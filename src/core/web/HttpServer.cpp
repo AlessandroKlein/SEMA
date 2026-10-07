@@ -79,6 +79,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/wind/north", HTTP_POST, [this]() { onWindNorth(); });
   server_.on("/api/v1/wind/resistors", HTTP_POST, [this]() { onWindResistors(); });
   server_.on("/api/v1/dashboard/layout", HTTP_POST, [this]() { onDashboardLayout(); });
+  server_.on("/api/v1/dashboard/layout", HTTP_GET, [this]() { onDashboardLayoutGet(); });
   server_.on("/gridstack.min.css", HTTP_GET, [this]() { onStaticFile("/gridstack.min.css", "text/css"); });
   server_.on("/gridstack-all.min.js", HTTP_GET, [this]() { onStaticFile("/gridstack-all.min.js", "application/javascript"); });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
@@ -252,7 +253,7 @@ const COLORS=['#58a6ff','#f0883e','#3fb950','#d29922','#bc8cff','#ff7b72','#56d4
 let grid=null, editMode=false, cfg={}, layout=[], lastMeasurements=[];
 
 function cid(type,k){ return type+'_'+String(k).replace(/[|]/g,'~'); }
-function mkey(m){ return m.sensor_id+'|'+m.channel_id; }
+function mkey(m){ return m.sensor_id+'|'+m.measurement; }
 
 function setEdit(on){
   editMode=on;
@@ -438,7 +439,7 @@ async function refresh(){
     const r=await(await fetch('/api/v1/sensors')).json();
     lastMeasurements=r.measurements||[];
     if(!grid){ renderCards(); }
-    else { updateCards(); drawCharts(); }
+    else { updateCards(); }
   }catch(e){}
 }
 
@@ -503,9 +504,11 @@ async function loadConfig(){
   try{
     const r=await(await fetch('/api/v1/config')).json();
     cfg=r;
-    if(r.system&&r.system.dashboard_layout){
-      try{ const l=JSON.parse(r.system.dashboard_layout); if(Array.isArray(l)&&l.length) layout=l; }catch(e){}
-    }
+  }catch(e){}
+  try{
+    const lr=await(await fetch('/api/v1/dashboard/layout')).json();
+    const l=JSON.parse(lr.layout||'[]');
+    if(Array.isArray(l)&&l.length) layout=l;
   }catch(e){}
 }
 
@@ -519,7 +522,7 @@ async function boot(){
     saveLayout();
   }
   setInterval(refresh,5000);
-  setInterval(drawCharts,30000);
+  setInterval(drawCharts,60000);
 }
 boot();
 </script>
@@ -1520,13 +1523,25 @@ void HttpServer::onDashboardLayout() {
     server_.send(400, "application/json", "{\"error\":\"missing body\"}");
     return;
   }
-  Config next = core_->config().get();
-  next.system.dashboardLayout = server_.arg("plain");
-  if (!core_->config().apply(next)) {
-    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+  if (!core_->config().saveDashboardLayout(server_.arg("plain"))) {
+    server_.send(500, "application/json", "{\"error\":\"layout save failed\"}");
     return;
   }
   server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onDashboardLayoutGet() {
+  if (!webAuthed()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  String layout;
+  core_->config().loadDashboardLayout(layout);
+  String out;
+  DynamicJsonDocument doc(2048);
+  doc["layout"] = layout.length() ? layout : "[]";
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
 }
 
 void HttpServer::onStaticFile(const char* path, const char* type) {
@@ -1552,6 +1567,38 @@ void HttpServer::onHistory() {
     }
   }
   const String format = server_.hasArg("format") ? server_.arg("format") : "json";
+
+#if SEMA_DEMO
+  // Histórico ficticio para las gráficas en modo demo.
+  {
+    const uint32_t now = nowEpoch();
+    const char* meas[] = {"temperature", "humidity", "pressure", "light", "co2", "pm25", "uvi", "wind_speed"};
+    const char* sens[] = {"ext", "ext", "ext", "uv", "co2", "pm", "uv", "wind"};
+    const float base[] = {23.0f, 60.0f, 1013.0f, 5000.0f, 600.0f, 15.0f, 4.0f, 6.0f};
+    const float amp[] = {5.0f, 15.0f, 5.0f, 4000.0f, 150.0f, 8.0f, 3.0f, 4.0f};
+    DynamicJsonDocument doc(8192);
+    JsonArray arr = doc.createNestedArray("history");
+    const int samples = 40;
+    for (int i = 0; i < 8; ++i) {
+      for (int j = 0; j < samples; ++j) {
+        const uint32_t ts = now - static_cast<uint32_t>(samples - j) * 90;
+        JsonObject o = arr.createNestedObject();
+        o["ts"] = ts;
+        o["sensor"] = sens[i];
+        o["channel"] = "0";
+        o["measurement"] = meas[i];
+        o["value"] = base[i] + amp[i] * sinf(static_cast<float>(j) / samples * 6.28318f + i);
+        o["unit"] = "";
+        o["quality"] = "VALID";
+        o["seq"] = j;
+      }
+    }
+    String out;
+    serializeJson(doc, out);
+    server_.send(200, "application/json", out);
+    return;
+  }
+#endif
 
   std::deque<Measurement> items;
   core_->history().readRecent(items, limit);

@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.48.0] - 2026-10-07
+
+### Fixed
+
+- Tarjetas duplicadas por colision de clave (mkey incluye measurement).
+- Guardar layout en clave NVS separada (arregla 500 por tamano).
+- Graficas demo con historico ficticio + refresco mas lento (60s).
+
 ## [1.47.0] - 2026-10-07
 
 ### Fixed
@@ -810,6 +818,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.48.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.48.0
 [1.47.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.47.0
 [1.46.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.46.0
 [1.45.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.45.0

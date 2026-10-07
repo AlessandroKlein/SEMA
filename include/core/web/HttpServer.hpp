@@ -55,6 +55,7 @@ private:
   void onWindNorth();
   void onWindResistors();
   void onDashboardLayout();
+  void onDashboardLayoutGet();
   void onStaticFile(const char* path, const char* type);
   void onHistory();
   void onEvents();
