@@ -32,6 +32,7 @@ private:
   void onConfig();
   void onConfigPut();
   void onConfigNetwork();
+  void onWifiScan();
   void onBackup();
   void onLoginPost();
   void onLogout();

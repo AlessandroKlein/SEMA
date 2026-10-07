@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <Update.h>
+#include <WiFi.h>
 #include <esp_system.h>
 #include <esp_ota_ops.h>
 #include <esp_partition.h>
@@ -31,7 +32,8 @@ button{width:100%;padding:.5rem;border:0;border-radius:4px;background:#1f6feb;co
 <body>
 <form method="POST" action="/login">
 <h1>SEMA</h1>
-<input type="password" name="password" placeholder="Clave de acceso" autofocus>
+<input type="text" name="username" placeholder="Usuario" value="admin">
+<input type="password" name="password" placeholder="Contraseña" autofocus>
 <button type="submit">Entrar</button>
 </form>
 </body>
@@ -51,6 +53,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
   server_.on("/api/v1/config/network", HTTP_POST, [this]() { onConfigNetwork(); });
+  server_.on("/api/v1/wifi/scan", HTTP_GET, [this]() { onWifiScan(); });
   server_.on("/api/v1/backup", HTTP_GET, [this]() { onBackup(); });
   server_.on("/api/v1/backup", HTTP_POST, [this]() { onConfigPut(); });
   server_.on("/login", HTTP_POST, [this]() { onLoginPost(); });
@@ -138,8 +141,8 @@ void HttpServer::onRoot() {
   // Protección del dashboard (login por sesión); sin claves configuradas queda
   // abierto para la primera configuración.
   const SecurityConfig& sec = core_->config().get().security;
-  const bool noKeys = sec.apiKey.length() == 0 && sec.serverKey.length() == 0;
-  if (!noKeys && !sessionAuthorized()) {
+  const bool noPass = sec.password.length() == 0;
+  if (!noPass && !sessionAuthorized()) {
     server_.send(200, "text/html", kLoginHtml);
     return;
   }
@@ -200,7 +203,15 @@ body.light .cat-item:hover{background:#f6f8fa}
 <h1>SEMA</h1>
 <div id="status" class="muted">Cargando…</div>
 
-<div class="bar">
+<nav style="display:flex;gap:.6rem;flex-wrap:wrap;margin:.5rem 0;padding-bottom:.5rem;border-bottom:1px solid #30363d">
+  <a href="#grid" style="color:#8b949e;text-decoration:none">📊 Dashboard</a>
+  <a href="#wind" style="color:#8b949e;text-decoration:none">🧭 Veleta</a>
+  <a href="#net" style="color:#8b949e;text-decoration:none">🌐 Red</a>
+  <a href="#sec" style="color:#8b949e;text-decoration:none">🔐 Seguridad</a>
+  <a href="/logout" style="color:#f85149;text-decoration:none">Salir</a>
+</nav>
+
+<div class="bar" id="grid">
   <button onclick="openCatalog()">➕ Añadir tarjeta</button>
   <button class="sec" onclick="toggleEdit()">✏️ Editar layout</button>
   <button class="sec" onclick="saveLayout()">💾 Guardar layout</button>
@@ -220,7 +231,7 @@ body.light .cat-item:hover{background:#f6f8fa}
   </div>
 </div>
 
-<section>
+<section id="wind">
 <h2>Calibración de la veleta (WH-SP-WD)</h2>
 <p class="muted">Ingresá los valores de las 8 resistencias en el orden del datasheet (empezando por N), y el pull-up. Las 16 posiciones (8 directas + 8 en paralelo) se calculan automáticamente.</p>
 <div class="grid-wind" id="windInputs"></div>
@@ -228,8 +239,10 @@ body.light .cat-item:hover{background:#f6f8fa}
 <button onclick="saveWind()">Guardar resistencias</button>
 </section>
 
-<section>
+<section id="net">
 <h2>Red (WiFi)</h2>
+<button type="button" class="sec" onclick="scanWifi()">🔍 Buscar redes</button>
+<div id="wifiList"></div>
 <form onsubmit="saveNetwork();return false;">
 <select id="cfg_mode">
   <option value="STA">Estación (conectarse a un router)</option>
@@ -238,15 +251,16 @@ body.light .cat-item:hover{background:#f6f8fa}
 <input id="cfg_ssid" placeholder="WiFi SSID">
 <input id="cfg_pass" type="password" placeholder="WiFi contraseña">
 <input id="cfg_host" placeholder="Hostname (mDNS)">
-<button type="submit">Guardar red</button>
+<button type="submit">Guardar red (reinicia)</button>
 </form>
-<p class="muted">Al cambiar la red, reiniciá para aplicar.</p>
 </section>
 
-<section>
+<section id="sec">
 <h2>Estación y seguridad</h2>
 <form onsubmit="saveConfig();return false;">
 <input id="cfg_name" placeholder="Nombre de la estación">
+<input id="cfg_user" placeholder="Usuario del login (vacío = admin)">
+<input id="cfg_loginpass" type="password" placeholder="Contraseña del login (vacío = sin login)">
 <input id="cfg_apikey" type="password" placeholder="API key (web)">
 <input id="cfg_serverkey" type="password" placeholder="Server key (Central)">
 <button type="submit">Guardar</button>
@@ -275,6 +289,23 @@ function toggleTheme(){
   try{localStorage.setItem('sema_theme', document.body.classList.contains('light')?'light':'dark');}catch(e){}
 }
 try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add('light');}catch(e){}
+async function scanWifi(){
+  document.getElementById('wifiList').innerHTML='<p class="muted">Escaneando…</p>';
+  try{
+    const r=await(await fetch('/api/v1/wifi/scan')).json();
+    const nets=(r.networks||[]).sort((a,b)=>b.rssi-a.rssi);
+    let h='<div class="catalog">';
+    for(const n of nets){
+      h+='<div class="cat-item"><span>'+n.ssid+' <span class="muted">('+n.rssi+' dBm'+(n.secure?' 🔒':'')+')</span></span><button class="add" data-ssid="'+n.ssid.replace(/"/g,'&quot;')+'" onclick="pickSsid(this)">Usar</button></div>';
+    }
+    h+='</div>';
+    document.getElementById('wifiList').innerHTML=h||'<p class="muted">Sin redes</p>';
+  }catch(e){document.getElementById('wifiList').innerHTML='<p class="muted">Error al escanear</p>';}
+}
+function pickSsid(btn){
+  document.getElementById('cfg_ssid').value=btn.getAttribute('data-ssid');
+  document.getElementById('cfg_pass').focus();
+}
 
 function defaultLayout(ms){
   const lay=[];
@@ -485,6 +516,8 @@ async function loadConfig(){
     document.getElementById('cfg_host').value=r.network?r.network.hostname:'';
     document.getElementById('cfg_apikey').value=r.security?r.security.api_key:'';
     document.getElementById('cfg_serverkey').value=r.security?r.security.server_key:'';
+    document.getElementById('cfg_user').value=r.security?r.security.username:'';
+    document.getElementById('cfg_loginpass').value=r.security?r.security.password:'';
     document.getElementById('wrp').value=r.system&&r.system.wind_rpull?r.system.wind_rpull:10000;
     const wr=(r.system&&r.system.wind_resistors)||[];
     DIRS.forEach((d,i)=>{
@@ -509,6 +542,8 @@ async function saveConfig(){
   cfg.station=cfg.station||{};cfg.station.name=document.getElementById('cfg_name').value;
   cfg.security=cfg.security||{};cfg.security.api_key=document.getElementById('cfg_apikey').value;
   cfg.security.server_key=document.getElementById('cfg_serverkey').value;
+  cfg.security.username=document.getElementById('cfg_user').value;
+  cfg.security.password=document.getElementById('cfg_loginpass').value;
   try{
     const resp=await fetch('/api/v1/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
     alert(resp.ok?'Guardado':'Error al guardar');
@@ -583,10 +618,11 @@ void HttpServer::onLoginPost() {
     return;
   }
 
+  const String user = server_.arg("username");
   const String password = server_.arg("password");
   const SecurityConfig& sec = core_->config().get().security;
-  const bool ok = (sec.apiKey.length() > 0 && password == sec.apiKey) ||
-                  (sec.serverKey.length() > 0 && password == sec.serverKey);
+  const String uname = sec.username.length() ? sec.username : "admin";
+  const bool ok = (sec.password.length() > 0 && user == uname && password == sec.password);
   if (ok) {
     failedLogins_ = 0;
     lockoutUntilMs_ = 0;
@@ -733,6 +769,29 @@ void HttpServer::onConfigNetwork() {
     return;
   }
   server_.send(200, "application/json", "{\"ok\":true}");
+  // Auto-reinicio para aplicar el cambio de red (AP → STA o viceversa).
+  delay(300);
+  ESP.restart();
+}
+
+void HttpServer::onWifiScan() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  const int n = WiFi.scanNetworks();
+  DynamicJsonDocument doc(4096);
+  JsonArray arr = doc.createNestedArray("networks");
+  for (int i = 0; i < n && i < 40; ++i) {
+    JsonObject o = arr.createNestedObject();
+    o["ssid"] = WiFi.SSID(i);
+    o["rssi"] = WiFi.RSSI(i);
+    o["secure"] = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
+  }
+  WiFi.scanDelete();
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
 }
 
 void HttpServer::onRestart() {

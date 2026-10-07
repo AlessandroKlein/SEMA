@@ -133,6 +133,8 @@ bool ConfigManager::serialize(String& out) const {
   doc["storage"]["retention_days"] = config_.storage.retentionDays;
   doc["security"]["api_key"] = config_.security.apiKey;
   doc["security"]["server_key"] = config_.security.serverKey;
+  doc["security"]["username"] = config_.security.username;
+  doc["security"]["password"] = config_.security.password;
   doc["energy"]["rain_pin"] = config_.energy.rainPin;
   doc["publishers"]["webhook_url"] = config_.publishers.webhookUrl;
   doc["publishers"]["mqtt_host"] = config_.publishers.mqttHost;
@@ -260,6 +262,8 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.storage.retentionDays = doc["storage"]["retention_days"] | 30;
   c.security.apiKey = doc["security"]["api_key"] | "";
   c.security.serverKey = doc["security"]["server_key"] | "";
+  c.security.username = doc["security"]["username"] | "";
+  c.security.password = doc["security"]["password"] | "";
   c.energy.rainPin = doc["energy"]["rain_pin"] | 0;
   c.publishers.webhookUrl = doc["publishers"]["webhook_url"] | "";
   c.publishers.mqttHost = doc["publishers"]["mqtt_host"] | "";

@@ -50,6 +50,8 @@ struct StorageConfig {
 struct SecurityConfig {
   String apiKey;     // clave de la web local (D-0048); vacía = sin autenticación
   String serverKey;  // clave del Servidor Central → SEMA (config de riesgo, vía API)
+  String username;   // usuario del login web (vacío = "admin")
+  String password;   // contraseña del login web (vacío = sin login)
 };
 
 struct EnergyConfig {

@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.37.0] - 2026-10-07
+
+### Added
+
+- Escaneo WiFi + autocompletado de SSID (GET /api/v1/wifi/scan).
+- Login por usuario/contrasena (security.username/password).
+- Navbar y auto-reinicio al guardar la red.
+
 ## [1.36.0] - 2026-10-07
 
 ### Fixed
@@ -716,6 +724,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.37.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.37.0
 [1.36.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.36.0
 [1.35.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.35.0
 [1.34.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.34.0
