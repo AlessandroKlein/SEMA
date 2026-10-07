@@ -33,6 +33,7 @@ struct NetworkConfig {
 
 struct SystemConfig {
   String timezone;
+  String ntpServer = "pool.ntp.org";
   String logLevel;
   String units = "metric";          // "metric" | "imperial"
   float altitude = 0.0f;            // metros (para QNH y altitud barométrica)

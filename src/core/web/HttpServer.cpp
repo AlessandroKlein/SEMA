@@ -3,6 +3,8 @@
 #include <ArduinoJson.h>
 #include <Update.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
 #include <esp_system.h>
 #include <esp_ota_ops.h>
 #include <esp_partition.h>
@@ -47,17 +49,20 @@ void HttpServer::begin(SemaCore& core) {
   core_ = &core;
 
   server_.on("/", HTTP_GET, [this]() { onRoot(); });
-  server_.on("/network", HTTP_GET, [this]() { onNetworkPage(); });
-  server_.on("/security", HTTP_GET, [this]() { onSecurityPage(); });
-  server_.on("/system", HTTP_GET, [this]() { onSystemPage(); });
+  server_.on("/config/network", HTTP_GET, [this]() { onNetworkPage(); });
+  server_.on("/config/security", HTTP_GET, [this]() { onSecurityPage(); });
+  server_.on("/config/system", HTTP_GET, [this]() { onSystemPage(); });
+  server_.on("/config/wind", HTTP_GET, [this]() { onWindPage(); });
   server_.on("/api/v1/status", HTTP_GET, [this]() { onStatus(); });
   server_.on("/api/v1/health", HTTP_GET, [this]() { onHealth(); });
   server_.on("/api/v1/system", HTTP_GET, [this]() { onSystem(); });
   server_.on("/api/v1/config", HTTP_GET, [this]() { onConfig(); });
   server_.on("/api/v1/config", HTTP_PUT, [this]() { onConfigPut(); });
   server_.on("/api/v1/config/network", HTTP_POST, [this]() { onConfigNetwork(); });
+  server_.on("/api/v1/config/system", HTTP_POST, [this]() { onConfigSystem(); });
   server_.on("/api/v1/wifi/scan", HTTP_GET, [this]() { onWifiScan(); });
   server_.on("/api/v1/security/keys", HTTP_POST, [this]() { onApiKeys(); });
+  server_.on("/api/v1/update/check", HTTP_GET, [this]() { onUpdateCheck(); });
   server_.on("/api/v1/backup", HTTP_GET, [this]() { onBackup(); });
   server_.on("/api/v1/backup", HTTP_POST, [this]() { onConfigPut(); });
   server_.on("/login", HTTP_POST, [this]() { onLoginPost(); });
@@ -209,10 +214,10 @@ body.light .cat-item:hover{background:#f6f8fa}
 
 <nav style="display:flex;gap:.6rem;flex-wrap:wrap;margin:.5rem 0;padding-bottom:.5rem;border-bottom:1px solid #30363d">
   <a href="/" style="color:#8b949e;text-decoration:none">📊 Dashboard</a>
-  <a href="#wind" style="color:#8b949e;text-decoration:none">🧭 Veleta</a>
-  <a href="/network" style="color:#8b949e;text-decoration:none">🌐 Red</a>
-  <a href="/security" style="color:#8b949e;text-decoration:none">🔐 Seguridad</a>
-  <a href="/system" style="color:#8b949e;text-decoration:none">⚙️ Sistema</a>
+  <a href="/config/network" style="color:#8b949e;text-decoration:none">🌐 Red</a>
+  <a href="/config/security" style="color:#8b949e;text-decoration:none">🔐 Seguridad</a>
+  <a href="/config/wind" style="color:#8b949e;text-decoration:none">🧭 Veleta</a>
+  <a href="/config/system" style="color:#8b949e;text-decoration:none">⚙️ Sistema</a>
   <a href="/logout" style="color:#f85149;text-decoration:none">Salir</a>
 </nav>
 
@@ -235,43 +240,6 @@ body.light .cat-item:hover{background:#f6f8fa}
     <button class="sec" onclick="closeCatalog()">Cerrar</button>
   </div>
 </div>
-
-<section id="wind">
-<h2>Calibración de la veleta (WH-SP-WD)</h2>
-<p class="muted">Ingresá los valores de las 8 resistencias en el orden del datasheet (empezando por N), y el pull-up. Las 16 posiciones (8 directas + 8 en paralelo) se calculan automáticamente.</p>
-<div class="grid-wind" id="windInputs"></div>
-<div style="max-width:260px"><label>Resistencia pull-up (Ω)</label><input id="wrp" type="number" step="1" value="10000"></div>
-<button onclick="saveWind()">Guardar resistencias</button>
-</section>
-
-<section id="net">
-<h2>Red (WiFi)</h2>
-<button type="button" class="sec" onclick="scanWifi()">🔍 Buscar redes</button>
-<div id="wifiList"></div>
-<form onsubmit="saveNetwork();return false;">
-<select id="cfg_mode">
-  <option value="STA">Estación (conectarse a un router)</option>
-  <option value="AP">Punto de acceso (AP propio)</option>
-</select>
-<input id="cfg_ssid" placeholder="WiFi SSID">
-<input id="cfg_pass" type="password" placeholder="WiFi contraseña">
-<input id="cfg_host" placeholder="Hostname (mDNS)">
-<button type="submit">Guardar red (reinicia)</button>
-</form>
-</section>
-
-<section id="sec">
-<h2>Estación y seguridad</h2>
-<form onsubmit="saveConfig();return false;">
-<input id="cfg_name" placeholder="Nombre de la estación">
-<input id="cfg_user" placeholder="Usuario del login (vacío = admin)">
-<input id="cfg_loginpass" type="password" placeholder="Contraseña del login (vacío = sin login)">
-<input id="cfg_apikey" type="password" placeholder="API key (web)">
-<input id="cfg_serverkey" type="password" placeholder="Server key (Central)">
-<button type="submit">Guardar</button>
-</form>
-<a href="/logout" style="display:inline-block;margin-top:.5rem">Cerrar sesión</a>
-</section>
 
 <script>
 const DIRS=['N','NE','E','SE','S','SO','O','NO'];
@@ -620,32 +588,47 @@ const char kBaseCss[] PROGMEM = R"html(
 <style>
 :root{--bg:#0d1117;--fg:#e6edf3;--card:#161b22;--bd:#30363d;--muted:#8b949e;--acc:#1f6feb}
 *{box-sizing:border-box}body{margin:0;padding:1rem;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif}
-h2{font-size:1rem;margin:.2rem 0 .6rem}
-section{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:1rem;margin-bottom:1rem;max-width:760px}
-input,select{width:100%;padding:.5rem;margin:.25rem 0;background:#0d1117;color:var(--fg);border:1px solid var(--bd);border-radius:6px}
-button{background:var(--acc);color:#fff;border:0;padding:.5rem .9rem;border-radius:6px;cursor:pointer;margin:.25rem .3rem 0 0}
+.wrap{max-width:820px;margin:0 auto}
+h2{font-size:1.05rem;margin:0 0 .6rem;font-weight:600}
+section{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:1.1rem;margin:0 auto 1rem;max-width:760px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+input,select{width:100%;padding:.55rem .6rem;margin:.3rem 0;background:#0d1117;color:var(--fg);border:1px solid var(--bd);border-radius:7px;font-size:.9rem}
+input:focus,select:focus{outline:none;border-color:var(--acc)}
+button{background:var(--acc);color:#fff;border:0;padding:.55rem 1rem;border-radius:7px;cursor:pointer;margin:.3rem .3rem 0 0;font-size:.88rem}
+button:hover{opacity:.9}
 button.sec{background:#21262d}
+button.theme{background:transparent;border:1px solid var(--bd);font-size:1rem}
 .muted{color:var(--muted);font-size:.8rem}
 a{color:var(--acc);text-decoration:none}
-.nav{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--bd)}
-.nav a{color:var(--muted);text-decoration:none;padding:.25rem .5rem;border-radius:6px}
+.nav{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.55rem 1rem;margin-bottom:1.2rem;border:1px solid var(--bd);border-radius:12px;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.nav-links{display:flex;gap:.25rem;flex-wrap:wrap;justify-content:center}
+.nav a{color:var(--muted);text-decoration:none;padding:.3rem .6rem;border-radius:7px;font-size:.9rem}
+.nav a:hover{color:var(--fg);background:#21262d}
 .nav a.on{color:#fff;background:var(--acc)}
 .nav .out{color:#f85149}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
-.cat-item{display:flex;justify-content:space-between;align-items:center;padding:.4rem .5rem;border-bottom:1px solid var(--bd)}
+.nav-right{margin-left:auto;display:flex;gap:.4rem;align-items:center}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.cat-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.5rem .6rem;border-bottom:1px solid var(--bd);font-size:.9rem}
+.cat-item:last-child{border-bottom:0}
+code{background:#21262d;padding:.1rem .4rem;border-radius:4px;font-size:.85em}
 body.light{--bg:#f6f8fa;--fg:#24292f;--card:#fff;--bd:#d0d7de;--muted:#57606a}
 body.light input{background:#fff;color:#24292f}
+body.light code{background:#f0f3f6}
 </style>
 )html";
 
 const char kNav[] PROGMEM = R"html(
 <nav class="nav">
+<div class="nav-links">
 <a href="/">📊 Dashboard</a>
-<a href="/network">🌐 Red</a>
-<a href="/security">🔐 Seguridad</a>
-<a href="/system">⚙️ Sistema</a>
-<button class="sec" onclick="toggleTheme()">🌓</button>
+<a href="/config/network">🌐 Red</a>
+<a href="/config/security">🔐 Seguridad</a>
+<a href="/config/wind">🧭 Veleta</a>
+<a href="/config/system">⚙️ Sistema</a>
+</div>
+<div class="nav-right">
+<button class="theme" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
 <a href="/logout" class="out">Salir</a>
+</div>
 </nav>
 )html";
 
@@ -662,7 +645,8 @@ void serveAuthedPage(WebServer& srv, bool authed, const String& body) {
     return;
   }
   String html = String("<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>SEMA</title>") +
-                String(kBaseCss) + "</head><body>" + String(kNav) + body + "</body></html>";
+                String(kBaseCss) + "</head><body>" + String(kNav) +
+                "<div class=\"wrap\">" + body + "</div></body></html>";
   srv.send(200, "text/html", html);
 }
 }  // namespace
@@ -741,15 +725,47 @@ void HttpServer::onSystemPage() {
 <section><h2>Sistema</h2>
 <div id="status" class="muted">Cargando…</div>
 <pre id="sysinfo" class="muted"></pre></section>
+<section><h2>NTP y zona horaria</h2>
+<form onsubmit="saveSystem();return false;">
+<input id="cfg_timezone" placeholder="Zona horaria (IANA, ej. America/Argentina/Buenos_Aires)">
+<input id="cfg_ntp" placeholder="Servidor NTP (ej. pool.ntp.org)">
+<button type="submit">Guardar</button>
+</form></section>
 <section><h2>Actualización (OTA)</h2>
+<button onclick="checkUpdate()">🔎 Comprobar actualización</button>
+<div id="upd" class="muted"></div>
 <form method="POST" action="/api/v1/ota" enctype="multipart/form-data"><input type="file" name="firmware"><button type="submit">Subir firmware</button></form></section>
 <section><h2>Acciones</h2>
 <button onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV histórico</button>
 <button class="sec" onclick="doRestart()">🔄 Reiniciar</button></section>
 <script>
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file}catch(e){}}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_timezone').value=c.system?c.system.timezone:'';document.getElementById('cfg_ntp').value=c.system?c.system.ntp_server:''}catch(e){}}
+async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:document.getElementById('cfg_ntp').value})});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
+async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
 async function doRestart(){if(!confirm('¿Reiniciar?'))return;try{await fetch('/api/v1/restart',{method:'POST'});alert('Reiniciando…')}catch(e){}}
 load();
+</script>
+)html";
+  serveAuthedPage(server_, authed, body);
+}
+
+void HttpServer::onWindPage() {
+  const bool authed = core_->config().get().security.password.length() == 0 || sessionAuthorized();
+  const String body = R"html(
+<section><h2>Calibración de la veleta (WH-SP-WD)</h2>
+<p class="muted">Ingresá los valores de las 8 resistencias en el orden del datasheet (empezando por N) y el pull-up. Las 16 posiciones (8 directas + 8 en paralelo) se calculan automáticamente.</p>
+<div class="row" id="windInputs"></div>
+<div style="max-width:280px"><label class="muted">Resistencia pull-up (Ω)</label><input id="wrp" type="number" step="1" value="10000"></div>
+<button onclick="saveWind()">Guardar resistencias</button>
+<button class="sec" onclick="calibrateNorth()">🧭 Calibrar norte</button>
+</section>
+<script>
+const DIRS=['N','NE','E','SE','S','SO','O','NO'];
+function renderWind(){const c=document.getElementById('windInputs');DIRS.forEach((d,i)=>{const b=document.createElement('div');b.innerHTML='<label class="muted">R'+(i+1)+' — '+d+' (Ω)</label><input id="wr'+i+'" type="number" step="1" value="0">';c.appendChild(b)})}
+async function loadWind(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('wrp').value=r.system&&r.system.wind_rpull?r.system.wind_rpull:10000;const wr=(r.system&&r.system.wind_resistors)||[];DIRS.forEach((d,i)=>{const e=document.getElementById('wr'+i);if(e)e.value=wr[i]!==undefined?wr[i]:0})}catch(e){}}
+async function saveWind(){const resistors=DIRS.map((d,i)=>parseFloat(document.getElementById('wr'+i).value)||0);const rpull=parseFloat(document.getElementById('wrp').value)||10000;try{const resp=await fetch('/api/v1/wind/resistors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rpull:rpull,resistors:resistors})});alert(resp.ok?'Resistencias guardadas':'Error')}catch(e){alert('Error de red')}}
+async function calibrateNorth(){try{const resp=await fetch('/api/v1/wind/north',{method:'POST'});alert(resp.ok?'Norte calibrado':'Error')}catch(e){alert('Error de red')}}
+renderWind();loadWind();
 </script>
 )html";
   serveAuthedPage(server_, authed, body);
@@ -1039,6 +1055,64 @@ void HttpServer::onApiKeys() {
   resp["name"] = name;
   if (generated.length()) {
     resp["key"] = generated;
+  }
+  String out;
+  serializeJson(resp, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onConfigSystem() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"body required\"}");
+    return;
+  }
+  DynamicJsonDocument doc(512);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  Config next = core_->config().get();
+  if (doc.containsKey("timezone")) next.system.timezone = doc["timezone"] | "America/Argentina/Buenos_Aires";
+  if (doc.containsKey("ntp_server")) next.system.ntpServer = doc["ntp_server"] | "pool.ntp.org";
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
+  server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onUpdateCheck() {
+  if (!authorized() && !sessionAuthorized()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  DynamicJsonDocument resp(512);
+  resp["current"] = SEMA_FW_VERSION;
+  resp["latest"] = "";
+  resp["update"] = false;
+  HTTPClient http;
+  WiFiClientSecure client;
+  client.setInsecure();  // solo para leer la versión; el OTA real usa X-SHA256
+  if (http.begin(client, "https://api.github.com/repos/AlessandroKlein/SEMA/releases/latest")) {
+    http.setTimeout(8000);
+    const int code = http.GET();
+    if (code == 200) {
+      DynamicJsonDocument doc(4096);
+      if (!deserializeJson(doc, http.getString())) {
+        String tag = doc["tag_name"] | "";
+        if (tag.startsWith("v")) {
+          tag = tag.substring(1);
+        }
+        resp["latest"] = tag;
+        resp["update"] = (tag.length() > 0 && tag != String(SEMA_FW_VERSION));
+        resp["url"] = doc["html_url"] | "";
+      }
+    }
+    http.end();
   }
   String out;
   serializeJson(resp, out);

@@ -6,6 +6,19 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.41.0] - 2026-10-07
+
+### Changed
+
+- Rutas /config/network, /config/security, /config/system, /config/wind.
+- Dashboard limpio (solo grid + graficos).
+- CSS centrado + navbar mejorada.
+
+### Added
+
+- Config NTP (servidor + zona horaria) en /config/system.
+- Comprobar actualizacion desde GitHub.
+
 ## [1.40.0] - 2026-10-07
 
 ### Added
@@ -745,6 +758,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.41.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.41.0
 [1.40.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.40.0
 [1.39.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.39.0
 [1.38.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.38.0

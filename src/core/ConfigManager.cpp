@@ -122,6 +122,7 @@ bool ConfigManager::serialize(String& out) const {
   doc["network"]["subnet"] = config_.network.subnet;
   doc["network"]["dns"] = config_.network.dns;
   doc["system"]["timezone"] = config_.system.timezone;
+  doc["system"]["ntp_server"] = config_.system.ntpServer;
   doc["system"]["log_level"] = config_.system.logLevel;
   doc["system"]["units"] = config_.system.units;
   doc["system"]["altitude"] = config_.system.altitude;
@@ -256,6 +257,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.network.subnet = doc["network"]["subnet"] | "";
   c.network.dns = doc["network"]["dns"] | "";
   c.system.timezone = doc["system"]["timezone"] | "America/Argentina/Buenos_Aires";
+  c.system.ntpServer = doc["system"]["ntp_server"] | "pool.ntp.org";
   c.system.logLevel = doc["system"]["log_level"] | "INFO";
   c.system.units = doc["system"]["units"] | "metric";
   c.system.altitude = doc["system"]["altitude"] | 0.0f;

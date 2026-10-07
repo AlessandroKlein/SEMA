@@ -29,14 +29,17 @@ private:
   void onNetworkPage();
   void onSecurityPage();
   void onSystemPage();
+  void onWindPage();
   void onStatus();
   void onHealth();
   void onSystem();
   void onConfig();
   void onConfigPut();
   void onConfigNetwork();
+  void onConfigSystem();
   void onWifiScan();
   void onApiKeys();
+  void onUpdateCheck();
   void onBackup();
   void onLoginPost();
   void onLogout();

@@ -124,7 +124,7 @@ void SemaCore::setup() {
               config_.get().network.dns);
 
   // Sincronización NTP (D-0044): reloj UTC; nowEpoch() cae a uptime hasta sincronizar.
-  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+  configTime(0, 0, config_.get().system.ntpServer.c_str(), "time.nist.gov");
 
   http_.begin(*this);
 
