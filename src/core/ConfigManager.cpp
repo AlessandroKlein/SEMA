@@ -223,6 +223,12 @@ bool ConfigManager::serialize(String& out) const {
       pm.add(s.pinModes[i]);
     }
   }
+  JsonArray se = doc.createNestedArray("spi_expanders");
+  for (const SpiExpanderConfig& x : config_.spiExpanders) {
+    JsonObject o = se.createNestedObject();
+    o["type"] = x.type;
+    o["cs"] = x.csPin;
+  }
   doc["modbus"]["enabled"] = config_.modbus.enabled;
   doc["modbus"]["rx"] = config_.modbus.rxPin;
   doc["modbus"]["tx"] = config_.modbus.txPin;
@@ -388,6 +394,14 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
       s.pinModes[i] = pm[i] | 0;
     }
     c.shiftRegisters.push_back(s);
+  }
+  c.spiExpanders.clear();
+  JsonArray se = doc["spi_expanders"].as<JsonArray>();
+  for (JsonObject o : se) {
+    SpiExpanderConfig x;
+    x.type = o["type"] | "";
+    x.csPin = o["cs"] | 0;
+    c.spiExpanders.push_back(x);
   }
   c.modbus.enabled = doc["modbus"]["enabled"] | false;
   c.modbus.rxPin = doc["modbus"]["rx"] | 16;

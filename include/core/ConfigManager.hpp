@@ -138,6 +138,12 @@ struct Mcp23s17Config {
   uint8_t pinModes[16] = {0};  // 0=no usado, 1=salida, 2=entrada
 };
 
+// Expansor SPI genérico (UART o I²C). Solo requiere chip-select (CS).
+struct SpiExpanderConfig {
+  String type = "MAX14830";  // "MAX14830" (UART) | "SC18IS602B" (I²C)
+  uint8_t csPin = 0;         // chip select SPI (0 = no usar)
+};
+
 // RS485 / Modbus RTU (maestro de un esclavo).
 struct ModbusConfig {
   bool enabled = false;
@@ -213,6 +219,7 @@ struct Config {
   std::vector<GpioSpec> gpio;              // GPIO standalone (opcional)
   Mcp23s17Config mcp23s17;                 // expansor GPIO SPI MCP23S17 (opcional)
   std::vector<ShiftRegisterConfig> shiftRegisters;  // shift registers (encadenables)
+  std::vector<SpiExpanderConfig> spiExpanders;       // expansores SPI (MAX14830/SC18IS602B)
   ModbusConfig modbus;                     // RS485/Modbus (opcional)
   CanConfig can;                           // CAN/TWAI (opcional)
   LoraConfig lora;                         // LoRa/SX1262 (opcional)

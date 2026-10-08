@@ -999,6 +999,7 @@ function usedPins(){
   // SDA/SCL (I²C) y MOSI/MISO/SCK (SPI) son buses compartidos, no se cuentan.
   (cfg.sensors||[]).forEach(x=>{[x.pin,x.rx,x.tx].forEach(p=>{if(p)s.add(p)})});
   if(cfg.mcp23s17_cs)s.add(cfg.mcp23s17_cs);
+  (cfg.spi_expanders||[]).forEach(x=>{if(x.cs)s.add(x.cs)});
   // Pines del MCP23S17 configurados como entrada/salida quedan reservados (no como CS de otros chips).
   (cfg.mcp23s17_pins||[]).forEach((v,i)=>{if(v)s.add(100+i)});
   (cfg.shift_registers||[]).forEach(x=>{if(x.latch_pin)s.add(x.latch_pin)});
@@ -1171,6 +1172,15 @@ function renderIo(){
   for(let i=0;i<8;i++){ h+=sel('mp'+(i+8), mPins[i+8]!==undefined?mPins[i+8]:0, 'B'+i); }
   h+='</span></div>';
   h+='</div>';
+  // Expansores SPI (UART/I²C): MAX14830 / SC18IS602B. Solo configuran CS.
+  h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Expansores SPI (UART / I²C) <span class="q" title="MAX14830 = 4 puertos UART por SPI; SC18IS602B = bus I²C por SPI. Solo se configura el chip-select (CS).">?</span></div>';
+  h+='<div class="catalog" id="spxList">';
+  (cfg.spi_expanders||[]).forEach((x,i)=>{
+    const label=x.type==='SC18IS602B'?'SC18IS602B (I²C)':'MAX14830 (UART)';
+    h+='<div class="cat-item"><span>'+label+'</span><span>CS <select class="spxcs" data-spx="'+i+'">'+pinSel(used,x.cs||0)+'</select></span><button class="sec" onclick="delSpx('+i+')">🗑️</button></div>';
+  });
+  h+='</div>';
+  h+='<button class="sec" onclick="addSpx()">➕ Añadir expansor SPI</button>';
   // Registros de desplazamiento (cascada) — solo si está habilitado por flag.
   if(shiftEnabled){
     h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">Registros de desplazamiento (cascada) <span class="q" title="74HC595 = 8 salidas; 74HC165 = 8 entradas. Alimentación típica 5V, pero las señales al ESP32 deben ser de 3.3V. DAT/CLK usan MOSI/SCLK del bus SPI; cada chip tiene su propio LATCH.">?</span></div>';
@@ -1194,6 +1204,13 @@ function addSh(){
   ]);
 }
 function delSh(i){cfg.shift_registers.splice(i,1);renderIo();}
+function addSpx(){
+  uiModal('¿Qué expansor SPI?','',[
+    {t:'MAX14830 (UART por SPI)',ok:()=>{cfg.spi_expanders=cfg.spi_expanders||[];cfg.spi_expanders.push({type:'MAX14830',cs:0});renderIo()}},
+    {t:'SC18IS602B (I²C por SPI)',ok:()=>{cfg.spi_expanders=cfg.spi_expanders||[];cfg.spi_expanders.push({type:'SC18IS602B',cs:0});renderIo()},sec:true}
+  ]);
+}
+function delSpx(i){cfg.spi_expanders.splice(i,1);renderIo();}
 function saveIo(){
   const pins=[];
   for(let i=0;i<16;i++){ pins.push(parseInt(document.getElementById('mp'+i).value)||0); }
@@ -1206,7 +1223,12 @@ function saveIo(){
       shift.push({type:t.value,latch:parseInt(l.value)||0,pins:sp});
     });
   }
-  const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift_registers:shift,gpio:[]};
+  const spx=[];
+  document.querySelectorAll('#spxList select.spxcs').forEach((sel,i)=>{
+    const t=(cfg.spi_expanders&&cfg.spi_expanders[i])?cfg.spi_expanders[i].type:'MAX14830';
+    spx.push({type:t,cs:parseInt(sel.value)||0});
+  });
+  const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift_registers:shift,spi_expanders:spx,gpio:[]};
   fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>uiAlert(r.ok?'Guardado':'Error')).catch(()=>uiAlert('Error de red'));
 }
 load();
@@ -1546,6 +1568,16 @@ void HttpServer::onConfigIo() {
     }
   }
 #endif
+  if (doc.containsKey("spi_expanders")) {
+    next.spiExpanders.clear();
+    JsonArray se = doc["spi_expanders"].as<JsonArray>();
+    for (JsonObject o : se) {
+      SpiExpanderConfig x;
+      x.type = o["type"] | "";
+      x.csPin = o["cs"] | 0;
+      next.spiExpanders.push_back(x);
+    }
+  }
   if (doc.containsKey("gpio")) {
     next.gpio.clear();
     JsonArray arr = doc["gpio"].as<JsonArray>();
