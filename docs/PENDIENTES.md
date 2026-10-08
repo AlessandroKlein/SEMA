@@ -51,9 +51,6 @@ Se corrigieron dos inconsistencias de documentación:
 - OTA con firma/checksum.
 - Tokens/API keys revocables.
 
-**Dashboard y web**
-- Multi-idioma (es/en).
-
 **Comunicaciones**
 - LoRaWAN (red sobre LoRa).
 - Red Zigbee multi-dispositivo.
