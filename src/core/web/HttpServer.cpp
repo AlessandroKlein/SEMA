@@ -1237,7 +1237,7 @@ void HttpServer::onBackup() {
 }
 
 void HttpServer::onSystem() {
-  DynamicJsonDocument doc(384);
+  DynamicJsonDocument doc(1536);
   doc["id"] = core_->config().get().station.id;
   doc["name"] = core_->config().get().station.name;
   doc["firmware"] = SEMA_FW_VERSION;

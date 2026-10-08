@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.84.0] - 2026-10-08
+
+### Fixed
+
+- Datos WiFi (SSID/IP/mDNS) no aparecian: el JSON de /api/v1/system era demasiado chico y descartaba esos campos.
+
 ## [1.83.0] - 2026-10-08
 
 ### Fixed
@@ -1056,6 +1062,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.84.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.84.0
 [1.83.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.83.0
 [1.82.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.82.0
 [1.81.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.81.0
