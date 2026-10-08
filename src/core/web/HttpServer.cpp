@@ -237,14 +237,14 @@ body.light input{background:#fff;color:#24292f}
   <div class="nav-right">
     <button class="sec" onclick="toggleLang()">🌐</button>
     <button class="sec" onclick="toggleTheme()">🌓</button>
-    <a href="/logout" class="out">Salir</a>
+    <a href="/logout" class="out"><span data-i18n="logout">Salir</span></a>
   </div>
 </nav>
 
 <div class="bar" id="editBar">
   <button class="edit-only" onclick="openCatalog()">➕ Añadir tarjeta</button>
-  <button class="sec" onclick="toggleEdit()">✏️ Editar layout</button>
-  <button class="sec edit-only" onclick="saveLayout()">💾 Guardar layout</button>
+  <button class="sec" onclick="toggleEdit()">✏️ <span data-i18n="edit_layout">Editar layout</span></button>
+  <button class="sec edit-only" onclick="saveLayout()">💾 <span data-i18n="save_layout">Guardar layout</span></button>
 </div>
 
 <div class="grid-stack" id="grid"></div>
@@ -261,6 +261,18 @@ body.light input{background:#fff;color:#24292f}
 <script>
 const DIRS=['N','NE','E','SE','S','SO','O','NO'];
 const COLORS=['#58a6ff','#f0883e','#3fb950','#d29922','#bc8cff','#ff7b72','#56d4dd','#79c0ff'];
+const MEAS={
+ temperature:['Temperatura','Temperatura del aire'],humidity:['Humedad','Humedad relativa (%)'],pressure:['Presión','Presión barométrica (hPa)'],
+ light:['Luz','Luminosidad (lux)'],uvi:['Índice UV','Radiación ultravioleta'],co2:['CO₂','Dióxido de carbono (ppm)'],
+ pm25:['PM2.5','Partículas finas (2.5 µm)'],pm10:['PM10','Partículas (10 µm)'],wind_speed:['Viento','Velocidad del viento'],
+ wind_gust:['Ráfagas','Ráfaga de viento'],wind_direction:['Dirección','Dirección del viento'],rain:['Lluvia','Precipitación'],
+ voltage:['Batería','Tensión de batería (V)'],solar_radiation:['Solar','Radiación solar (W/m²)'],clock:['Reloj','Hora actual'],
+ dew_point:['Rocío','Punto de rocío'],heat_index:['Índice calor','Sensación térmica por humedad'],wind_chill:['Sensación','Sensación térmica por viento'],
+ qnh:['QNH','Presión a nivel del mar'],vpd:['VPD','Déficit de presión de vapor'],aqi:['AQI','Índice de calidad del aire'],
+ barometric_altitude:['Altitud','Altitud barométrica'],rain_rate:['Lluvia/h','Tasa de lluvia (mm/h)'],rain_accumulated:['Lluvia ac.','Lluvia acumulada']
+};
+function measLabel(m){const e=MEAS[m];return e?e[0]:m}
+function measDesc(m){const e=MEAS[m];return e?e[1]:''}
 let grid=null, editMode=false, cfg={}, layout=[], lastMeasurements=[];
 
 function cid(type,k){ return type+'_'+String(k).replace(/[|]/g,'~'); }
@@ -281,8 +293,8 @@ function toggleTheme(){
 }
 try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add('light');}catch(e){}
 const I18N={
- es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación'},
- en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station'}
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login'}
 };
 function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
 function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
@@ -325,7 +337,7 @@ function findValue(key){
 
 function cardContent(it){
   if(it.type==='chart'){
-    return '<div class="card"><div class="t">📈 '+it.key+'</div>'+
+    return '<div class="card"><div class="t">📈 '+measLabel(it.key)+' <span class="q" title="'+measDesc(it.key)+'">?</span></div>'+
            '<div class="range">'+
              '<button class="rbtn on" data-r="1" onclick="setRange(this,\''+it.key+'\')">1h</button>'+
              '<button class="rbtn" data-r="24" onclick="setRange(this,\''+it.key+'\')">24h</button>'+
@@ -341,7 +353,7 @@ function cardContent(it){
   const u=m&&!isClock?m.unit:'';
   const q=m?m.quality:'';
   const nm=m?m.measurement:it.key;
-  return '<div class="card"><div class="t">'+nm+'</div>'+
+  return '<div class="card"><div class="t">'+measLabel(nm)+' <span class="q" title="'+measDesc(nm)+'">?</span></div>'+
          '<div class="v">'+v+' <span>'+u+'</span></div>'+
          '<div class="s">'+(m?m.sensor_id:'')+' · '+q+'</div>'+
          '<button class="del" onclick="deleteCard(\''+cid(it.type,it.key)+'\')">✕</button></div>';
@@ -620,7 +632,7 @@ const char kNav[] PROGMEM = R"html(
 <div class="nav-right">
 <button class="theme" onclick="toggleLang()" title="Idioma / Language">🌐</button>
 <button class="theme" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
-<a href="/logout" class="out">Salir</a>
+<a href="/logout" class="out"><span data-i18n="logout">Salir</span></a>
 </div>
 </nav>
 )html";
@@ -635,8 +647,8 @@ try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add(
 const char kI18nJs[] PROGMEM = R"html(
 <script>
 const I18N={
- es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación'},
- en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station'}
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login'}
 };
 function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});document.documentElement.lang=l||'es';try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
 function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
@@ -721,7 +733,7 @@ void HttpServer::onNetworkPage() {
   const bool authed = webAuthed();
   const String body = R"html(
 <section><h2 data-i18n="network_title">Red (WiFi)</h2>
-<button class="sec" onclick="scanWifi()">🔍 Buscar redes</button><div id="wifiList"></div>
+<button class="sec" onclick="scanWifi()">🔍 <span data-i18n="scan">Buscar redes</span></button><div id="wifiList"></div>
 <form onsubmit="saveWifi();return false;">
 <select id="cfg_mode"><option value="STA">Estación (conectarse a un router)</option><option value="AP">Punto de acceso (AP propio)</option></select>
 <input id="cfg_ssid" placeholder="WiFi SSID">
@@ -862,8 +874,8 @@ void HttpServer::onSystemPage() {
 <div id="otaMsg" class="muted"></div>
 <button onclick="doOta()">⬆️ Subir firmware</button></section>
 <section><h2 data-i18n="actions">Acciones</h2>
-<button onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV histórico</button>
-<button class="sec" onclick="doRestart()">🔄 Reiniciar</button></section>
+<button onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ <span data-i18n="csv_history">CSV histórico</span></button>
+<button class="sec" onclick="doRestart()">🔄 <span data-i18n="restart">Reiniciar</span></button></section>
 <script>
 function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
