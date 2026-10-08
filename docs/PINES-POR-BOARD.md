@@ -1,6 +1,6 @@
 # Pines por board — SEMA
 
-> **Tipo:** Referencia de hardware | **Fecha:** 2026-10-08 | **Firmware:** v1.90.0
+> **Tipo:** Referencia de hardware | **Fecha:** 2026-10-08 | **Firmware:** v1.91.0
 
 Tabla de pines definitiva por board. Los pines **reservados** por el hardware no
 aparecen en los selectores de la web. Los buses **compartidos** (I²C / SPI) se

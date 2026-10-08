@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.91.0] - 2026-10-08
+
+### Added
+
+- MCP23S17 como expansor: sus 16 pines (A0-B7) se agregan a los selectores de pines cuando esta habilitado.
+
 ## [1.90.0] - 2026-10-08
 
 ### Added
@@ -1102,6 +1108,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.91.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.91.0
 [1.90.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.90.0
 [1.89.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.89.0
 [1.88.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.88.0

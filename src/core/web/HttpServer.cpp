@@ -1001,6 +1001,15 @@ function pinSel(used,cur){
     const taken=used.has(p)&&p!==cur;
     h+='<option value="'+p+'"'+(p===cur?' selected':'')+(taken?' disabled':'')+'>GPIO '+p+(taken?' (ocupado)':'')+'</option>';
   }
+  // Pines del MCP23S17 (expansor SPI): disponibles cuando el chip está habilitado (CS != 0).
+  if(cfg.mcp23s17_cs){
+    for(let i=0;i<16;i++){
+      const v=100+i;
+      const name='MCP '+((i<8)?'A':'B')+(i%8);
+      const taken=used.has(v)&&v!==cur;
+      h+='<option value="'+v+'"'+(cur===v?' selected':'')+(taken?' disabled':'')+'>'+name+(taken?' (ocupado)':'')+'</option>';
+    }
+  }
   return h;
 }
 function render(){
