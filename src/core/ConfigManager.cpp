@@ -193,6 +193,7 @@ bool ConfigManager::serialize(String& out) const {
     o["scl"] = s.scl;
     o["bus"] = s.bus;
     o["uart"] = s.uart;
+    o["uart_port"] = s.uartPort;
     o["pin"] = s.pin;
     o["rx"] = s.rxPin;
     o["tx"] = s.txPin;
@@ -236,6 +237,7 @@ bool ConfigManager::serialize(String& out) const {
   doc["modbus"]["tx"] = config_.modbus.txPin;
   doc["modbus"]["de_re"] = config_.modbus.deRePin;
   doc["modbus"]["uart"] = config_.modbus.uart;
+  doc["modbus"]["uart_port"] = config_.modbus.uartPort;
   doc["modbus"]["baud"] = config_.modbus.baud;
   doc["modbus"]["slave_id"] = config_.modbus.slaveId;
   doc["modbus"]["register"] = config_.modbus.registerAddr;
@@ -258,6 +260,7 @@ bool ConfigManager::serialize(String& out) const {
   doc["zigbee"]["rx"] = config_.zigbee.rxPin;
   doc["zigbee"]["tx"] = config_.zigbee.txPin;
   doc["zigbee"]["uart"] = config_.zigbee.uart;
+  doc["zigbee"]["uart_port"] = config_.zigbee.uartPort;
   doc["zigbee"]["baud"] = config_.zigbee.baud;
   doc["ethernet"]["enabled"] = config_.ethernet.enabled;
   doc["ethernet"]["mdc"] = config_.ethernet.mdcPin;
@@ -358,6 +361,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     s.scl = o["scl"] | 22;
     s.bus = o["bus"] | 0;
     s.uart = o["uart"] | 0;
+    s.uartPort = o["uart_port"] | 0;
     s.pin = o["pin"] | 0;
     s.rxPin = o["rx"] | 0;
     s.txPin = o["tx"] | 0;
@@ -414,6 +418,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.modbus.txPin = doc["modbus"]["tx"] | 17;
   c.modbus.deRePin = doc["modbus"]["de_re"] | 0;
   c.modbus.uart = doc["modbus"]["uart"] | 0;
+  c.modbus.uartPort = doc["modbus"]["uart_port"] | 0;
   c.modbus.baud = doc["modbus"]["baud"] | 9600;
   c.modbus.slaveId = doc["modbus"]["slave_id"] | 1;
   c.modbus.registerAddr = doc["modbus"]["register"] | 0;
@@ -436,6 +441,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.zigbee.rxPin = doc["zigbee"]["rx"] | 18;
   c.zigbee.txPin = doc["zigbee"]["tx"] | 19;
   c.zigbee.uart = doc["zigbee"]["uart"] | 0;
+  c.zigbee.uartPort = doc["zigbee"]["uart_port"] | 0;
   c.zigbee.baud = doc["zigbee"]["baud"] | 115200;
   c.ethernet.enabled = doc["ethernet"]["enabled"] | false;
   c.ethernet.mdcPin = doc["ethernet"]["mdc"] | 23;

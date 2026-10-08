@@ -1041,11 +1041,18 @@ function sc18Options(cur){
   (cfg.spi_expanders||[]).forEach(x=>{if(x.type==='SC18IS602B'&&x.cs)h+='<option value="'+x.cs+'"'+(cur==x.cs?' selected':'')+'>SC18IS602B (CS='+x.cs+')</option>'});
   return h;
 }
-function maxOptions(cur){
+function maxOptions(cur,curPort){
   let h='<option value="0"'+(cur==0?' selected':'')+'>GPIO (RX/TX)</option>';
-  (cfg.spi_expanders||[]).forEach(x=>{if(x.type==='MAX14830'&&x.cs)h+='<option value="'+x.cs+'"'+(cur==x.cs?' selected':'')+'>MAX14830 (CS='+x.cs+')</option>'});
+  (cfg.spi_expanders||[]).forEach(x=>{
+    if(x.type==='MAX14830'&&x.cs){
+      for(let p=0;p<4;p++){
+        h+='<option value="'+x.cs+'" data-p="'+p+'"'+((cur==x.cs&&curPort==p)?' selected':'')+'>MAX14830 CS='+x.cs+' U'+p+'</option>';
+      }
+    }
+  });
   return h;
 }
+function uartPortOf(id){const s=document.getElementById(id);if(!s)return 0;const o=s.options[s.selectedIndex];return (o&&o.getAttribute('data-p'))?parseInt(o.getAttribute('data-p')):0;}
 function render(){
   const list=document.getElementById('sensorList');
   const used=usedPins();
@@ -1065,7 +1072,7 @@ function render(){
       h+='<span class="muted">Bus<select class="bus" data-k="'+key+'" style="width:118px">'+sc18Options(cur.bus||0)+'</select></span>';
     }else if(t.i==='uart'){
       const urt=cur.uart||0;
-      h+='<span class="muted">UART<select class="uart" data-k="'+key+'" onchange="uartChange(this)" style="width:116px">'+maxOptions(urt)+'</select></span>';
+      h+='<span class="muted">UART<select class="uart" data-k="'+key+'" onchange="uartChange(this)" style="width:130px">'+maxOptions(urt,cur.uartPort||0)+'</select></span>';
       h+='<span class="muted rxwrap" data-k="'+key+'" '+(urt?'style="display:none"':'')+'>RX<select class="p" data-k="'+key+'" data-p="rx">'+pinSel(used,rx)+'</select> TX<select class="p" data-k="'+key+'" data-p="tx">'+pinSel(used,tx)+'</select></span>';
     }else{
       const src=cur.channel&&cur.channel.startsWith('ads')?'ads':'native';
@@ -1112,14 +1119,14 @@ function save(){
     if(!t)return;
     const src=document.querySelector('#sensorList select.src[data-k="'+key+'"]');
     const isAds=src&&src.value==='ads';
-    const spec={id:t.name.toLowerCase().replace(/[^a-z0-9]/g,''),model:isAds?'ADS1115':t.m,enabled:true,address:0,sda:21,scl:22,bus:0,uart:0,pin:0,rx:0,tx:0,channel:t.ch||''};
+    const spec={id:t.name.toLowerCase().replace(/[^a-z0-9]/g,''),model:isAds?'ADS1115':t.m,enabled:true,address:0,sda:21,scl:22,bus:0,uart:0,uart_port:0,pin:0,rx:0,tx:0,channel:t.ch||''};
     document.querySelectorAll('#sensorList select.p[data-k="'+key+'"]').forEach(p=>{
       const k=p.getAttribute('data-p');spec[k]=parseInt(p.value)||0;
     });
     const b=document.querySelector('#sensorList select.bus[data-k="'+key+'"]');
     if(b) spec.bus=parseInt(b.value)||0;
     const u=document.querySelector('#sensorList select.uart[data-k="'+key+'"]');
-    if(u) spec.uart=parseInt(u.value)||0;
+    if(u){spec.uart=parseInt(u.value)||0;const uo=u.options[u.selectedIndex];spec.uart_port=uo&&uo.getAttribute('data-p')?parseInt(uo.getAttribute('data-p')):0;}
     if(isAds){
       // El sensor analógico usa el ADS1115: el pin pasa a ser el canal A0-A3.
       const ch=document.querySelector('#sensorList select.ch[data-k="'+key+'"]');
@@ -1148,10 +1155,10 @@ async function loadPins(r){
   p+='<div class="catalog">';
   p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>SDA <select id="busI2cSda">'+pinSel(used,r.i2c_sda||21)+'</select> SCL <select id="busI2cScl">'+pinSel(used,r.i2c_scl||22)+'</select> <button class="sec" onclick="saveI2c()">💾 Guardar I²C</button></span></div>';
   p+='<div class="cat-item"><span>SPI SCK / MISO / MOSI</span><span class="muted">'+y.spi_sck+' / '+y.spi_miso+' / '+y.spi_mosi+' (bus compartido)</span></div>';
-  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busModEn"'+(m.enabled?' checked':'')+'><span class="sl"></span></label><span>Modbus</span><span>UART <select id="busModUart" style="width:112px">'+maxOptions(m.uart||0)+'</select> RX <select id="busModRx">'+pinSel(used,m.rx||16)+'</select> TX <select id="busModTx">'+pinSel(used,m.tx||17)+'</select></span></div>';
+  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busModEn"'+(m.enabled?' checked':'')+'><span class="sl"></span></label><span>Modbus</span><span>UART <select id="busModUart" style="width:128px">'+maxOptions(m.uart||0,m.uart_port||0)+'</select> RX <select id="busModRx">'+pinSel(used,m.rx||16)+'</select> TX <select id="busModTx">'+pinSel(used,m.tx||17)+'</select></span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busCanEn"'+(ca.enabled?' checked':'')+'><span class="sl"></span></label><span>CAN TX / RX</span><span>TX <select id="busCanTx">'+pinSel(used,ca.tx||5)+'</select> RX <select id="busCanRx">'+pinSel(used,ca.rx||4)+'</select></span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busLoraEn"'+(l.enabled?' checked':'')+'><span class="sl"></span></label><span>LoRa CS / RST / DIO1 / BUSY</span><span>CS <select id="busLoraCs">'+pinSel(used,l.cs||10)+'</select> RST <select id="busLoraRst">'+pinSel(used,l.rst||32)+'</select> DIO1 <select id="busLoraDio1">'+pinSel(used,l.dio1||26)+'</select> BUSY <select id="busLoraBusy">'+pinSel(used,l.busy||27)+'</select></span></div>';
-  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busZigEn"'+(z.enabled?' checked':'')+'><span class="sl"></span></label><span>Zigbee</span><span>UART <select id="busZigUart" style="width:112px">'+maxOptions(z.uart||0)+'</select> RX <select id="busZigRx">'+pinSel(used,z.rx||18)+'</select> TX <select id="busZigTx">'+pinSel(used,z.tx||19)+'</select></span></div>';
+  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busZigEn"'+(z.enabled?' checked':'')+'><span class="sl"></span></label><span>Zigbee</span><span>UART <select id="busZigUart" style="width:128px">'+maxOptions(z.uart||0,z.uart_port||0)+'</select> RX <select id="busZigRx">'+pinSel(used,z.rx||18)+'</select> TX <select id="busZigTx">'+pinSel(used,z.tx||19)+'</select></span></div>';
   p+='<div class="cat-item"><span>microSD CS (SPI)</span><span>CS <select id="busSdCs">'+pinSel(used,sd.sd_cs||4)+'</select></span></div>';
   if(r.mcp23s17_cs)p+='<div class="cat-item"><span>MCP23S17 (GPIO SPI)</span><span class="muted">CS='+r.mcp23s17_cs+'</span></div>';
   (r.spi_expanders||[]).forEach(x=>{
@@ -1171,10 +1178,10 @@ async function saveBuses(){
   const ecs=g('busEthCs');if(ecs)eth.cs=parseInt(ecs.value)||5;
   const b={
     sd_cs:parseInt(g('busSdCs').value)||4,
-    modbus:{enabled:g('busModEn').checked,rx:parseInt(g('busModRx').value)||16,tx:parseInt(g('busModTx').value)||17,de_re:0,uart:parseInt(g('busModUart').value)||0},
+    modbus:{enabled:g('busModEn').checked,rx:parseInt(g('busModRx').value)||16,tx:parseInt(g('busModTx').value)||17,de_re:0,uart:parseInt(g('busModUart').value)||0,uart_port:uartPortOf('busModUart')},
     can:{enabled:g('busCanEn').checked,tx:parseInt(g('busCanTx').value)||5,rx:parseInt(g('busCanRx').value)||4},
     lora:{enabled:g('busLoraEn').checked,cs:parseInt(g('busLoraCs').value)||10,rst:parseInt(g('busLoraRst').value)||14,dio1:parseInt(g('busLoraDio1').value)||26,busy:parseInt(g('busLoraBusy').value)||27},
-    zigbee:{enabled:g('busZigEn').checked,rx:parseInt(g('busZigRx').value)||18,tx:parseInt(g('busZigTx').value)||19,uart:parseInt(g('busZigUart').value)||0},
+    zigbee:{enabled:g('busZigEn').checked,rx:parseInt(g('busZigRx').value)||18,tx:parseInt(g('busZigTx').value)||19,uart:parseInt(g('busZigUart').value)||0,uart_port:uartPortOf('busZigUart')},
     ethernet:eth
   };
   try{const r=await fetch('/api/v1/config/buses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}
@@ -1657,6 +1664,7 @@ void HttpServer::onConfigBuses() {
     next.modbus.txPin = doc["modbus"]["tx"] | 17;
     next.modbus.deRePin = doc["modbus"]["de_re"] | 0;
     next.modbus.uart = doc["modbus"]["uart"] | 0;
+    next.modbus.uartPort = doc["modbus"]["uart_port"] | 0;
   }
   if (doc.containsKey("can")) {
     next.can.enabled = doc["can"]["enabled"] | false;
@@ -1675,6 +1683,7 @@ void HttpServer::onConfigBuses() {
     next.zigbee.rxPin = doc["zigbee"]["rx"] | 18;
     next.zigbee.txPin = doc["zigbee"]["tx"] | 19;
     next.zigbee.uart = doc["zigbee"]["uart"] | 0;
+    next.zigbee.uartPort = doc["zigbee"]["uart_port"] | 0;
   }
   if (doc.containsKey("ethernet")) {
     next.ethernet.enabled = doc["ethernet"]["enabled"] | false;
