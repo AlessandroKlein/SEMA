@@ -351,11 +351,9 @@ function cardContent(it){
   const isClock=m&&m.measurement==='clock';
   const v=m?(isClock?new Date((+m.value)*1000).toLocaleTimeString():(+m.value).toFixed(2)):'—';
   const u=m&&!isClock?m.unit:'';
-  const q=m?m.quality:'';
   const nm=m?m.measurement:it.key;
   return '<div class="card"><div class="t">'+measLabel(nm)+' <span class="q" title="'+measDesc(nm)+'">?</span></div>'+
          '<div class="v">'+v+' <span>'+u+'</span></div>'+
-         '<div class="s">'+(m?m.sensor_id:'')+' · '+q+'</div>'+
          '<button class="del" onclick="deleteCard(\''+cid(it.type,it.key)+'\')">✕</button></div>';
 }
 

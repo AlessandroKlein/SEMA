@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.87.0] - 2026-10-08
+
+### Removed
+
+- Pie de tarjeta (sensor_id · quality) eliminado del dashboard.
+
 ## [1.86.0] - 2026-10-08
 
 ### Changed
@@ -1076,6 +1082,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.87.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.87.0
 [1.86.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.86.0
 [1.85.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.85.0
 [1.84.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.84.0
