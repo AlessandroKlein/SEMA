@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.93.0] - 2026-10-08
+
+### Fixed
+
+- Pines del MCP23S17 configurados como entrada/salida quedan reservados (no se pueden usar como CS de otros chips).
+
 ## [1.92.0] - 2026-10-08
 
 ### Changed
@@ -1117,6 +1123,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.93.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.93.0
 [1.92.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.92.0
 [1.91.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.91.0
 [1.90.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.90.0

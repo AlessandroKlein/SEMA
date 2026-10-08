@@ -998,6 +998,8 @@ function usedPins(){
   // SDA/SCL (I²C) y MOSI/MISO/SCK (SPI) son buses compartidos, no se cuentan.
   (cfg.sensors||[]).forEach(x=>{[x.pin,x.rx,x.tx].forEach(p=>{if(p)s.add(p)})});
   if(cfg.mcp23s17_cs)s.add(cfg.mcp23s17_cs);
+  // Pines del MCP23S17 configurados como entrada/salida quedan reservados (no como CS de otros chips).
+  (cfg.mcp23s17_pins||[]).forEach((v,i)=>{if(v)s.add(100+i)});
   (cfg.shift_registers||[]).forEach(x=>{if(x.latch_pin)s.add(x.latch_pin)});
   // Pines de buses: solo reservan si el elemento está habilitado.
   const m=cfg.modbus||{};if(m.enabled){[m.rx,m.tx,m.de_re].forEach(p=>{if(p)s.add(p)})}
