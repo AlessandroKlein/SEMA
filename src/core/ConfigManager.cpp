@@ -393,7 +393,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.can.rxPin = doc["can"]["rx"] | 4;
   c.can.speed = doc["can"]["speed"] | 500000;
   c.lora.enabled = doc["lora"]["enabled"] | false;
-  c.lora.csPin = doc["lora"]["cs"] | 5;
+  c.lora.csPin = doc["lora"]["cs"] | 10;
   c.lora.rstPin = doc["lora"]["rst"] | 14;
   c.lora.dio1Pin = doc["lora"]["dio1"] | 26;
   c.lora.busyPin = doc["lora"]["busy"] | 27;
@@ -403,8 +403,8 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.lora.codingRate = doc["lora"]["coding_rate"] | 5;
   c.lora.txPower = doc["lora"]["tx_power"] | 14;
   c.zigbee.enabled = doc["zigbee"]["enabled"] | false;
-  c.zigbee.rxPin = doc["zigbee"]["rx"] | 16;
-  c.zigbee.txPin = doc["zigbee"]["tx"] | 17;
+  c.zigbee.rxPin = doc["zigbee"]["rx"] | 18;
+  c.zigbee.txPin = doc["zigbee"]["tx"] | 19;
   c.zigbee.baud = doc["zigbee"]["baud"] | 115200;
   c.ethernet.enabled = doc["ethernet"]["enabled"] | false;
   c.ethernet.mdcPin = doc["ethernet"]["mdc"] | 23;

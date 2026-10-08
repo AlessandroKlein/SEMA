@@ -956,7 +956,8 @@ const TYPES=[
 ];
 let cfg={};
 let shiftEnabled=false;
-async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;try{const y=await(await fetch('/api/v1/system')).json();shiftEnabled=!!y.shift_enabled}catch(e){}render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
+let reservedPins=new Set();
+async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;try{const y=await(await fetch('/api/v1/system')).json();shiftEnabled=!!y.shift_enabled;reservedPins=new Set(y.reserved_pins||[])}catch(e){}render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
 function usedPins(){
   const s=new Set();
   // Solo pines "únicos" (punto a punto): PIN analógico/pulsos y RX/TX de UART.
@@ -969,6 +970,7 @@ function usedPins(){
 function pinSel(used,cur){
   let h='<option value="0">— sin asignar —</option>';
   for(let p=1;p<=39;p++){
+    if(reservedPins.has(p)&&p!==cur)continue;  // reservado por hardware → no aparece
     const taken=used.has(p)&&p!==cur;
     h+='<option value="'+p+'"'+(p===cur?' selected':'')+(taken?' disabled':'')+'>GPIO '+p+(taken?' (ocupado)':'')+'</option>';
   }
@@ -1260,7 +1262,7 @@ void HttpServer::onBackup() {
 }
 
 void HttpServer::onSystem() {
-  DynamicJsonDocument doc(1536);
+  DynamicJsonDocument doc(2048);
   doc["id"] = core_->config().get().station.id;
   doc["name"] = core_->config().get().station.name;
   doc["firmware"] = SEMA_FW_VERSION;
@@ -1286,6 +1288,15 @@ void HttpServer::onSystem() {
   doc["wifi_ip"] = core_->wifi().localIP();
   doc["wifi_host"] = core_->config().get().network.hostname;
   doc["wifi_mdns"] = core_->wifi().mdnsStarted();
+  // Pines reservados por el hardware (no disponibles para sensores/salidas).
+  JsonArray reserved = doc.createNestedArray("reserved_pins");
+#if SEMA_NATIVE_ETH && SEMA_USE_ETHERNET
+  const uint8_t rp[] = {SEMA_PIN_ETH_MDC, SEMA_PIN_ETH_MDIO, SEMA_PIN_ETH_TXD0,
+                        SEMA_PIN_ETH_TXD1, SEMA_PIN_ETH_TX_EN, SEMA_PIN_ETH_RXD0,
+                        SEMA_PIN_ETH_RXD1, SEMA_PIN_ETH_CRS_DV, SEMA_PIN_ETH_RX_ER,
+                        SEMA_PIN_ETH_REF_CLK};
+  for (uint8_t p : rp) reserved.add(p);
+#endif
   doc["firmware_file"] =
       String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
   String out;

@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.89.0] - 2026-10-08
+
+### Fixed
+
+- Pines reservados por hardware (Ethernet RMII) no aparecen en los selectores de pines.
+- Defaults de Zigbee (18/19) y LoRa CS (10) corregidos para no solaparse.
+
 ## [1.88.0] - 2026-10-08
 
 ### Changed
@@ -1089,6 +1096,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.89.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.89.0
 [1.88.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.88.0
 [1.87.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.87.0
 [1.86.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.86.0
