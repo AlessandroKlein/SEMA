@@ -14,7 +14,7 @@ class WiFiManager {
 public:
   void begin(const String& mode, const String& ssid, const String& password,
              const String& hostname, const String& ip, const String& gateway,
-             const String& subnet, const String& dns);
+             const String& subnet, const String& dns, bool mdns);
   void loop();
 
   bool connected() const;

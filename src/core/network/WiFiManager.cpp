@@ -8,7 +8,7 @@ namespace sema {
 void WiFiManager::begin(const String& mode, const String& ssid,
                         const String& password, const String& hostname,
                         const String& ip, const String& gateway,
-                        const String& subnet, const String& dns) {
+                        const String& subnet, const String& dns, bool mdns) {
   if (mode == "STA" && ssid.length() > 0) {
     staMode_ = true;
     WiFi.mode(WIFI_STA);
@@ -31,7 +31,7 @@ void WiFiManager::begin(const String& mode, const String& ssid,
 
   // mDNS (README §61): resuelve <hostname>.local. Se sanea el nombre (solo
   // letras, dígitos y guiones; sin espacios ni caracteres especiales).
-  if (hostname.length() > 0) {
+  if (mdns && hostname.length() > 0) {
     String safe;
     safe.reserve(hostname.length());
     for (size_t i = 0; i < hostname.length(); ++i) {

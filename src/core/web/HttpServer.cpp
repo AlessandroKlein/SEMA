@@ -593,6 +593,9 @@ a{color:var(--acc);text-decoration:none}
 .switch input:checked+.sl:before{transform:translateX(17px)}
 .q{display:inline-block;width:16px;height:16px;border:1px solid var(--bd);border-radius:50%;text-align:center;line-height:14px;font-size:.68rem;color:var(--muted);cursor:help;margin-left:.25rem;font-style:normal}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.eye{width:auto;padding:.45rem .7rem;margin:.3rem 0;background:#21262d;border:1px solid var(--bd);border-radius:6px;cursor:pointer;font-size:1rem}
+details{margin:.4rem 0;border:1px solid var(--bd);border-radius:6px;padding:.4rem .6rem}
+summary{cursor:pointer;color:var(--acc);font-size:.82rem;padding:.2rem 0}
 .cat-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.5rem .6rem;border-bottom:1px solid var(--bd);font-size:.9rem}
 .cat-item:last-child{border-bottom:0}
 code{background:#21262d;padding:.1rem .4rem;border-radius:4px;font-size:.85em}
@@ -724,9 +727,11 @@ void HttpServer::onNetworkPage() {
 <input id="cfg_ssid" placeholder="WiFi SSID">
 <div class="row">
 <input id="cfg_pass" type="password" placeholder="WiFi contraseña" style="flex:1">
-<button type="button" class="sec" onclick="togglePass()" title="Ver/ocultar contraseña">👁️</button>
+<button type="button" class="eye" onclick="togglePass()" title="Ver/ocultar contraseña">👁️</button>
 </div>
 <input id="cfg_host" placeholder="Hostname (mDNS)">
+<label class="switch"><input type="checkbox" id="cfg_mdns"><span class="sl"></span></label>
+<label class="muted">Habilitar mDNS (http://hostname.local)</label>
 <button type="button" class="sec" onclick="openMdns()">🔗 Abrir http://&lt;hostname&gt;.local</button>
 <details class="muted"><summary>Configuración avanzada (IP estática)</summary>
 <div class="row">
@@ -740,9 +745,9 @@ void HttpServer::onNetworkPage() {
 </form></section>
 <script>
 function togglePass(){const p=document.getElementById('cfg_pass');p.type=p.type==='password'?'text':'password'}
-async function loadNet(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';document.getElementById('cfg_pass').value=r.network?r.network.password:'';document.getElementById('cfg_host').value=r.network?r.network.hostname:'';document.getElementById('cfg_ip').value=r.network?r.network.ip:'';document.getElementById('cfg_gateway').value=r.network?r.network.gateway:'';document.getElementById('cfg_subnet').value=r.network?r.network.subnet:'';document.getElementById('cfg_dns').value=r.network?r.network.dns:''}catch(e){}}
+async function loadNet(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';document.getElementById('cfg_pass').value=r.network?r.network.password:'';document.getElementById('cfg_host').value=r.network?r.network.hostname:'';document.getElementById('cfg_mdns').checked=!!(r.network&&r.network.mdns);document.getElementById('cfg_ip').value=r.network?r.network.ip:'';document.getElementById('cfg_gateway').value=r.network?r.network.gateway:'';document.getElementById('cfg_subnet').value=r.network?r.network.subnet:'';document.getElementById('cfg_dns').value=r.network?r.network.dns:''}catch(e){}}
 function openMdns(){const h=document.getElementById('cfg_host').value.trim();if(h)window.open('http://'+h+'.local','_blank');else alert('Poné un hostname primero')}
-async function saveNetwork(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,hostname:document.getElementById('cfg_host').value,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){alert('Error de red')}}
+async function saveNetwork(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,hostname:document.getElementById('cfg_host').value,mdns:document.getElementById('cfg_mdns').checked,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){alert('Error de red')}}
 async function scanWifi(){document.getElementById('wifiList').innerHTML='<p class="muted">Escaneando…</p>';try{const r=await(await fetch('/api/v1/wifi/scan')).json();const n=(r.networks||[]).sort((a,b)=>b.rssi-a.rssi);if(!n.length){document.getElementById('wifiList').innerHTML='<p class="muted">Sin redes</p>';return}let h='';for(const x of n)h+='<div class="cat-item"><span>'+x.ssid+' <span class="muted">('+x.rssi+' dBm)</span></span><button data-ssid="'+x.ssid+'" onclick="pickSsid(this)">Usar</button></div>';document.getElementById('wifiList').innerHTML=h}catch(e){document.getElementById('wifiList').innerHTML='<p class="muted">Error al escanear</p>'}}
 function pickSsid(b){document.getElementById('cfg_ssid').value=b.getAttribute('data-ssid');document.getElementById('cfg_pass').focus()}
 loadNet();
@@ -1251,7 +1256,7 @@ void HttpServer::onSystem() {
   doc["sd_enabled"] = core_->config().get().storage.sdEnabled;
   doc["history_available"] = core_->history().sdEnabled();
   doc["shift_enabled"] = (SEMA_USE_SHIFT != 0);
-  doc["esp_temp"] = temperatureRead();
+  doc["esp_temp"] = temperatureRead() - 10.0f;  // corrección aproximada del sensor interno
   doc["restart_count"] = core_->restartCount();
   doc["reset_reason"] = esp_reset_reason();
   doc["wifi_ssid"] = core_->config().get().network.ssid;

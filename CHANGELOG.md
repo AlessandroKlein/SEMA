@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.83.0] - 2026-10-08
+
+### Fixed
+
+- Temperatura interna del ESP corregida (-10 C aproximado).
+### Added
+
+- Toggle mDNS en /config/network (funciona con el flag config.network.mdns).
+- Estilo del boton ojo de contrasena y de configuracion avanzada.
+
 ## [1.82.0] - 2026-10-08
 
 ### Added
@@ -1046,6 +1056,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.83.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.83.0
 [1.82.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.82.0
 [1.81.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.81.0
 [1.80.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.80.0

@@ -153,7 +153,8 @@ void SemaCore::setup() {
               config_.get().network.ip,
               config_.get().network.gateway,
               config_.get().network.subnet,
-              config_.get().network.dns);
+              config_.get().network.dns,
+              config_.get().network.mdns);
 
   // Sincronización NTP (D-0044): configura la zona horaria local; nowEpoch()
   // devuelve la época local y cae a uptime hasta sincronizar.
