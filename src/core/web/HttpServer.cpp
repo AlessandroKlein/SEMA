@@ -274,6 +274,9 @@ const MEAS={
 };
 function measLabel(m){const e=MEAS[m];return e?e[0]:m}
 function measDesc(m){const e=MEAS[m];return e?e[1]:''}
+function uiModal(title,msg,buttons){let m=document.getElementById('uiModal');if(!m){m=document.createElement('div');m.id='uiModal';m.className='ui-modal';document.body.appendChild(m)}m.innerHTML='<div class="ui-modal-box"><h3>'+title+'</h3><p>'+msg+'</p><div class="ui-modal-btns"></div></div>';const box=m.querySelector('.ui-modal-btns');(buttons||[{t:'Aceptar',ok:null}]).forEach(b=>{const btn=document.createElement('button');btn.textContent=b.t;if(b.sec)btn.className='sec';btn.onclick=()=>{m.classList.remove('open');if(typeof b.ok==='function')b.ok()};box.appendChild(btn)});m.classList.add('open')}
+function uiAlert(msg){uiModal('SEMA',msg,[{t:'Aceptar',ok:null,sec:true}])}
+function uiConfirm(msg,onOk){uiModal('SEMA',msg,[{t:'Cancelar',ok:null,sec:true},{t:'Aceptar',ok:onOk}])}
 let grid=null, editMode=false, cfg={}, layout=[], lastMeasurements=[];
 
 function cid(type,k){ return type+'_'+String(k).replace(/[|]/g,'~'); }
@@ -607,6 +610,14 @@ a{color:var(--acc);text-decoration:none}
 .eye{width:auto;padding:.45rem .7rem;margin:.3rem 0;background:#21262d;border:1px solid var(--bd);border-radius:6px;cursor:pointer;font-size:1rem}
 details{margin:.4rem 0;border:1px solid var(--bd);border-radius:6px;padding:.4rem .6rem}
 summary{cursor:pointer;color:var(--acc);font-size:.82rem;padding:.2rem 0}
+.ui-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:99}
+.ui-modal.open{display:flex}
+.ui-modal-box{background:var(--bg);border:1px solid var(--bd);border-radius:14px;max-width:420px;width:90%;padding:1.3rem;box-shadow:0 12px 40px rgba(0,0,0,.5);animation:pop .18s ease}
+.ui-modal-box h3{margin:0 0 .6rem;font-size:1.05rem}
+.ui-modal-box p{color:var(--muted);margin:.2rem 0 1rem;font-size:.9rem}
+.ui-modal-btns{display:flex;gap:.5rem;justify-content:flex-end}
+.ui-modal-btns button{width:auto;margin:0}
+.ui-modal-btns button.sec{background:#21262d}
 .cat-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.5rem .6rem;border-bottom:1px solid var(--bd);font-size:.9rem}
 .cat-item:last-child{border-bottom:0}
 code{background:#21262d;padding:.1rem .4rem;border-radius:4px;font-size:.85em}
@@ -658,6 +669,22 @@ const I18N={
 };
 function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});document.documentElement.lang=l||'es';try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
 function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
+function uiModal(title,msg,buttons){
+  let m=document.getElementById('uiModal');
+  if(!m){m=document.createElement('div');m.id='uiModal';m.className='ui-modal';document.body.appendChild(m)}
+  m.innerHTML='<div class="ui-modal-box"><h3>'+title+'</h3><p>'+msg+'</p><div class="ui-modal-btns"></div></div>';
+  const box=m.querySelector('.ui-modal-btns');
+  (buttons||[{t:'Aceptar',ok:true}]).forEach(b=>{
+    const btn=document.createElement('button');
+    btn.textContent=b.t;
+    if(b.sec)btn.className='sec';
+    btn.onclick=()=>{m.classList.remove('open');if(typeof b.ok==='function')b.ok()};
+    box.appendChild(btn);
+  });
+  m.classList.add('open');
+}
+function uiAlert(msg){uiModal('SEMA',msg,[{t:'Aceptar',ok:null,sec:true}])}
+function uiConfirm(msg,onOk){uiModal('SEMA',msg,[{t:'Cancelar',ok:null,sec:true},{t:'Aceptar',ok:onOk}])}
 document.addEventListener('DOMContentLoaded',function(){let l='es';try{l=localStorage.getItem('sema_lang')||'es'}catch(e){}applyLang(l)});
 </script>
 )html";
@@ -768,9 +795,9 @@ void HttpServer::onNetworkPage() {
 <script>
 function togglePass(){const p=document.getElementById('cfg_pass');p.type=p.type==='password'?'text':'password'}
 async function loadNet(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';document.getElementById('cfg_pass').value=r.network?r.network.password:'';document.getElementById('cfg_host').value=r.network?r.network.hostname:'';document.getElementById('cfg_mdns').checked=!!(r.network&&r.network.mdns);document.getElementById('cfg_ip').value=r.network?r.network.ip:'';document.getElementById('cfg_gateway').value=r.network?r.network.gateway:'';document.getElementById('cfg_subnet').value=r.network?r.network.subnet:'';document.getElementById('cfg_dns').value=r.network?r.network.dns:''}catch(e){}}
-function openMdns(){const h=document.getElementById('cfg_host').value.trim();if(h)window.open('http://'+h+'.local','_blank');else alert('Poné un hostname primero')}
-async function saveWifi(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){alert('Error de red')}}
-async function saveMdns(){const b={hostname:document.getElementById('cfg_host').value,mdns:document.getElementById('cfg_mdns').checked};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
+function openMdns(){const h=document.getElementById('cfg_host').value.trim();if(h)window.open('http://'+h+'.local','_blank');else uiAlert('Poné un hostname primero')}
+async function saveWifi(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});uiAlert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){uiAlert('Error de red')}}
+async function saveMdns(){const b={hostname:document.getElementById('cfg_host').value,mdns:document.getElementById('cfg_mdns').checked};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}}
 async function scanWifi(){document.getElementById('wifiList').innerHTML='<p class="muted">Escaneando…</p>';try{const r=await(await fetch('/api/v1/wifi/scan')).json();const n=(r.networks||[]).sort((a,b)=>b.rssi-a.rssi);if(!n.length){document.getElementById('wifiList').innerHTML='<p class="muted">Sin redes</p>';return}let h='';for(const x of n)h+='<div class="cat-item"><span>'+x.ssid+' <span class="muted">('+x.rssi+' dBm)</span></span><button data-ssid="'+x.ssid+'" onclick="pickSsid(this)">Usar</button></div>';document.getElementById('wifiList').innerHTML=h}catch(e){document.getElementById('wifiList').innerHTML='<p class="muted">Error al escanear</p>'}}
 function pickSsid(b){document.getElementById('cfg_ssid').value=b.getAttribute('data-ssid');document.getElementById('cfg_pass').focus()}
 loadNet();
@@ -805,12 +832,12 @@ void HttpServer::onSecurityPage() {
 var cfg={};
 async function loadSec(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;document.getElementById('cfg_name').value=r.station?r.station.name:'';document.getElementById('cfg_user').value=r.security?r.security.username:'';document.getElementById('cfg_loginpass').value=r.security?r.security.password:'';document.getElementById('cfg_apikey').value=r.security?r.security.api_key:'';document.getElementById('cfg_serverkey').value=r.security?r.security.server_key:'';renderKeys()}catch(e){}}
 function renderKeys(){let h='';try{const k=JSON.parse(cfg.security.extra_keys||'{}');for(const n in k)h+='<div class="cat-item"><span>'+n+' <span class="muted">'+k[n]+'</span></span><button class="sec" onclick="revokeKey(this)" data-n="'+n+'">🗑️</button></div>'}catch(e){}document.getElementById('keyList').innerHTML=h||'<p class="muted">Sin claves adicionales</p>'}
-async function genKey(){const n=document.getElementById('keyname').value.trim();if(!n)return alert('Poné un nombre');try{const r=await(await fetch('/api/v1/security/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generate',name:n})})).json();if(r.ok){alert('Clave generada: '+r.key);loadSec()}else alert('Error')}catch(e){alert('Error de red')}}
-async function revokeKey(b){const n=b.getAttribute('data-n');try{const r=await(await fetch('/api/v1/security/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'revoke',name:n})})).json();if(r.ok){loadSec()}else alert('Error')}catch(e){alert('Error de red')}}
+async function genKey(){const n=document.getElementById('keyname').value.trim();if(!n)return uiAlert('Poné un nombre');try{const r=await(await fetch('/api/v1/security/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'generate',name:n})})).json();if(r.ok){uiAlert('Clave generada: '+r.key);loadSec()}else uiAlert('Error')}catch(e){uiAlert('Error de red')}}
+async function revokeKey(b){const n=b.getAttribute('data-n');try{const r=await(await fetch('/api/v1/security/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'revoke',name:n})})).json();if(r.ok){loadSec()}else uiAlert('Error')}catch(e){uiAlert('Error de red')}}
 async function saveStation(){cfg.station=cfg.station||{};cfg.station.name=document.getElementById('cfg_name').value;await save()}
 async function saveLogin(){cfg.security=cfg.security||{};cfg.security.username=document.getElementById('cfg_user').value;cfg.security.password=document.getElementById('cfg_loginpass').value;await save()}
 async function saveKeys(){cfg.security=cfg.security||{};cfg.security.api_key=document.getElementById('cfg_apikey').value;cfg.security.server_key=document.getElementById('cfg_serverkey').value;await save()}
-async function save(){try{const r=await fetch('/api/v1/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
+async function save(){try{const r=await fetch('/api/v1/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}}
 loadSec();
 </script>
 )html";
@@ -886,11 +913,11 @@ void HttpServer::onSystemPage() {
 function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
 async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp chip (aprox): '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason))+'\nWiFi: '+(y.wifi_ssid||'—')+' · '+(y.wifi_ip||'—')+'\nmDNS: '+(y.wifi_mdns?(y.wifi_host||'')+'.local':'deshabilitado');const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
-async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp(),units:document.getElementById('cfg_units').value,lang:document.getElementById('cfg_lang').value})});applyLang(document.getElementById('cfg_lang').value);alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
-async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});alert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){alert('Error de red')}}
+async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp(),units:document.getElementById('cfg_units').value,lang:document.getElementById('cfg_lang').value})});applyLang(document.getElementById('cfg_lang').value);uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}}
+async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});uiAlert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){uiAlert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
-function doOta(){const f=document.getElementById('fwfile').files[0];if(!f)return alert('Elegí un archivo .bin');if(!confirm('¿Actualizar con '+f.name+'?'))return;const bar=document.getElementById('otaBar'),fill=document.getElementById('otaFill'),msg=document.getElementById('otaMsg');bar.style.display='block';msg.textContent='Subiendo…';const fd=new FormData();fd.append('firmware',f);const xhr=new XMLHttpRequest();xhr.open('POST','/api/v1/ota');xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);fill.style.width=p+'%';msg.textContent='Subiendo '+p+'%'}};xhr.onload=()=>{fill.style.width='100%';msg.textContent='Flasheado. Reiniciando…';setTimeout(()=>location.href='/',12000)};xhr.onerror=()=>{msg.textContent='Error al subir'};xhr.send(fd)}
-async function doRestart(){if(!confirm('¿Reiniciar?'))return;try{await fetch('/api/v1/restart',{method:'POST'});alert('Reiniciando…')}catch(e){}}
+function doOta(){const f=document.getElementById('fwfile').files[0];if(!f)return uiAlert('Elegí un archivo .bin');uiConfirm('¿Actualizar con '+f.name+'?',()=>{const bar=document.getElementById('otaBar'),fill=document.getElementById('otaFill'),msg=document.getElementById('otaMsg');bar.style.display='block';msg.textContent='Subiendo…';const fd=new FormData();fd.append('firmware',f);const xhr=new XMLHttpRequest();xhr.open('POST','/api/v1/ota');xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);fill.style.width=p+'%';msg.textContent='Subiendo '+p+'%'}};xhr.onload=()=>{fill.style.width='100%';msg.textContent='Flasheado. Reiniciando…';setTimeout(()=>location.href='/',12000)};xhr.onerror=()=>{msg.textContent='Error al subir'};xhr.send(fd)})}
+async function doRestart(){uiConfirm('¿Reiniciar?',async()=>{try{await fetch('/api/v1/restart',{method:'POST'});uiAlert('Reiniciando…')}catch(e){}})}
 load();
 </script>
 )html";
@@ -911,8 +938,8 @@ void HttpServer::onWindPage() {
 const DIRS=['N','NE','E','SE','S','SO','O','NO'];
 function renderWind(){const c=document.getElementById('windInputs');DIRS.forEach((d,i)=>{const b=document.createElement('div');b.innerHTML='<label class="muted">R'+(i+1)+' — '+d+' (Ω)</label><input id="wr'+i+'" type="number" step="1" value="0">';c.appendChild(b)})}
 async function loadWind(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('wrp').value=r.system&&r.system.wind_rpull?r.system.wind_rpull:10000;const wr=(r.system&&r.system.wind_resistors)||[];DIRS.forEach((d,i)=>{const e=document.getElementById('wr'+i);if(e)e.value=wr[i]!==undefined?wr[i]:0})}catch(e){}}
-async function saveWind(){const resistors=DIRS.map((d,i)=>parseFloat(document.getElementById('wr'+i).value)||0);const rpull=parseFloat(document.getElementById('wrp').value)||10000;try{const resp=await fetch('/api/v1/wind/resistors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rpull:rpull,resistors:resistors})});alert(resp.ok?'Resistencias guardadas':'Error')}catch(e){alert('Error de red')}}
-async function calibrateNorth(){try{const resp=await fetch('/api/v1/wind/north',{method:'POST'});alert(resp.ok?'Norte calibrado':'Error')}catch(e){alert('Error de red')}}
+async function saveWind(){const resistors=DIRS.map((d,i)=>parseFloat(document.getElementById('wr'+i).value)||0);const rpull=parseFloat(document.getElementById('wrp').value)||10000;try{const resp=await fetch('/api/v1/wind/resistors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rpull:rpull,resistors:resistors})});uiAlert(resp.ok?'Resistencias guardadas':'Error')}catch(e){uiAlert('Error de red')}}
+async function calibrateNorth(){try{const resp=await fetch('/api/v1/wind/north',{method:'POST'});uiAlert(resp.ok?'Norte calibrado':'Error')}catch(e){uiAlert('Error de red')}}
 renderWind();loadWind();
 </script>
 )html";
@@ -1056,7 +1083,7 @@ function save(){
     const busPin=parseInt(document.getElementById('dsBusPin').value)||0;
     sensors.push({id:id?id.value:('ds'+i),model:'DS18B20',enabled:true,pin:busPin,rom:rom?rom.value.trim():''});
   });
-  fetch('/api/v1/config/sensors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sensors:sensors})}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
+  fetch('/api/v1/config/sensors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sensors:sensors})}).then(r=>uiAlert(r.ok?'Guardado':'Error')).catch(()=>uiAlert('Error de red'));
 }
 async function loadPins(r){
   const y=await(await fetch('/api/v1/system')).json();
@@ -1113,10 +1140,10 @@ function renderIo(){
 }
 function sel(id,val,label){return '<span style="margin-right:.3rem">'+label+'<select id="'+id+'" style="width:80px"><option value="0"'+(val==0?' selected':'')+'>—</option><option value="1"'+(val==1?' selected':'')+'>out</option><option value="2"'+(val==2?' selected':'')+'>in</option></select></span>';}
 function addSh(){
-  const out=confirm('¿Qué chip agregar?\n\nAceptar = 74HC595 (8 salidas)\nCancelar = 74HC165 (8 entradas)');
-  cfg.shift_registers=cfg.shift_registers||[];
-  cfg.shift_registers.push({type:out?'74HC595':'74HC165',latch_pin:0,pins:[0,0,0,0,0,0,0,0]});
-  renderIo();
+  uiModal('¿Qué chip agregar?','',[
+    {t:'74HC595 (8 salidas)',ok:()=>{cfg.shift_registers=cfg.shift_registers||[];cfg.shift_registers.push({type:'74HC595',latch_pin:0,pins:[0,0,0,0,0,0,0,0]});renderIo()}},
+    {t:'74HC165 (8 entradas)',ok:()=>{cfg.shift_registers=cfg.shift_registers||[];cfg.shift_registers.push({type:'74HC165',latch_pin:0,pins:[0,0,0,0,0,0,0,0]});renderIo()},sec:true}
+  ]);
 }
 function delSh(i){cfg.shift_registers.splice(i,1);renderIo();}
 function saveIo(){
@@ -1132,7 +1159,7 @@ function saveIo(){
     });
   }
   const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift_registers:shift,gpio:[]};
-  fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>alert(r.ok?'Guardado':'Error')).catch(()=>alert('Error de red'));
+  fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>uiAlert(r.ok?'Guardado':'Error')).catch(()=>uiAlert('Error de red'));
 }
 load();
 </script>
