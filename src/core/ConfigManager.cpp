@@ -143,6 +143,7 @@ bool ConfigManager::serialize(String& out) const {
   doc["system"]["ntp_server"] = config_.system.ntpServer;
   doc["system"]["log_level"] = config_.system.logLevel;
   doc["system"]["units"] = config_.system.units;
+  doc["system"]["lang"] = config_.system.lang;
   doc["system"]["altitude"] = config_.system.altitude;
   doc["system"]["wind_north_offset"] = config_.system.windNorthOffset;
   doc["system"]["wind_direction_pin"] = config_.system.windDirectionPin;
@@ -293,6 +294,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.system.ntpServer = doc["system"]["ntp_server"] | "pool.ntp.org";
   c.system.logLevel = doc["system"]["log_level"] | "INFO";
   c.system.units = doc["system"]["units"] | "metric";
+  c.system.lang = doc["system"]["lang"] | "es";
   c.system.altitude = doc["system"]["altitude"] | 0.0f;
   c.system.windNorthOffset = doc["system"]["wind_north_offset"] | 0.0f;
   c.system.windDirectionPin = doc["system"]["wind_direction_pin"] | 0;

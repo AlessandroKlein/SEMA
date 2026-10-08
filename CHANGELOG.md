@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.75.0] - 2026-10-08
+
+### Added
+
+- Multi-idioma es/en en la navegacion y selector de idioma en /config/system.
+
 ## [1.74.0] - 2026-10-08
 
 ### Fixed
@@ -995,6 +1001,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.75.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.75.0
 [1.74.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.74.0
 [1.73.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.73.0
 [1.72.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.72.0

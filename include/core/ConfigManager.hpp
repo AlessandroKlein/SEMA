@@ -36,6 +36,7 @@ struct SystemConfig {
   String ntpServer = "pool.ntp.org";
   String logLevel;
   String units = "metric";          // "metric" | "imperial"
+  String lang = "es";               // "es" | "en" (idioma de la web)
   float altitude = 0.0f;            // metros (para QNH y altitud barométrica)
   float windNorthOffset = 0.0f;     // grados (fine-tune del norte de la veleta)
   uint8_t windDirectionPin = 0;     // ADC de la veleta WH-SP-WD (0 = sin veleta)

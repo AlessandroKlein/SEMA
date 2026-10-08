@@ -595,16 +595,17 @@ body.light code{background:#f0f3f6}
 const char kNav[] PROGMEM = R"html(
 <nav class="nav">
 <div class="nav-links">
-<a href="/">📊 Dashboard</a>
-<a href="/sensors">🌡️ Sensores</a>
-<a href="/events">🔔 Eventos</a>
-<a href="/config/network">🌐 Red</a>
-<a href="/config/sensors">🔌 Config</a>
-<a href="/config/security">🔐 Seguridad</a>
-<a href="/config/wind">🧭 Veleta</a>
-<a href="/config/system">⚙️ Sistema</a>
+<a href="/">📊 <span data-i18n="dashboard">Dashboard</span></a>
+<a href="/sensors">🌡️ <span data-i18n="sensors">Sensores</span></a>
+<a href="/events">🔔 <span data-i18n="events">Eventos</span></a>
+<a href="/config/network">🌐 <span data-i18n="network">Red</span></a>
+<a href="/config/sensors">🔌 <span data-i18n="config">Config</span></a>
+<a href="/config/security">🔐 <span data-i18n="security">Seguridad</span></a>
+<a href="/config/wind">🧭 <span data-i18n="wind">Veleta</span></a>
+<a href="/config/system">⚙️ <span data-i18n="system">Sistema</span></a>
 </div>
 <div class="nav-right">
+<button class="theme" onclick="toggleLang()" title="Idioma / Language">🌐</button>
 <button class="theme" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
 <a href="/logout" class="out">Salir</a>
 </div>
@@ -618,13 +619,25 @@ try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add(
 </script>
 )html";
 
+const char kI18nJs[] PROGMEM = R"html(
+<script>
+const I18N={
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System'}
+};
+function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});document.documentElement.lang=l||'es';try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
+function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
+document.addEventListener('DOMContentLoaded',function(){let l='es';try{l=localStorage.getItem('sema_lang')||'es'}catch(e){}applyLang(l)});
+</script>
+)html";
+
 void serveAuthedPage(WebServer& srv, bool authed, const String& body) {
   if (!authed) {
     srv.send(200, "text/html", kLoginHtml);
     return;
   }
   String html = String("<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>SEMA</title>") +
-                String(kBaseCss) + "</head><body>" + String(kNav) + String(kThemeJs) +
+                String(kBaseCss) + "</head><body>" + String(kNav) + String(kThemeJs) + String(kI18nJs) +
                 "<div class=\"wrap\">" + body + "</div></body></html>";
   srv.send(200, "text/html", html);
 }
@@ -790,6 +803,11 @@ void HttpServer::onSystemPage() {
 <option value="metric">Métrico (°C, m/s, mm, hPa)</option>
 <option value="imperial">Imperial (°F, mph, in)</option>
 </select>
+<label class="muted">Idioma</label>
+<select id="cfg_lang">
+<option value="es">Español</option>
+<option value="en">English</option>
+</select>
 <label class="muted">Servidor NTP</label>
 <select id="cfg_ntp">
 <option value="pool.ntp.org">pool.ntp.org (mundial)</option>
@@ -824,8 +842,8 @@ void HttpServer::onSystemPage() {
 <script>
 function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
-async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp(),units:document.getElementById('cfg_units').value})});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
+async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp(),units:document.getElementById('cfg_units').value,lang:document.getElementById('cfg_lang').value})});applyLang(document.getElementById('cfg_lang').value);alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
 async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});alert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){alert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
 function doOta(){const f=document.getElementById('fwfile').files[0];if(!f)return alert('Elegí un archivo .bin');if(!confirm('¿Actualizar con '+f.name+'?'))return;const bar=document.getElementById('otaBar'),fill=document.getElementById('otaFill'),msg=document.getElementById('otaMsg');bar.style.display='block';msg.textContent='Subiendo…';const fd=new FormData();fd.append('firmware',f);const xhr=new XMLHttpRequest();xhr.open('POST','/api/v1/ota');xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);fill.style.width=p+'%';msg.textContent='Subiendo '+p+'%'}};xhr.onload=()=>{fill.style.width='100%';msg.textContent='Flasheado. Reiniciando…';setTimeout(()=>location.href='/',12000)};xhr.onerror=()=>{msg.textContent='Error al subir'};xhr.send(fd)}
@@ -1497,6 +1515,7 @@ void HttpServer::onConfigSystem() {
   if (doc.containsKey("timezone")) next.system.timezone = doc["timezone"] | "America/Argentina/Buenos_Aires";
   if (doc.containsKey("ntp_server")) next.system.ntpServer = doc["ntp_server"] | "pool.ntp.org";
   if (doc.containsKey("units")) next.system.units = doc["units"] | "metric";
+  if (doc.containsKey("lang")) next.system.lang = doc["lang"] | "es";
   if (doc.containsKey("sd_enabled")) next.storage.sdEnabled = doc["sd_enabled"] | false;
   if (doc.containsKey("sd_cs")) next.storage.sdCsPin = doc["sd_cs"] | 4;
   if (!core_->config().apply(next)) {
