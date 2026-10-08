@@ -51,6 +51,15 @@ void SemaCore::setup() {
   history_.begin();
   eventLog_.begin();
 
+  // Contador de reinicios (persistido en NVS).
+  {
+    uint32_t boots = 0;
+    store_.getUInt("boots", boots);
+    ++boots;
+    store_.putUInt("boots", boots);
+    restartCount_ = boots;
+  }
+
   // Perfil base ESP32 clásico (D-0050/D-0051). En una iteración posterior esto se
   // carga desde el Board/Chip Profile en lugar de declararse aquí.
   CapabilityManager& caps = CapabilityManager::instance();

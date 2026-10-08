@@ -98,6 +98,7 @@ public:
   EventLog& eventLog() { return eventLog_; }
   GpioManager& gpio() { return gpio_; }
   ShiftRegisterManager& shift() { return shift_; }
+  uint32_t restartCount() const { return restartCount_; }
 #if SEMA_USE_MODBUS
   ModbusManager& modbus() { return modbus_; }
 #endif
@@ -149,6 +150,7 @@ private:
 #endif
   Watchdog watchdog_;
   HealthMonitor health_;
+  uint32_t restartCount_ = 0;
   std::vector<DetectedDevice> detectedDevices_;
   std::vector<Sensor*> ownedSensors_;  // sensores creados por la factoría (D-0042)
   Scheduler scheduler_;

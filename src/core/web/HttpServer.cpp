@@ -852,7 +852,7 @@ void HttpServer::onSystemPage() {
 <script>
 function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file;const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp ESP: '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason));const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
 async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp(),units:document.getElementById('cfg_units').value,lang:document.getElementById('cfg_lang').value})});applyLang(document.getElementById('cfg_lang').value);alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
 async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});alert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){alert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
@@ -1244,6 +1244,9 @@ void HttpServer::onSystem() {
   doc["sd_enabled"] = core_->config().get().storage.sdEnabled;
   doc["history_available"] = core_->history().sdEnabled();
   doc["shift_enabled"] = (SEMA_USE_SHIFT != 0);
+  doc["esp_temp"] = temperatureRead();
+  doc["restart_count"] = core_->restartCount();
+  doc["reset_reason"] = esp_reset_reason();
   doc["firmware_file"] =
       String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
   String out;
@@ -1806,10 +1809,21 @@ void HttpServer::onSensors() {
     }
     const float t = millis() / 1000.0f;
     JsonArray darr = ddoc.createNestedArray("measurements");
+    std::vector<Measurement> rawVec;
     auto wave = [&](float seed, float lo, float hi, float period) {
       return lo + (hi - lo) * (0.5f + 0.5f * sinf(t * 6.283185f / period + seed));
     };
     auto add = [&](const char* id, const char* meas, float v, const char* baseUnit) {
+      Measurement rm;
+      rm.sensorId = id;
+      rm.channelId = "0";
+      rm.measurement = meas;
+      rm.value = v;
+      rm.unit = baseUnit;
+      rm.quality = Quality::Valid;
+      rm.timestamp = nowEpoch();
+      rawVec.push_back(rm);
+
       String u;
       const float cv = DerivedCalculator::convertUnit(v, meas, baseUnit, imperial, u);
       JsonObject o = darr.createNestedObject();
@@ -1838,6 +1852,22 @@ void HttpServer::onSensors() {
     add("batt", "voltage", wave(11.0f, 11.5f, 13.6f, 6000), "V");
     add("solar", "solar_radiation", wave(12.0f, 0.0f, 800.0f, 3600), "W/m²");
     add("clock", "clock", static_cast<float>(nowEpoch()), "epoch");
+
+    // Magnitudes derivadas (punto de rocío, índice de calor, QNH, VPD, AQI, etc.)
+    // calculadas sobre los datos ficticios para validar la visualización completa.
+    std::vector<Measurement> derivedVec;
+    core_->derived().compute(rawVec, derivedVec, units);
+    for (const Measurement& m : derivedVec) {
+      JsonObject o = darr.createNestedObject();
+      o["sensor_id"] = m.sensorId;
+      o["channel_id"] = m.channelId;
+      o["measurement"] = m.measurement;
+      o["value"] = m.value;
+      o["unit"] = m.unit;
+      o["quality"] = qualityName(m.quality);
+      o["sequence"] = 0;
+    }
+
     ddoc["units"] = units;
     String dout;
     serializeJson(ddoc, dout);

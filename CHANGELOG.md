@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.81.0] - 2026-10-08
+
+### Added
+
+- Demo con magnitudes derivadas (rocio, indice de calor, QNH, VPD, AQI, etc).
+- Datos del ESP en /config/system: temperatura interna, reinicios y motivo de reset.
+
 ## [1.80.0] - 2026-10-08
 
 ### Added
@@ -1031,6 +1038,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.81.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.81.0
 [1.80.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.80.0
 [1.79.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.79.0
 [1.78.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.78.0
