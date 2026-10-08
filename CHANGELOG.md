@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.78.0] - 2026-10-08
+
+### Fixed
+
+- Demo: al cambiar unidades se convierten los valores numericos (no solo la etiqueta).
+
 ## [1.77.0] - 2026-10-08
 
 ### Changed
@@ -1013,6 +1019,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.78.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.78.0
 [1.77.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.77.0
 [1.76.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.76.0
 [1.75.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.75.0

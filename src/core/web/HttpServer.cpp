@@ -1792,28 +1792,30 @@ void HttpServer::onSensors() {
     auto wave = [&](float seed, float lo, float hi, float period) {
       return lo + (hi - lo) * (0.5f + 0.5f * sinf(t * 6.283185f / period + seed));
     };
-    auto add = [&](const char* id, const char* meas, float v, const char* u) {
+    auto add = [&](const char* id, const char* meas, float v, const char* baseUnit) {
+      String u;
+      const float cv = DerivedCalculator::convertUnit(v, meas, baseUnit, imperial, u);
       JsonObject o = darr.createNestedObject();
       o["sensor_id"] = id;
       o["channel_id"] = "0";
       o["measurement"] = meas;
-      o["value"] = v;
+      o["value"] = cv;
       o["unit"] = u;
       o["quality"] = "VALID";
       o["sequence"] = 1;
     };
-    add("ext", "temperature", wave(0.0f, 18.0f, 28.0f, 3600), imperial ? "°F" : "°C");
+    add("ext", "temperature", wave(0.0f, 18.0f, 28.0f, 3600), "°C");
     add("ext", "humidity", wave(1.0f, 45.0f, 75.0f, 5400), "%");
     add("ext", "pressure", wave(2.0f, 1008.0f, 1018.0f, 7200), "hPa");
-    add("int", "temperature", wave(3.0f, 20.0f, 26.0f, 4200), imperial ? "°F" : "°C");
+    add("int", "temperature", wave(3.0f, 20.0f, 26.0f, 4200), "°C");
     add("int", "humidity", wave(4.0f, 40.0f, 65.0f, 4800), "%");
     add("uv", "uvi", wave(5.0f, 0.5f, 7.0f, 3000), "");
     add("uv", "light", wave(6.0f, 200.0f, 9000.0f, 2800), "lux");
     add("co2", "co2", wave(7.0f, 420.0f, 750.0f, 6000), "ppm");
     add("pm", "pm25", wave(8.0f, 8.0f, 25.0f, 5000), "µg/m³");
-    add("wind", "wind_speed", wave(9.0f, 2.0f, 12.0f, 2400), imperial ? "mph" : "m/s");
+    add("wind", "wind_speed", wave(9.0f, 2.0f, 12.0f, 2400), "m/s");
     add("wind", "wind_direction", fmodf(t * 12.0f, 360.0f), "°");
-    add("rain", "rain", wave(10.0f, 0.0f, 3.0f, 9000), imperial ? "in" : "mm");
+    add("rain", "rain", wave(10.0f, 0.0f, 3.0f, 9000), "mm");
     add("clock", "clock", static_cast<float>(nowEpoch()), "epoch");
     ddoc["units"] = units;
     String dout;
