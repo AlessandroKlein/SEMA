@@ -226,13 +226,16 @@ body.light input{background:#fff;color:#24292f}
 </div>
 
 <nav class="nav" id="mainNav">
-  <a href="/">📊 Dashboard</a>
-  <a href="/config/network">🌐 Red</a>
-  <a href="/config/sensors">🔌 Sensores</a>
-  <a href="/config/security">🔐 Seguridad</a>
-  <a href="/config/wind">🧭 Veleta</a>
-  <a href="/config/system">⚙️ Sistema</a>
+  <a href="/">📊 <span data-i18n="dashboard">Dashboard</span></a>
+  <a href="/sensors">🌡️ <span data-i18n="sensors">Sensores</span></a>
+  <a href="/events">🔔 <span data-i18n="events">Eventos</span></a>
+  <a href="/config/network">🌐 <span data-i18n="network">Red</span></a>
+  <a href="/config/sensors">🔌 <span data-i18n="config">Config</span></a>
+  <a href="/config/security">🔐 <span data-i18n="security">Seguridad</span></a>
+  <a href="/config/wind">🧭 <span data-i18n="wind">Veleta</span></a>
+  <a href="/config/system">⚙️ <span data-i18n="system">Sistema</span></a>
   <div class="nav-right">
+    <button class="sec" onclick="toggleLang()">🌐</button>
     <button class="sec" onclick="toggleTheme()">🌓</button>
     <a href="/logout" class="out">Salir</a>
   </div>
@@ -248,7 +251,7 @@ body.light input{background:#fff;color:#24292f}
 
 <div class="modal" id="modal">
   <div class="modal-box">
-    <h2>Añadir tarjeta</h2>
+    <h2 data-i18n="add_card">Añadir tarjeta</h2>
     <p class="muted">Elegí qué mostrar. Los gráficos muestran la última hora.</p>
     <div class="catalog" id="catalog"></div>
     <button class="sec" onclick="closeCatalog()">Cerrar</button>
@@ -277,6 +280,13 @@ function toggleTheme(){
   try{localStorage.setItem('sema_theme', document.body.classList.contains('light')?'light':'dark');}catch(e){}
 }
 try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add('light');}catch(e){}
+const I18N={
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station'}
+};
+function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
+function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
+try{applyLang(localStorage.getItem('sema_lang')||'es')}catch(e){}
 async function scanWifi(){
   document.getElementById('wifiList').innerHTML='<p class="muted">Escaneando…</p>';
   try{
@@ -622,8 +632,8 @@ try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add(
 const char kI18nJs[] PROGMEM = R"html(
 <script>
 const I18N={
- es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema'},
- en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System'}
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station'}
 };
 function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});document.documentElement.lang=l||'es';try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
 function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
@@ -646,7 +656,7 @@ void serveAuthedPage(WebServer& srv, bool authed, const String& body) {
 void HttpServer::onSensorsViewPage() {
   const bool authed = webAuthed();
   const String body = R"html(
-<section><h2>Sensores</h2>
+<section><h2 data-i18n="sensors">Sensores</h2>
 <p class="muted">Estado en vivo de los sensores y sus mediciones (se actualiza cada 5 s).</p>
 <div id="list" class="muted">Cargando…</div>
 <button onclick="refresh()">🔄 Actualizar</button></section>
@@ -661,7 +671,7 @@ async function refresh(){
     }
     h+='</tbody></table>';
     if(!cat.length)h+='<p class="muted">Sin sensores activos</p>';
-    h+='<h3>Mediciones</h3><table><thead><tr><th>Sensor</th><th>Magnitud</th><th>Valor</th><th>Unidad</th></tr></thead><tbody>';
+    h+='<h3 data-i18n="measurements">Mediciones</h3><table><thead><tr><th>Sensor</th><th>Magnitud</th><th>Valor</th><th>Unidad</th></tr></thead><tbody>';
     for(const m of ms){
       h+='<tr><td>'+m.sensor_id+'</td><td>'+m.measurement+'</td><td>'+Number(m.value).toFixed(2)+'</td><td>'+m.unit+'</td></tr>';
     }
@@ -679,7 +689,7 @@ refresh();setInterval(refresh,5000);
 void HttpServer::onEventsPage() {
   const bool authed = webAuthed();
   const String body = R"html(
-<section><h2>Eventos y alarmas</h2>
+<section><h2 data-i18n="events_title">Eventos y alarmas</h2>
 <p class="muted">Últimos eventos del sistema (se actualiza cada 5 s).</p>
 <div id="list" class="muted">Cargando…</div>
 <button onclick="refresh()">🔄 Actualizar</button></section>
@@ -707,7 +717,7 @@ refresh();setInterval(refresh,5000);
 void HttpServer::onNetworkPage() {
   const bool authed = webAuthed();
   const String body = R"html(
-<section><h2>Red (WiFi)</h2>
+<section><h2 data-i18n="network_title">Red (WiFi)</h2>
 <button class="sec" onclick="scanWifi()">🔍 Buscar redes</button><div id="wifiList"></div>
 <form onsubmit="saveNetwork();return false;">
 <select id="cfg_mode"><option value="STA">Estación (conectarse a un router)</option><option value="AP">Punto de acceso (AP propio)</option></select>
@@ -739,18 +749,18 @@ loadNet();
 void HttpServer::onSecurityPage() {
   const bool authed = webAuthed();
   const String body = R"html(
-<section><h2>Estación</h2>
+<section><h2 data-i18n="station_title">Estación</h2>
 <form onsubmit="saveStation();return false;">
 <input id="cfg_name" placeholder="Nombre de la estación">
 <button type="submit">Guardar</button>
 </form></section>
-<section><h2>Login (usuario/contraseña)</h2>
+<section><h2 data-i18n="login_title">Login (usuario/contraseña)</h2>
 <form onsubmit="saveLogin();return false;">
 <input id="cfg_user" placeholder="Usuario (vacío = admin)">
 <input id="cfg_loginpass" type="password" placeholder="Contraseña (vacío = sin login)">
 <button type="submit">Guardar login</button>
 </form></section>
-<section><h2>Claves API</h2>
+<section><h2 data-i18n="api_keys">Claves API</h2>
 <div class="muted">Claves adicionales con nombre (revocables).</div>
 <div class="row"><input id="keyname" placeholder="Nombre (ej. Cliente 1)"><button class="sec" onclick="genKey()">➕ Generar</button></div>
 <div id="keyList"></div>
@@ -777,10 +787,10 @@ loadSec();
 void HttpServer::onSystemPage() {
   const bool authed = webAuthed();
   const String body = R"html(
-<section><h2>Sistema</h2>
+<section><h2 data-i18n="system_title">Sistema</h2>
 <div id="status" class="muted">Cargando…</div>
 <pre id="sysinfo" class="muted"></pre></section>
-<section><h2>NTP y zona horaria</h2>
+<section><h2 data-i18n="ntp_title">NTP y zona horaria</h2>
 <form onsubmit="saveSystem();return false;">
 <label class="muted">Zona horaria</label>
 <select id="cfg_timezone">
@@ -820,7 +830,7 @@ void HttpServer::onSystemPage() {
 <input id="cfg_ntp_custom" placeholder="Servidor NTP propio">
 <button type="submit">Guardar</button>
 </form></section>
-<section><h2>Almacenamiento (microSD)</h2>
+<section><h2 data-i18n="storage_title">Almacenamiento (microSD)</h2>
 <p class="muted">La microSD (SPI) guarda el histórico para las gráficas. Si está deshabilitada o no se detecta, las gráficas no muestran nada (no se usa memoria interna).</p>
 <form onsubmit="saveStorage();return false;">
 <label class="switch"><input type="checkbox" id="cfg_sd"><span class="sl"></span></label>
@@ -829,14 +839,14 @@ void HttpServer::onSystemPage() {
 <input id="cfg_sdcs" style="width:70px" value="4">
 <button type="submit">Guardar</button>
 </form></section>
-<section><h2>Actualización (OTA)</h2>
+<section><h2 data-i18n="ota_title">Actualización (OTA)</h2>
 <div style="text-align:center;margin:.4rem 0 1rem"><button onclick="checkUpdate()">🔎 Comprobar actualización</button></div>
 <div id="upd" class="muted" style="text-align:center;margin-bottom:1rem"></div>
 <input type="file" id="fwfile" accept=".bin">
 <div id="otaBar" style="display:none;background:#21262d;border-radius:6px;height:16px;margin:.5rem 0;overflow:hidden"><div id="otaFill" style="width:0%;height:100%;background:#1f6feb"></div></div>
 <div id="otaMsg" class="muted"></div>
 <button onclick="doOta()">⬆️ Subir firmware</button></section>
-<section><h2>Acciones</h2>
+<section><h2 data-i18n="actions">Acciones</h2>
 <button onclick="location.href='/api/v1/history?limit=3000&format=csv'">⬇️ CSV histórico</button>
 <button class="sec" onclick="doRestart()">🔄 Reiniciar</button></section>
 <script>
@@ -857,7 +867,7 @@ load();
 void HttpServer::onWindPage() {
   const bool authed = webAuthed();
   const String body = R"html(
-<section><h2>Calibración de la veleta (WH-SP-WD)</h2>
+<section><h2 data-i18n="wind_calib">Calibración de la veleta (WH-SP-WD)</h2>
 <p class="muted">Ingresá los valores de las 8 resistencias en el orden del datasheet (empezando por N) y el pull-up. Las 16 posiciones (8 directas + 8 en paralelo) se calculan automáticamente.</p>
 <div class="row" id="windInputs"></div>
 <div style="max-width:280px"><label class="muted">Resistencia pull-up (Ω)</label><input id="wrp" type="number" step="1" value="10000"></div>
@@ -879,13 +889,13 @@ renderWind();loadWind();
 void HttpServer::onSensorsPage() {
   const bool authed = webAuthed();
   const String body = R"html(
-<section><h2>Configuración de sensores</h2>
+<section><h2 data-i18n="sensors_config">Configuración de sensores</h2>
 <p class="muted">Marcá los sensores que tenés conectados y asigná los pines. Guardar aplica y reinicia los sensores.</p>
 <div id="sensorList" class="muted">Cargando…</div>
 <button onclick="save()">💾 Guardar sensores</button></section>
-<section><h2>Pines de buses</h2>
+<section><h2 data-i18n="pins_buses">Pines de buses</h2>
 <div id="pinInfo" class="muted">Cargando…</div></section>
-<section><h2>Expansores y salidas</h2>
+<section><h2 data-i18n="io_title">Expansores y salidas</h2>
 <p class="muted">Registro de desplazamiento (74HC595/74HC165) y salidas GPIO (nativas o por MCP23017).</p>
 <div id="ioList" class="muted">Cargando…</div>
 <button onclick="saveIo()">💾 Guardar expansores/salidas</button></section>
