@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.96.0] - 2026-10-08
+
+### Changed
+
+- I2C con boton de guardado propio que reinicia el dispositivo al cambiar SDA/SCL.
+
 ## [1.95.0] - 2026-10-08
 
 ### Changed
@@ -1137,6 +1143,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.96.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.96.0
 [1.95.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.95.0
 [1.94.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.94.0
 [1.93.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.93.0

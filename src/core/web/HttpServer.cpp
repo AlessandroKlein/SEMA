@@ -1117,7 +1117,7 @@ async function loadPins(r){
   const m=r.modbus||{},ca=r.can||{},l=r.lora||{},z=r.zigbee||{},e=r.ethernet||{},sd=r.storage||{};
   const used=usedPins();
   p+='<div class="catalog">';
-  p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>SDA <select id="busI2cSda">'+pinSel(used,r.i2c_sda||21)+'</select> SCL <select id="busI2cScl">'+pinSel(used,r.i2c_scl||22)+'</select></span></div>';
+  p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>SDA <select id="busI2cSda">'+pinSel(used,r.i2c_sda||21)+'</select> SCL <select id="busI2cScl">'+pinSel(used,r.i2c_scl||22)+'</select> <button class="sec" onclick="saveI2c()">💾 Guardar I²C</button></span></div>';
   p+='<div class="cat-item"><span>SPI SCK / MISO / MOSI</span><span class="muted">'+y.spi_sck+' / '+y.spi_miso+' / '+y.spi_mosi+' (bus compartido)</span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busModEn"'+(m.enabled?' checked':'')+'><span class="sl"></span></label><span>Modbus RX / TX</span><span>RX <select id="busModRx">'+pinSel(used,m.rx||16)+'</select> TX <select id="busModTx">'+pinSel(used,m.tx||17)+'</select></span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busCanEn"'+(ca.enabled?' checked':'')+'><span class="sl"></span></label><span>CAN TX / RX</span><span>TX <select id="busCanTx">'+pinSel(used,ca.tx||5)+'</select> RX <select id="busCanRx">'+pinSel(used,ca.rx||4)+'</select></span></div>';
@@ -1137,8 +1137,6 @@ async function saveBuses(){
   const eth={enabled:g('busEthEn').checked,mdc:23,mdio:18};
   const ecs=g('busEthCs');if(ecs)eth.cs=parseInt(ecs.value)||5;
   const b={
-    i2c_sda:parseInt(g('busI2cSda').value)||21,
-    i2c_scl:parseInt(g('busI2cScl').value)||22,
     sd_cs:parseInt(g('busSdCs').value)||4,
     modbus:{enabled:g('busModEn').checked,rx:parseInt(g('busModRx').value)||16,tx:parseInt(g('busModTx').value)||17,de_re:0},
     can:{enabled:g('busCanEn').checked,tx:parseInt(g('busCanTx').value)||5,rx:parseInt(g('busCanRx').value)||4},
@@ -1147,6 +1145,15 @@ async function saveBuses(){
     ethernet:eth
   };
   try{const r=await fetch('/api/v1/config/buses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}
+}
+async function saveI2c(){
+  const g=id=>document.getElementById(id);
+  const b={i2c_sda:parseInt(g('busI2cSda').value)||21,i2c_scl:parseInt(g('busI2cScl').value)||22};
+  try{
+    const r=await fetch('/api/v1/config/buses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+    if(r.ok){uiAlert('Guardado. Reiniciando…');setTimeout(()=>{fetch('/api/v1/restart',{method:'POST'}).catch(()=>{})},900)}
+    else uiAlert('Error');
+  }catch(e){uiAlert('Error de red')}
 }
 function renderIo(){
   const list=document.getElementById('ioList');
