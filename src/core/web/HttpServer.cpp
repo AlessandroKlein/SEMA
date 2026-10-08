@@ -297,8 +297,8 @@ function toggleTheme(){
 }
 try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add('light');}catch(e){}
 const I18N={
- es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login'},
- en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login'}
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',general_title:'General',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',general_title:'General',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login'}
 };
 function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
 function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
@@ -664,8 +664,8 @@ try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add(
 const char kI18nJs[] PROGMEM = R"html(
 <script>
 const I18N={
- es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login'},
- en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login'}
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',general_title:'General',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',general_title:'General',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login'}
 };
 function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});document.documentElement.lang=l||'es';try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
 function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
@@ -851,7 +851,7 @@ void HttpServer::onSystemPage() {
 <div id="status" class="muted">Cargando…</div>
 <pre id="sysinfo" class="muted"></pre></section>
 <section><h2 data-i18n="ntp_title">NTP y zona horaria</h2>
-<form onsubmit="saveSystem();return false;">
+<form onsubmit="saveNtp();return false;">
 <label class="muted">Zona horaria</label>
 <select id="cfg_timezone">
 <option value="UTC">UTC (0)</option>
@@ -868,16 +868,6 @@ void HttpServer::onSystemPage() {
 <option value="Asia/Tokyo">Tokio (+9)</option>
 <option value="Australia/Sydney">Sídney (+10/+11)</option>
 </select>
-<label class="muted">Unidades de medida</label>
-<select id="cfg_units">
-<option value="metric">Métrico (°C, m/s, mm, hPa)</option>
-<option value="imperial">Imperial (°F, mph, in)</option>
-</select>
-<label class="muted">Idioma</label>
-<select id="cfg_lang">
-<option value="es">Español</option>
-<option value="en">English</option>
-</select>
 <label class="muted">Servidor NTP</label>
 <select id="cfg_ntp">
 <option value="pool.ntp.org">pool.ntp.org (mundial)</option>
@@ -888,7 +878,21 @@ void HttpServer::onSystemPage() {
 <option value="__custom__">Personalizado…</option>
 </select>
 <input id="cfg_ntp_custom" placeholder="Servidor NTP propio">
-<button type="submit">Guardar</button>
+<button type="submit">Guardar NTP</button>
+</form></section>
+<section><h2 data-i18n="general_title">General</h2>
+<form onsubmit="saveGeneral();return false;">
+<label class="muted">Unidades de medida</label>
+<select id="cfg_units">
+<option value="metric">Métrico (°C, m/s, mm, hPa)</option>
+<option value="imperial">Imperial (°F, mph, in)</option>
+</select>
+<label class="muted">Idioma</label>
+<select id="cfg_lang">
+<option value="es">Español</option>
+<option value="en">English</option>
+</select>
+<button type="submit">Guardar general</button>
 </form></section>
 <section><h2 data-i18n="storage_title">Almacenamiento (microSD)</h2>
 <p class="muted">La microSD (SPI) guarda el histórico para las gráficas. Si está deshabilitada o no se detecta, las gráficas no muestran nada (no se usa memoria interna).</p>
@@ -896,7 +900,7 @@ void HttpServer::onSystemPage() {
 <label class="switch"><input type="checkbox" id="cfg_sd"><span class="sl"></span></label>
 <label class="muted">Usar microSD para el histórico</label>
 <label class="muted">Chip-select (CS)</label>
-<input id="cfg_sdcs" style="width:70px" value="4">
+<select id="cfg_sdcs"></select>
 <button type="submit">Guardar</button>
 </form></section>
 <section><h2 data-i18n="ota_title">Actualización (OTA)</h2>
@@ -912,8 +916,11 @@ void HttpServer::onSystemPage() {
 <script>
 function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp chip (aprox): '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason))+'\nWiFi: '+(y.wifi_ssid||'—')+' · '+(y.wifi_ip||'—')+'\nmDNS: '+(y.wifi_mdns?(y.wifi_host||'')+'.local':'deshabilitado');const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
-async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp(),units:document.getElementById('cfg_units').value,lang:document.getElementById('cfg_lang').value})});applyLang(document.getElementById('cfg_lang').value);uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}}
+let reservedPins=new Set();
+function pinSel(cur){let h='<option value="0">— sin asignar —</option>';for(let p=1;p<=39;p++){if(reservedPins.has(p)&&p!==cur)continue;h+='<option value="'+p+'"'+(p===cur?' selected':'')+'>GPIO '+p+'</option>'}return h}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();reservedPins=new Set(y.reserved_pins||[]);const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp chip (aprox): '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason))+'\nWiFi: '+(y.wifi_ssid||'—')+' · '+(y.wifi_ip||'—')+'\nmDNS: '+(y.wifi_mdns?(y.wifi_host||'')+'.local':'deshabilitado');const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').innerHTML=pinSel(c.storage.sd_cs||4)}}catch(e){}}
+async function saveNtp(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp()})});uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}}
+async function saveGeneral(){const lang=document.getElementById('cfg_lang').value;try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({units:document.getElementById('cfg_units').value,lang:lang})});applyLang(lang);uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}}
 async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});uiAlert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){uiAlert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
 function doOta(){const f=document.getElementById('fwfile').files[0];if(!f)return uiAlert('Elegí un archivo .bin');uiConfirm('¿Actualizar con '+f.name+'?',()=>{const bar=document.getElementById('otaBar'),fill=document.getElementById('otaFill'),msg=document.getElementById('otaMsg');bar.style.display='block';msg.textContent='Subiendo…';const fd=new FormData();fd.append('firmware',f);const xhr=new XMLHttpRequest();xhr.open('POST','/api/v1/ota');xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);fill.style.width=p+'%';msg.textContent='Subiendo '+p+'%'}};xhr.onload=()=>{fill.style.width='100%';msg.textContent='Flasheado. Reiniciando…';setTimeout(()=>location.href='/',12000)};xhr.onerror=()=>{msg.textContent='Error al subir'};xhr.send(fd)})}
@@ -992,6 +999,12 @@ function usedPins(){
   (cfg.sensors||[]).forEach(x=>{[x.pin,x.rx,x.tx].forEach(p=>{if(p)s.add(p)})});
   if(cfg.mcp23s17_cs)s.add(cfg.mcp23s17_cs);
   (cfg.shift_registers||[]).forEach(x=>{if(x.latch_pin)s.add(x.latch_pin)});
+  // Pines de buses: solo reservan si el elemento está habilitado.
+  const m=cfg.modbus||{};if(m.enabled){[m.rx,m.tx,m.de_re].forEach(p=>{if(p)s.add(p)})}
+  const ca=cfg.can||{};if(ca.enabled){[ca.tx,ca.rx].forEach(p=>{if(p)s.add(p)})}
+  const l=cfg.lora||{};if(l.enabled){[l.cs,l.rst,l.dio1,l.busy].forEach(p=>{if(p)s.add(p)})}
+  const z=cfg.zigbee||{};if(z.enabled){[z.rx,z.tx].forEach(p=>{if(p)s.add(p)})}
+  const e=cfg.ethernet||{};if(e.enabled){[e.mdc,e.mdio,e.cs,e.sck,e.miso,e.mosi,e.rst,e.irq].forEach(p=>{if(p&&p>0)s.add(p)})}
   return s;
 }
 function pinSel(used,cur){

@@ -364,6 +364,13 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
     c.gpio.push_back(g);
   }
   c.mcp23s17.csPin = doc["mcp23s17_cs"] | 0;
+#if SEMA_DEMO
+  // Demo: el MCP23S17 aparece conectado (CS=5) con sus 16 pines como salidas.
+  if (c.mcp23s17.csPin == 0) {
+    c.mcp23s17.csPin = 5;
+    for (int i = 0; i < 16; ++i) c.mcp23s17.pinModes[i] = 1;
+  }
+#endif
   JsonArray mp = doc["mcp23s17_pins"].as<JsonArray>();
   for (int i = 0; i < 16 && i < static_cast<int>(mp.size()); ++i) {
     c.mcp23s17.pinModes[i] = mp[i] | 0;

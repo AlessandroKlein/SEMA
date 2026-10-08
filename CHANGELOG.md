@@ -6,6 +6,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.92.0] - 2026-10-08
+
+### Changed
+
+- Seccion General separada de NTP (unidades/idioma).
+- Chip-select de microSD como dropdown de pines.
+- Pines de buses solo reservan si el elemento esta habilitado.
+- Demo: MCP23S17 conectado (CS=5) con 16 salidas.
+
 ## [1.91.0] - 2026-10-08
 
 ### Added
@@ -1108,6 +1117,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.92.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.92.0
 [1.91.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.91.0
 [1.90.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.90.0
 [1.89.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.89.0
