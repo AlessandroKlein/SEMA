@@ -13,6 +13,7 @@
 
 #include "core/SemaCore.hpp"
 #include "core/Time.hpp"
+#include "core/web/GridstackAssets.h"
 
 namespace sema {
 
@@ -86,8 +87,16 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/wind/resistors", HTTP_POST, [this]() { onWindResistors(); });
   server_.on("/api/v1/dashboard/layout", HTTP_POST, [this]() { onDashboardLayout(); });
   server_.on("/api/v1/dashboard/layout", HTTP_GET, [this]() { onDashboardLayoutGet(); });
-  server_.on("/gridstack.min.css", HTTP_GET, [this]() { onStaticFile("/gridstack.min.css", "text/css"); });
-  server_.on("/gridstack-all.min.js", HTTP_GET, [this]() { onStaticFile("/gridstack-all.min.js", "application/javascript"); });
+  server_.on("/gridstack.min.css", HTTP_GET, [this]() {
+    server_.sendHeader("Content-Encoding", "gzip");
+    server_.sendHeader("Cache-Control", "max-age=3600");
+    server_.send_P(200, PSTR("text/css"), (PGM_P)gridstack_css_gz, gridstack_css_gz_len);
+  });
+  server_.on("/gridstack-all.min.js", HTTP_GET, [this]() {
+    server_.sendHeader("Content-Encoding", "gzip");
+    server_.sendHeader("Cache-Control", "max-age=3600");
+    server_.send_P(200, PSTR("application/javascript"), (PGM_P)gridstack_js_gz, gridstack_js_gz_len);
+  });
   server_.on("/api/v1/history", HTTP_GET, [this]() { onHistory(); });
   server_.on("/api/v1/events", HTTP_GET, [this]() { onEvents(); });
   server_.on("/api/v1/alarms", HTTP_GET, [this]() { onAlarms(); });

@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.100.0] - 2026-10-08
+
+### Changed
+
+- gridstack (CSS/JS) embebido en PROGMEM y servido con gzip (Content-Encoding), sin depender de LittleFS.
+
 ## [1.99.0] - 2026-10-08
 
 ### Fixed
@@ -1162,6 +1168,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.100.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.100.0
 [1.99.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.99.0
 [1.98.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.98.0
 [1.97.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.97.0
