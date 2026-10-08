@@ -1118,6 +1118,7 @@ async function loadPins(r){
   const used=usedPins();
   p+='<div class="catalog">';
   p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>SDA <select id="busI2cSda">'+pinSel(used,r.i2c_sda||21)+'</select> SCL <select id="busI2cScl">'+pinSel(used,r.i2c_scl||22)+'</select></span></div>';
+  p+='<div class="cat-item"><span>SPI SCK / MISO / MOSI</span><span class="muted">'+y.spi_sck+' / '+y.spi_miso+' / '+y.spi_mosi+' (bus compartido)</span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busModEn"'+(m.enabled?' checked':'')+'><span class="sl"></span></label><span>Modbus RX / TX</span><span>RX <select id="busModRx">'+pinSel(used,m.rx||16)+'</select> TX <select id="busModTx">'+pinSel(used,m.tx||17)+'</select></span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busCanEn"'+(ca.enabled?' checked':'')+'><span class="sl"></span></label><span>CAN TX / RX</span><span>TX <select id="busCanTx">'+pinSel(used,ca.tx||5)+'</select> RX <select id="busCanRx">'+pinSel(used,ca.rx||4)+'</select></span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busLoraEn"'+(l.enabled?' checked':'')+'><span class="sl"></span></label><span>LoRa CS / RST / DIO1 / BUSY</span><span>CS <select id="busLoraCs">'+pinSel(used,l.cs||10)+'</select> RST <select id="busLoraRst">'+pinSel(used,l.rst||14)+'</select> DIO1 <select id="busLoraDio1">'+pinSel(used,l.dio1||26)+'</select> BUSY <select id="busLoraBusy">'+pinSel(used,l.busy||27)+'</select></span></div>';
@@ -1358,12 +1359,19 @@ void HttpServer::onSystem() {
   doc["wifi_mdns"] = core_->wifi().mdnsStarted();
   // Pines reservados por el hardware (no disponibles para sensores/salidas).
   JsonArray reserved = doc.createNestedArray("reserved_pins");
+  // Bus SPI (SCK/MISO/MOSI) — dedicados al bus, no disponibles como GPIO.
+  reserved.add(SEMA_SPI_SCK);
+  reserved.add(SEMA_SPI_MISO);
+  reserved.add(SEMA_SPI_MOSI);
 #if SEMA_NATIVE_ETH && SEMA_USE_ETHERNET
-  const uint8_t rp[] = {SEMA_PIN_ETH_MDC, SEMA_PIN_ETH_MDIO, SEMA_PIN_ETH_TXD0,
-                        SEMA_PIN_ETH_TXD1, SEMA_PIN_ETH_TX_EN, SEMA_PIN_ETH_RXD0,
-                        SEMA_PIN_ETH_RXD1, SEMA_PIN_ETH_CRS_DV, SEMA_PIN_ETH_RX_ER,
-                        SEMA_PIN_ETH_REF_CLK};
-  for (uint8_t p : rp) reserved.add(p);
+  // Ethernet RMII — reservados solo si Ethernet nativo está habilitado.
+  if (core_->config().get().ethernet.enabled) {
+    const uint8_t rp[] = {SEMA_PIN_ETH_MDC, SEMA_PIN_ETH_MDIO, SEMA_PIN_ETH_TXD0,
+                          SEMA_PIN_ETH_TXD1, SEMA_PIN_ETH_TX_EN, SEMA_PIN_ETH_RXD0,
+                          SEMA_PIN_ETH_RXD1, SEMA_PIN_ETH_CRS_DV, SEMA_PIN_ETH_RX_ER,
+                          SEMA_PIN_ETH_REF_CLK};
+    for (uint8_t p : rp) reserved.add(p);
+  }
 #endif
   doc["firmware_file"] =
       String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
