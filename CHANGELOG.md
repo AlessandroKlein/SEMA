@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.82.0] - 2026-10-08
+
+### Added
+
+- Boton ojo para ver contrasena WiFi y config avanzada (IP/gateway/mascara/DNS) plegable.
+- Datos WiFi (SSID, IP, mDNS) en /config/system.
+- Bus I2C compartido (SDA/SCL) como elemento unico; pines unicos sin repetir (PIN/RX/TX/CS).
+
 ## [1.81.0] - 2026-10-08
 
 ### Added
@@ -1038,6 +1046,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.82.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.82.0
 [1.81.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.81.0
 [1.80.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.80.0
 [1.79.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.79.0

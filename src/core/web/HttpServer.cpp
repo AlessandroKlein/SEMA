@@ -722,19 +722,24 @@ void HttpServer::onNetworkPage() {
 <form onsubmit="saveNetwork();return false;">
 <select id="cfg_mode"><option value="STA">Estación (conectarse a un router)</option><option value="AP">Punto de acceso (AP propio)</option></select>
 <input id="cfg_ssid" placeholder="WiFi SSID">
-<input id="cfg_pass" type="password" placeholder="WiFi contraseña">
+<div class="row">
+<input id="cfg_pass" type="password" placeholder="WiFi contraseña" style="flex:1">
+<button type="button" class="sec" onclick="togglePass()" title="Ver/ocultar contraseña">👁️</button>
+</div>
 <input id="cfg_host" placeholder="Hostname (mDNS)">
 <button type="button" class="sec" onclick="openMdns()">🔗 Abrir http://&lt;hostname&gt;.local</button>
-<div class="muted">IP estática (dejar vacío = DHCP):</div>
+<details class="muted"><summary>Configuración avanzada (IP estática)</summary>
 <div class="row">
 <input id="cfg_ip" placeholder="IP (ej. 192.168.1.50)">
 <input id="cfg_gateway" placeholder="Gateway (ej. 192.168.1.1)">
 <input id="cfg_subnet" placeholder="Máscara (ej. 255.255.255.0)">
 <input id="cfg_dns" placeholder="DNS (ej. 8.8.8.8)">
 </div>
+</details>
 <button type="submit">Guardar red (reinicia)</button>
 </form></section>
 <script>
+function togglePass(){const p=document.getElementById('cfg_pass');p.type=p.type==='password'?'text':'password'}
 async function loadNet(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';document.getElementById('cfg_pass').value=r.network?r.network.password:'';document.getElementById('cfg_host').value=r.network?r.network.hostname:'';document.getElementById('cfg_ip').value=r.network?r.network.ip:'';document.getElementById('cfg_gateway').value=r.network?r.network.gateway:'';document.getElementById('cfg_subnet').value=r.network?r.network.subnet:'';document.getElementById('cfg_dns').value=r.network?r.network.dns:''}catch(e){}}
 function openMdns(){const h=document.getElementById('cfg_host').value.trim();if(h)window.open('http://'+h+'.local','_blank');else alert('Poné un hostname primero')}
 async function saveNetwork(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,hostname:document.getElementById('cfg_host').value,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){alert('Error de red')}}
@@ -852,7 +857,7 @@ void HttpServer::onSystemPage() {
 <script>
 function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp ESP: '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason));const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp ESP: '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason))+'\nWiFi: '+(y.wifi_ssid||'—')+' · '+(y.wifi_ip||'—')+'\nmDNS: '+(y.wifi_mdns?(y.wifi_host||'')+'.local':'deshabilitado');const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
 async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp(),units:document.getElementById('cfg_units').value,lang:document.getElementById('cfg_lang').value})});applyLang(document.getElementById('cfg_lang').value);alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
 async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});alert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){alert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
@@ -926,7 +931,9 @@ let shiftEnabled=false;
 async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;try{const y=await(await fetch('/api/v1/system')).json();shiftEnabled=!!y.shift_enabled}catch(e){}render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
 function usedPins(){
   const s=new Set();
-  (cfg.sensors||[]).forEach(x=>{[x.pin,x.sda,x.scl,x.rx,x.tx].forEach(p=>{if(p)s.add(p)})});
+  // Solo pines "únicos" (punto a punto): PIN analógico/pulsos y RX/TX de UART.
+  // SDA/SCL (I²C) y MOSI/MISO/SCK (SPI) son buses compartidos, no se cuentan.
+  (cfg.sensors||[]).forEach(x=>{[x.pin,x.rx,x.tx].forEach(p=>{if(p)s.add(p)})});
   if(cfg.mcp23s17_cs)s.add(cfg.mcp23s17_cs);
   (cfg.shift_registers||[]).forEach(x=>{if(x.latch_pin)s.add(x.latch_pin)});
   return s;
@@ -955,7 +962,7 @@ function render(){
     h+='<label style="flex:1;margin:0 .4rem">'+t.name+' <span class="muted">('+t.i+')</span></label><span class="q" title="'+t.d+'">?</span>';
     if(t.i==='i2c'){
       h+='<span class="muted">ID<select class="a" data-k="'+key+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option><option value="73"'+(addr==73?' selected':'')+'>0x49</option><option value="74"'+(addr==74?' selected':'')+'>0x4A</option><option value="75"'+(addr==75?' selected':'')+'>0x4B</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option></select></span>';
-      h+='<span class="muted">SDA<select class="p" data-k="'+key+'" data-p="sda">'+pinSel(used,sda)+'</select> SCL<select class="p" data-k="'+key+'" data-p="scl">'+pinSel(used,scl)+'</select></span>';
+      h+='<span class="muted" title="Bus I²C compartido (SDA=21, SCL=22)">bus I²C 21/22</span>';
     }else if(t.i==='uart'){
       h+='<span class="muted">RX<select class="p" data-k="'+key+'" data-p="rx">'+pinSel(used,rx)+'</select> TX<select class="p" data-k="'+key+'" data-p="tx">'+pinSel(used,tx)+'</select></span>';
     }else{
@@ -1247,6 +1254,10 @@ void HttpServer::onSystem() {
   doc["esp_temp"] = temperatureRead();
   doc["restart_count"] = core_->restartCount();
   doc["reset_reason"] = esp_reset_reason();
+  doc["wifi_ssid"] = core_->config().get().network.ssid;
+  doc["wifi_ip"] = core_->wifi().localIP();
+  doc["wifi_host"] = core_->config().get().network.hostname;
+  doc["wifi_mdns"] = core_->wifi().mdnsStarted();
   doc["firmware_file"] =
       String("sema_") + SEMA_FW_VERSION + "_" + SEMA_BOARD_ID + ".bin";
   String out;
