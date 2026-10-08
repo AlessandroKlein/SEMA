@@ -7,7 +7,6 @@
 namespace sema {
 
 static const char* kConfigKey = "config";
-static const char* kConfigBakKey = "config_bak";  // respaldo fail-safe
 
 // Si SEMA_PINS_FROM_FILE, fija los pines desde HwProfile.hpp (PCB) e ignora
 // los que vengan de la web.
@@ -45,19 +44,9 @@ ConfigManager::ConfigManager(KeyValueStore& store) : store_(store) {}
 
 bool ConfigManager::load() {
   String raw;
-  // Intento 1: clave principal.
   if (store_.getString(kConfigKey, raw) && raw.length() > 0) {
     if (deserialize(raw) && validate(config_)) {
       valid_ = true;
-      return true;
-    }
-  }
-
-  // Intento 2: respaldo fail-safe (clave principal corrupta o inválida).
-  if (store_.getString(kConfigBakKey, raw) && raw.length() > 0) {
-    if (deserialize(raw) && validate(config_)) {
-      valid_ = true;
-      store_.putString(kConfigKey, raw.c_str());  // restaura la principal
       return true;
     }
   }
@@ -85,11 +74,14 @@ bool ConfigManager::save() {
     Serial.println("[cfg] serialize failed");
     return false;
   }
-  const bool ok = store_.putString(kConfigKey, raw.c_str());
-  if (ok) {
-    store_.putString(kConfigBakKey, raw.c_str());  // respaldo fail-safe
-  } else {
-    Serial.printf("[cfg] putString failed (len=%u)\n", static_cast<unsigned>(raw.length()));
+  bool ok = store_.putString(kConfigKey, raw.c_str());
+  if (!ok) {
+    // NVS lleno/fragmentado (NOT_ENOUGH_SPACE): limpia el namespace y reintenta
+    // una vez. Se pierden la config anterior y el layout, pero se recupera el
+    // guardado sin necesidad de reflashear.
+    Serial.println("[cfg] NVS sin espacio: limpiando y reintentando");
+    store_.clear();
+    ok = store_.putString(kConfigKey, raw.c_str());
   }
   return ok;
 }
