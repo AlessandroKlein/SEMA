@@ -924,8 +924,24 @@ const TYPES=[
 let cfg={};
 let shiftEnabled=false;
 async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;try{const y=await(await fetch('/api/v1/system')).json();shiftEnabled=!!y.shift_enabled}catch(e){}render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
+function usedPins(){
+  const s=new Set();
+  (cfg.sensors||[]).forEach(x=>{[x.pin,x.sda,x.scl,x.rx,x.tx].forEach(p=>{if(p)s.add(p)})});
+  if(cfg.mcp23s17_cs)s.add(cfg.mcp23s17_cs);
+  (cfg.shift_registers||[]).forEach(x=>{if(x.latch_pin)s.add(x.latch_pin)});
+  return s;
+}
+function pinSel(used,cur){
+  let h='<option value="0">— sin asignar —</option>';
+  for(let p=1;p<=39;p++){
+    if(used.has(p)&&p!==cur)continue;
+    h+='<option value="'+p+'"'+(p===cur?' selected':'')+'>GPIO '+p+'</option>';
+  }
+  return h;
+}
 function render(){
   const list=document.getElementById('sensorList');
+  const used=usedPins();
   let h='<div class="catalog">';
   for(const t of TYPES){
     if(t.multi) continue;  // DS18B20 se renderiza en su propia sección
@@ -939,13 +955,13 @@ function render(){
     h+='<label style="flex:1;margin:0 .4rem">'+t.name+' <span class="muted">('+t.i+')</span></label><span class="q" title="'+t.d+'">?</span>';
     if(t.i==='i2c'){
       h+='<span class="muted">ID<select class="a" data-k="'+key+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option><option value="73"'+(addr==73?' selected':'')+'>0x49</option><option value="74"'+(addr==74?' selected':'')+'>0x4A</option><option value="75"'+(addr==75?' selected':'')+'>0x4B</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option></select></span>';
-      h+='<span class="muted">SDA<input class="p" data-k="'+key+'" data-p="sda" value="'+sda+'" style="width:44px"> SCL<input class="p" data-k="'+key+'" data-p="scl" value="'+scl+'" style="width:44px"></span>';
+      h+='<span class="muted">SDA<select class="p" data-k="'+key+'" data-p="sda">'+pinSel(used,sda)+'</select> SCL<select class="p" data-k="'+key+'" data-p="scl">'+pinSel(used,scl)+'</select></span>';
     }else if(t.i==='uart'){
-      h+='<span class="muted">RX<input class="p" data-k="'+key+'" data-p="rx" value="'+rx+'" style="width:44px"> TX<input class="p" data-k="'+key+'" data-p="tx" value="'+tx+'" style="width:44px"></span>';
+      h+='<span class="muted">RX<select class="p" data-k="'+key+'" data-p="rx">'+pinSel(used,rx)+'</select> TX<select class="p" data-k="'+key+'" data-p="tx">'+pinSel(used,tx)+'</select></span>';
     }else{
       const src=cur.channel&&cur.channel.startsWith('ads')?'ads':'native';
       h+='<span class="muted">FUENTE<select class="src" data-k="'+key+'" onchange="srcChange(this)" style="width:84px"><option value="native"'+(src==='native'?' selected':'')+'>ADC ESP32</option><option value="ads"'+(src==='ads'?' selected':'')+'>ADS1115</option></select></span>';
-      h+='<span class="muted pin-wrap" data-k="'+key+'" '+(src==='ads'?'style="display:none"':'')+'>PIN<input class="p" data-k="'+key+'" data-p="pin" value="'+pin+'" style="width:44px"></span>';
+      h+='<span class="muted pin-wrap" data-k="'+key+'" '+(src==='ads'?'style="display:none"':'')+'>PIN<select class="p" data-k="'+key+'" data-p="pin">'+pinSel(used,pin)+'</select></span>';
       h+='<span class="muted ch-wrap" data-k="'+key+'" '+(src==='native'?'style="display:none"':'')+'>CANAL<select class="ch" data-k="'+key+'" style="width:70px"><option value="0"'+(pin==0?' selected':'')+'>A0</option><option value="1"'+(pin==1?' selected':'')+'>A1</option><option value="2"'+(pin==2?' selected':'')+'>A2</option><option value="3"'+(pin==3?' selected':'')+'>A3</option></select></span>';
     }
     h+='</div>';
@@ -953,7 +969,7 @@ function render(){
   h+='</div>';
   h+='<div class="muted" style="margin:.6rem 0 .2rem">DS18B20 (bus 1-Wire) — un solo pin para todos, cada uno con su dirección ROM</div>';
   const dspin=(cfg.sensors||[]).find(s=>s.model==='DS18B20')||{};
-  h+='<div class="cat-item"><span>PIN del bus 1-Wire</span><input id="dsBusPin" value="'+(dspin.pin||0)+'" style="width:70px"></div>';
+  h+='<div class="cat-item"><span>PIN del bus 1-Wire</span><select id="dsBusPin">'+pinSel(used,dspin.pin||0)+'</select></div>';
   h+='<div class="catalog" id="dsList">';
   const ds=(cfg.sensors||[]).filter(s=>s.model==='DS18B20');
   ds.forEach((s,i)=>{
@@ -983,7 +999,7 @@ function save(){
     const src=document.querySelector('#sensorList select.src[data-k="'+key+'"]');
     const isAds=src&&src.value==='ads';
     const spec={id:t.name.toLowerCase().replace(/[^a-z0-9]/g,''),model:isAds?'ADS1115':t.m,enabled:true,address:0,sda:21,scl:22,pin:0,rx:0,tx:0,channel:t.ch||''};
-    document.querySelectorAll('#sensorList input.p[data-k="'+key+'"]').forEach(p=>{
+    document.querySelectorAll('#sensorList select.p[data-k="'+key+'"]').forEach(p=>{
       const k=p.getAttribute('data-p');spec[k]=parseInt(p.value)||0;
     });
     if(isAds){
@@ -1030,11 +1046,12 @@ function renderIo(){
   const list=document.getElementById('ioList');
   const mCs=cfg.mcp23s17_cs||0;
   const mPins=cfg.mcp23s17_pins||[];
+  const used=usedPins();
   let h='';
   // MCP23S17 (expansor GPIO SPI)
   h+='<div class="muted" style="margin:.5rem 0 .2rem;font-weight:600">MCP23S17 — expansor GPIO SPI (16 pines) <span class="q" title="Expansor GPIO por SPI de 16 pines (2 puertos A/B). Tensión 1.8-5.5V (lógica del bus 3.3V del ESP32).">?</span></div>';
   h+='<div class="catalog">';
-  h+='<div class="cat-item"><span>Chip Select (CS)</span><input id="mcpCs" value="'+mCs+'" placeholder="0 = no usar" style="width:70px"></div>';
+  h+='<div class="cat-item"><span>Chip Select (CS)</span><select id="mcpCs">'+pinSel(used,mCs)+'</select></div>';
   h+='<div class="cat-item"><span>Pines A0-A7</span><span class="muted">';
   for(let i=0;i<8;i++){ h+=sel('mp'+i, mPins[i]!==undefined?mPins[i]:0, 'A'+i); }
   h+='</span></div>';
