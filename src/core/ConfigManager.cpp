@@ -403,7 +403,7 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.can.speed = doc["can"]["speed"] | 500000;
   c.lora.enabled = doc["lora"]["enabled"] | false;
   c.lora.csPin = doc["lora"]["cs"] | 10;
-  c.lora.rstPin = doc["lora"]["rst"] | 14;
+  c.lora.rstPin = doc["lora"]["rst"] | 32;
   c.lora.dio1Pin = doc["lora"]["dio1"] | 26;
   c.lora.busyPin = doc["lora"]["busy"] | 27;
   c.lora.frequency = doc["lora"]["frequency"] | 915.0f;

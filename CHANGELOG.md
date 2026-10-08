@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.97.0] - 2026-10-08
+
+### Changed
+
+- Pines reservados se muestran deshabilitados como ocupado (no se ocultan).
+- SPI de WROOM movido a 14/12/15 para no chocar con Ethernet RMII; LoRa RST a 32.
+
 ## [1.96.0] - 2026-10-08
 
 ### Changed
@@ -1143,6 +1150,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.97.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.97.0
 [1.96.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.96.0
 [1.95.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.95.0
 [1.94.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.94.0

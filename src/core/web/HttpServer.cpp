@@ -1013,8 +1013,7 @@ function usedPins(){
 function pinSel(used,cur){
   let h='<option value="0">— sin asignar —</option>';
   for(let p=1;p<=39;p++){
-    if(reservedPins.has(p)&&p!==cur)continue;  // reservado por hardware → no aparece
-    const taken=used.has(p)&&p!==cur;
+    const taken=(used.has(p)||reservedPins.has(p))&&p!==cur;
     h+='<option value="'+p+'"'+(p===cur?' selected':'')+(taken?' disabled':'')+'>GPIO '+p+(taken?' (ocupado)':'')+'</option>';
   }
   // Pines del MCP23S17 (expansor SPI): disponibles cuando el chip está habilitado (CS != 0).

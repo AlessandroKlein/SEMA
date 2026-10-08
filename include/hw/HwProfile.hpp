@@ -103,10 +103,10 @@
 #define SEMA_SPI_MISO 13
 #define SEMA_SPI_MOSI 11
 #define SEMA_SPI_CS 10
-#else  // WROOM / WROOM32U (VSPI)
-#define SEMA_SPI_SCK 18
-#define SEMA_SPI_MISO 19
-#define SEMA_SPI_MOSI 23
+#else  // WROOM / WROOM32U (VSPI → pines libres para no chocar con Ethernet RMII)
+#define SEMA_SPI_SCK 14
+#define SEMA_SPI_MISO 12
+#define SEMA_SPI_MOSI 15
 #define SEMA_SPI_CS 5
 #endif
 
@@ -149,7 +149,7 @@
 #define SEMA_PIN_ZIGBEE_RX 18
 #define SEMA_PIN_ZIGBEE_TX 19
 
-#define SEMA_PIN_LORA_RST 14
+#define SEMA_PIN_LORA_RST 32
 #define SEMA_PIN_LORA_DIO1 26
 #define SEMA_PIN_LORA_BUSY 27
 
