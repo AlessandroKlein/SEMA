@@ -1121,9 +1121,13 @@ async function loadPins(r){
   p+='<div class="cat-item"><span>SPI SCK / MISO / MOSI</span><span class="muted">'+y.spi_sck+' / '+y.spi_miso+' / '+y.spi_mosi+' (bus compartido)</span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busModEn"'+(m.enabled?' checked':'')+'><span class="sl"></span></label><span>Modbus RX / TX</span><span>RX <select id="busModRx">'+pinSel(used,m.rx||16)+'</select> TX <select id="busModTx">'+pinSel(used,m.tx||17)+'</select></span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busCanEn"'+(ca.enabled?' checked':'')+'><span class="sl"></span></label><span>CAN TX / RX</span><span>TX <select id="busCanTx">'+pinSel(used,ca.tx||5)+'</select> RX <select id="busCanRx">'+pinSel(used,ca.rx||4)+'</select></span></div>';
-  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busLoraEn"'+(l.enabled?' checked':'')+'><span class="sl"></span></label><span>LoRa CS / RST / DIO1 / BUSY</span><span>CS <select id="busLoraCs">'+pinSel(used,l.cs||10)+'</select> RST <select id="busLoraRst">'+pinSel(used,l.rst||14)+'</select> DIO1 <select id="busLoraDio1">'+pinSel(used,l.dio1||26)+'</select> BUSY <select id="busLoraBusy">'+pinSel(used,l.busy||27)+'</select></span></div>';
+  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busLoraEn"'+(l.enabled?' checked':'')+'><span class="sl"></span></label><span>LoRa CS / RST / DIO1 / BUSY</span><span>CS <select id="busLoraCs">'+pinSel(used,l.cs||10)+'</select> RST <select id="busLoraRst">'+pinSel(used,l.rst||32)+'</select> DIO1 <select id="busLoraDio1">'+pinSel(used,l.dio1||26)+'</select> BUSY <select id="busLoraBusy">'+pinSel(used,l.busy||27)+'</select></span></div>';
   p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busZigEn"'+(z.enabled?' checked':'')+'><span class="sl"></span></label><span>Zigbee RX / TX</span><span>RX <select id="busZigRx">'+pinSel(used,z.rx||18)+'</select> TX <select id="busZigTx">'+pinSel(used,z.tx||19)+'</select></span></div>';
   p+='<div class="cat-item"><span>microSD CS (SPI)</span><span>CS <select id="busSdCs">'+pinSel(used,sd.sd_cs||4)+'</select></span></div>';
+  if(r.mcp23s17_cs)p+='<div class="cat-item"><span>MCP23S17 (GPIO SPI)</span><span class="muted">CS='+r.mcp23s17_cs+'</span></div>';
+  (r.spi_expanders||[]).forEach(x=>{
+    if(x.cs)p+='<div class="cat-item"><span>'+(x.type==='SC18IS602B'?'SC18IS602B (I²C)':'MAX14830 (UART)')+'</span><span class="muted">CS='+x.cs+'</span></div>';
+  });
   if(y.native_eth){
     p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busEthEn"'+(e.enabled?' checked':'')+'><span class="sl"></span></label><span>Ethernet RMII</span><span class="muted">MDC=23 MDIO=18 + TXD0..REF_CLK (fijos)</span></div>';
   }else{
