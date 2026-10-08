@@ -3,7 +3,7 @@ import gzip, os
 d = r'D:\Users\alekl\Documents\GitHub\SEMA'
 out = []
 for name, var in [('gridstack.min.css', 'gridstack_css'), ('gridstack-all.min.js', 'gridstack_js')]:
-    p = os.path.join(d, 'data', name)
+    p = os.path.join(d, 'docs', 'Optimizacion web', name)
     raw = open(p, 'rb').read()
     gz = gzip.compress(raw, 9)
     out.append((var, gz, len(gz)))

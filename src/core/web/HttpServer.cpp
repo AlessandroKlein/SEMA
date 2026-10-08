@@ -9,7 +9,6 @@
 #include <esp_ota_ops.h>
 #include <esp_partition.h>
 #include <mbedtls/md.h>
-#include <LittleFS.h>
 
 #include "core/SemaCore.hpp"
 #include "core/Time.hpp"
@@ -2271,20 +2270,6 @@ void HttpServer::onDashboardLayoutGet() {
   doc["layout"] = layout.length() ? layout : "[]";
   serializeJson(doc, out);
   server_.send(200, "application/json", out);
-}
-
-void HttpServer::onStaticFile(const char* path, const char* type) {
-  if (!LittleFS.begin(false) || !LittleFS.exists(path)) {
-    server_.send(404, "text/plain", "Not found");
-    return;
-  }
-  File f = LittleFS.open(path, "r");
-  if (!f) {
-    server_.send(404, "text/plain", "Not found");
-    return;
-  }
-  server_.streamFile(f, type);
-  f.close();
 }
 
 void HttpServer::onHistory() {
