@@ -196,9 +196,10 @@ button.sec{background:#21262d}
 .grid-wind{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
 label{font-size:.75rem;color:var(--muted);display:block}
 section{border:1px solid var(--bd);border-radius:8px;padding:1rem;margin:1rem 0;background:var(--card)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;overflow:auto}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:none;z-index:50;overflow:auto}
 .modal.open{display:block}
-.modal-box{background:var(--bg);border:1px solid var(--bd);border-radius:8px;max-width:520px;margin:2rem auto;padding:1rem}
+.modal-box{background:var(--bg);border:1px solid var(--bd);border-radius:14px;max-width:520px;margin:3rem auto;padding:1.2rem;box-shadow:0 12px 40px rgba(0,0,0,.5);animation:pop .18s ease}
+@keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
 .catalog{max-height:60vh;overflow:auto;border:1px solid var(--bd);border-radius:6px;padding:.5rem}
 .cat-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem;border-bottom:1px solid #21262d;cursor:pointer}
 .cat-item:hover{background:var(--card)}
@@ -609,6 +610,13 @@ summary{cursor:pointer;color:var(--acc);font-size:.82rem;padding:.2rem 0}
 .cat-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.5rem .6rem;border-bottom:1px solid var(--bd);font-size:.9rem}
 .cat-item:last-child{border-bottom:0}
 code{background:#21262d;padding:.1rem .4rem;border-radius:4px;font-size:.85em}
+select option:disabled{color:#484f58;background:#1a1e24;font-style:italic}
+button{transition:opacity .15s,transform .15s}
+button:active{transform:scale(.97)}
+section{transition:box-shadow .2s}
+section:hover{box-shadow:0 3px 10px rgba(0,0,0,.18)}
+input,select{transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{box-shadow:0 0 0 2px rgba(31,111,235,.25)}
 body.light{--bg:#f6f8fa;--fg:#24292f;--card:#fff;--bd:#d0d7de;--muted:#57606a}
 body.light input{background:#fff;color:#24292f}
 body.light code{background:#f0f3f6}
@@ -961,8 +969,8 @@ function usedPins(){
 function pinSel(used,cur){
   let h='<option value="0">— sin asignar —</option>';
   for(let p=1;p<=39;p++){
-    if(used.has(p)&&p!==cur)continue;
-    h+='<option value="'+p+'"'+(p===cur?' selected':'')+'>GPIO '+p+'</option>';
+    const taken=used.has(p)&&p!==cur;
+    h+='<option value="'+p+'"'+(p===cur?' selected':'')+(taken?' disabled':'')+'>GPIO '+p+(taken?' (ocupado)':'')+'</option>';
   }
   return h;
 }
