@@ -34,7 +34,7 @@ Se corrigieron dos inconsistencias de documentación:
 | Sistema de módulos | Interfaz + registro | Módulos reales (instalación/desinstalación/permisos). |
 | Medición energética | Batería por ADC | Medición de consumo/corriente. |
 | Diagnóstico | Health monitor + endpoints | Diagnóstico por sensor más profundo. |
-| Seguridad | api_key + server_key + login + rate limiting | TLS/HTTPS, OTA firmado, keys revocables. |
+| Seguridad | api_key + server_key + login + rate limiting + keys revocables (`extra_keys`) | TLS/HTTPS, OTA firmado (keys revocables parcial: RBAC completo). |
 | Comunicaciones remotas | MQTT/LoRa/Zigbee/Ethernet | Servidor Central (fuera de alcance). |
 | Energía | Batería, deep sleep | Gestión de carga/MPPT del panel solar. |
 
@@ -49,7 +49,7 @@ Se corrigieron dos inconsistencias de documentación:
 **Seguridad**
 - TLS/HTTPS (certificado).
 - OTA con firma/checksum.
-- Tokens/API keys revocables.
+- Tokens/API keys revocables (parcial: `extra_keys` con revocación; falta RBAC completo).
 
 **Comunicaciones**
 - LoRaWAN (red sobre LoRa).
