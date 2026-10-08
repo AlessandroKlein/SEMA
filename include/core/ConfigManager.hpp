@@ -218,6 +218,8 @@ struct Config {
   LoraConfig lora;                         // LoRa/SX1262 (opcional)
   ZigbeeConfig zigbee;                     // Zigbee/CC2652P2 (opcional)
   EthernetConfig ethernet;                 // Ethernet LAN8720A/W5500 (opcional)
+  uint8_t i2cSda = 21;                     // bus I²C compartido (SDA)
+  uint8_t i2cScl = 22;                     // bus I²C compartido (SCL)
 };
 
 class ConfigManager {

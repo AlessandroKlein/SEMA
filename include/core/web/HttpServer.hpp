@@ -42,6 +42,7 @@ private:
   void onConfigSystem();
   void onConfigSensors();
   void onConfigIo();
+  void onConfigBuses();
   void onWifiScan();
   void onApiKeys();
   void onUpdateCheck();

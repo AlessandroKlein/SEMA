@@ -260,6 +260,8 @@ bool ConfigManager::serialize(String& out) const {
   doc["ethernet"]["sck"] = config_.ethernet.sckPin;
   doc["ethernet"]["miso"] = config_.ethernet.misoPin;
   doc["ethernet"]["mosi"] = config_.ethernet.mosiPin;
+  doc["i2c_sda"] = config_.i2cSda;
+  doc["i2c_scl"] = config_.i2cScl;
   serializeJson(doc, out);
   return true;
 }
@@ -424,6 +426,8 @@ bool ConfigManager::parseInto(const String& in, Config& c) {
   c.ethernet.sckPin = doc["ethernet"]["sck"] | 18;
   c.ethernet.misoPin = doc["ethernet"]["miso"] | 19;
   c.ethernet.mosiPin = doc["ethernet"]["mosi"] | 21;
+  c.i2cSda = doc["i2c_sda"] | 21;
+  c.i2cScl = doc["i2c_scl"] | 22;
   applyHwProfile(c);
   return true;
 }

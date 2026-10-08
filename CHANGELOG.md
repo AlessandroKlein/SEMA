@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.94.0] - 2026-10-08
+
+### Added
+
+- Pines de buses editables: habilitar/deshabilitar modulos (Modbus/CAN/LoRa/Zigbee/Ethernet), seleccionar CS (SPI) e I2C (SDA/SCL).
+- Chip-select de microSD movido a Pines de buses.
+
 ## [1.93.0] - 2026-10-08
 
 ### Fixed
@@ -1123,6 +1130,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.94.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.94.0
 [1.93.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.93.0
 [1.92.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.92.0
 [1.91.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.91.0

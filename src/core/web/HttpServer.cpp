@@ -66,6 +66,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/config/system", HTTP_POST, [this]() { onConfigSystem(); });
   server_.on("/api/v1/config/sensors", HTTP_POST, [this]() { onConfigSensors(); });
   server_.on("/api/v1/config/io", HTTP_POST, [this]() { onConfigIo(); });
+  server_.on("/api/v1/config/buses", HTTP_POST, [this]() { onConfigBuses(); });
   server_.on("/api/v1/wifi/scan", HTTP_GET, [this]() { onWifiScan(); });
   server_.on("/api/v1/security/keys", HTTP_POST, [this]() { onApiKeys(); });
   server_.on("/api/v1/update/check", HTTP_GET, [this]() { onUpdateCheck(); });
@@ -899,8 +900,7 @@ void HttpServer::onSystemPage() {
 <form onsubmit="saveStorage();return false;">
 <label class="switch"><input type="checkbox" id="cfg_sd"><span class="sl"></span></label>
 <label class="muted">Usar microSD para el histórico</label>
-<label class="muted">Chip-select (CS)</label>
-<select id="cfg_sdcs"></select>
+<p class="muted">El chip-select (CS) se configura en "Pines de buses" (Configuración de sensores).</p>
 <button type="submit">Guardar</button>
 </form></section>
 <section><h2 data-i18n="ota_title">Actualización (OTA)</h2>
@@ -918,10 +918,10 @@ function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.o
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
 let reservedPins=new Set();
 function pinSel(cur){let h='<option value="0">— sin asignar —</option>';for(let p=1;p<=39;p++){if(reservedPins.has(p)&&p!==cur)continue;h+='<option value="'+p+'"'+(p===cur?' selected':'')+'>GPIO '+p+'</option>'}return h}
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();reservedPins=new Set(y.reserved_pins||[]);const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp chip (aprox): '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason))+'\nWiFi: '+(y.wifi_ssid||'—')+' · '+(y.wifi_ip||'—')+'\nmDNS: '+(y.wifi_mdns?(y.wifi_host||'')+'.local':'deshabilitado');const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').innerHTML=pinSel(c.storage.sd_cs||4)}}catch(e){}}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();reservedPins=new Set(y.reserved_pins||[]);const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp chip (aprox): '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason))+'\nWiFi: '+(y.wifi_ssid||'—')+' · '+(y.wifi_ip||'—')+'\nmDNS: '+(y.wifi_mdns?(y.wifi_host||'')+'.local':'deshabilitado');const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled}}catch(e){}}
 async function saveNtp(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp()})});uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}}
 async function saveGeneral(){const lang=document.getElementById('cfg_lang').value;try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({units:document.getElementById('cfg_units').value,lang:lang})});applyLang(lang);uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}}
-async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});uiAlert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){uiAlert('Error de red')}}
+async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked})});uiAlert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){uiAlert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
 function doOta(){const f=document.getElementById('fwfile').files[0];if(!f)return uiAlert('Elegí un archivo .bin');uiConfirm('¿Actualizar con '+f.name+'?',()=>{const bar=document.getElementById('otaBar'),fill=document.getElementById('otaFill'),msg=document.getElementById('otaMsg');bar.style.display='block';msg.textContent='Subiendo…';const fd=new FormData();fd.append('firmware',f);const xhr=new XMLHttpRequest();xhr.open('POST','/api/v1/ota');xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);fill.style.width=p+'%';msg.textContent='Subiendo '+p+'%'}};xhr.onload=()=>{fill.style.width='100%';msg.textContent='Flasheado. Reiniciando…';setTimeout(()=>location.href='/',12000)};xhr.onerror=()=>{msg.textContent='Error al subir'};xhr.send(fd)})}
 async function doRestart(){uiConfirm('¿Reiniciar?',async()=>{try{await fetch('/api/v1/restart',{method:'POST'});uiAlert('Reiniciando…')}catch(e){}})}
@@ -961,7 +961,8 @@ void HttpServer::onSensorsPage() {
 <div id="sensorList" class="muted">Cargando…</div>
 <button onclick="save()">💾 Guardar sensores</button></section>
 <section><h2 data-i18n="pins_buses">Pines de buses</h2>
-<div id="pinInfo" class="muted">Cargando…</div></section>
+<div id="pinInfo" class="muted">Cargando…</div>
+<button onclick="saveBuses()">💾 Guardar pines</button></section>
 <section><h2 data-i18n="io_title">Expansores y salidas</h2>
 <p class="muted">Registro de desplazamiento (74HC595/74HC165) y salidas GPIO (nativas o por MCP23017).</p>
 <div id="ioList" class="muted">Cargando…</div>
@@ -1113,22 +1114,38 @@ async function loadPins(r){
   const y=await(await fetch('/api/v1/system')).json();
   let p='<p>Board: '+y.board+' · Flash: '+y.flash_mb+' MB'+(y.demo?' · <b>DEMO</b>':'')+'</p>';
   p+='<p>Origen de pines: <b>'+(y.pins_from_file?'PCB (fijos)':'Web (configurables)')+'</b></p>';
-  const n=r.network||{},m=r.modbus||{},ca=r.can||{},l=r.lora||{},z=r.zigbee||{},e=r.ethernet||{};
+  const m=r.modbus||{},ca=r.can||{},l=r.lora||{},z=r.zigbee||{},e=r.ethernet||{},sd=r.storage||{};
+  const used=usedPins();
   p+='<div class="catalog">';
-  p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>21 / 22</span></div>';
-  p+='<div class="cat-item"><span>Modbus RX / TX (DE/RE)</span><span>'+m.rx+' / '+m.tx+' ('+m.de_re+')</span></div>';
-  p+='<div class="cat-item"><span>CAN TX / RX</span><span>'+ca.tx+' / '+ca.rx+'</span></div>';
-  p+='<div class="cat-item"><span>LoRa CS / RST / DIO1 / BUSY</span><span>'+l.cs+' / '+l.rst+' / '+l.dio1+' / '+l.busy+'</span></div>';
-  p+='<div class="cat-item"><span>Zigbee RX / TX</span><span>'+z.rx+' / '+z.tx+'</span></div>';
-  p+='<div class="cat-item"><span>SD (SPI) CS / MOSI / MISO / SCK</span><span>'+y.sd_cs+' / '+y.spi_mosi+' / '+y.spi_miso+' / '+y.spi_sck+'</span></div>';
+  p+='<div class="cat-item"><span>I²C SDA / SCL</span><span>SDA <select id="busI2cSda">'+pinSel(used,r.i2c_sda||21)+'</select> SCL <select id="busI2cScl">'+pinSel(used,r.i2c_scl||22)+'</select></span></div>';
+  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busModEn"'+(m.enabled?' checked':'')+'><span class="sl"></span></label><span>Modbus RX / TX</span><span>RX <select id="busModRx">'+pinSel(used,m.rx||16)+'</select> TX <select id="busModTx">'+pinSel(used,m.tx||17)+'</select></span></div>';
+  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busCanEn"'+(ca.enabled?' checked':'')+'><span class="sl"></span></label><span>CAN TX / RX</span><span>TX <select id="busCanTx">'+pinSel(used,ca.tx||5)+'</select> RX <select id="busCanRx">'+pinSel(used,ca.rx||4)+'</select></span></div>';
+  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busLoraEn"'+(l.enabled?' checked':'')+'><span class="sl"></span></label><span>LoRa CS / RST / DIO1 / BUSY</span><span>CS <select id="busLoraCs">'+pinSel(used,l.cs||10)+'</select> RST <select id="busLoraRst">'+pinSel(used,l.rst||14)+'</select> DIO1 <select id="busLoraDio1">'+pinSel(used,l.dio1||26)+'</select> BUSY <select id="busLoraBusy">'+pinSel(used,l.busy||27)+'</select></span></div>';
+  p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busZigEn"'+(z.enabled?' checked':'')+'><span class="sl"></span></label><span>Zigbee RX / TX</span><span>RX <select id="busZigRx">'+pinSel(used,z.rx||18)+'</select> TX <select id="busZigTx">'+pinSel(used,z.tx||19)+'</select></span></div>';
+  p+='<div class="cat-item"><span>microSD CS (SPI)</span><span>CS <select id="busSdCs">'+pinSel(used,sd.sd_cs||4)+'</select></span></div>';
   if(y.native_eth){
-    p+='<div class="cat-item"><span>Ethernet RMII MDC / MDIO</span><span>'+e.mdc+' / '+e.mdio+'</span></div>';
-    p+='<div class="cat-item"><span>Ethernet RMII (fijos)</span><span class="muted">TXD0=19 TXD1=22 TX_EN=21 RXD0=25 RXD1=26 CRS_DV=27 REF_CLK=0</span></div>';
+    p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busEthEn"'+(e.enabled?' checked':'')+'><span class="sl"></span></label><span>Ethernet RMII</span><span class="muted">MDC=23 MDIO=18 + TXD0..REF_CLK (fijos)</span></div>';
   }else{
-    p+='<div class="cat-item"><span>Ethernet W5500 (SPI)</span><span class="muted">CS='+e.cs+' MOSI='+e.mosi+' MISO='+e.miso+' SCK='+e.sck+' RST='+e.rst+' IRQ='+e.irq+'</span></div>';
+    p+='<div class="cat-item"><label class="switch"><input type="checkbox" id="busEthEn"'+(e.enabled?' checked':'')+'><span class="sl"></span></label><span>Ethernet W5500 (SPI)</span><span>CS <select id="busEthCs">'+pinSel(used,e.cs||5)+'</select></span></div>';
   }
   p+='</div>';
   document.getElementById('pinInfo').innerHTML=p;
+}
+async function saveBuses(){
+  const g=id=>document.getElementById(id);
+  const eth={enabled:g('busEthEn').checked,mdc:23,mdio:18};
+  const ecs=g('busEthCs');if(ecs)eth.cs=parseInt(ecs.value)||5;
+  const b={
+    i2c_sda:parseInt(g('busI2cSda').value)||21,
+    i2c_scl:parseInt(g('busI2cScl').value)||22,
+    sd_cs:parseInt(g('busSdCs').value)||4,
+    modbus:{enabled:g('busModEn').checked,rx:parseInt(g('busModRx').value)||16,tx:parseInt(g('busModTx').value)||17,de_re:0},
+    can:{enabled:g('busCanEn').checked,tx:parseInt(g('busCanTx').value)||5,rx:parseInt(g('busCanRx').value)||4},
+    lora:{enabled:g('busLoraEn').checked,cs:parseInt(g('busLoraCs').value)||10,rst:parseInt(g('busLoraRst').value)||14,dio1:parseInt(g('busLoraDio1').value)||26,busy:parseInt(g('busLoraBusy').value)||27},
+    zigbee:{enabled:g('busZigEn').checked,rx:parseInt(g('busZigRx').value)||18,tx:parseInt(g('busZigTx').value)||19},
+    ethernet:eth
+  };
+  try{const r=await fetch('/api/v1/config/buses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}
 }
 function renderIo(){
   const list=document.getElementById('ioList');
@@ -1534,6 +1551,60 @@ void HttpServer::onConfigIo() {
   }
   core_->applyGpio();
   core_->applyShift();
+  server_.send(200, "application/json", "{\"ok\":true}");
+}
+
+void HttpServer::onConfigBuses() {
+  if (!webAuthed()) {
+    server_.send(401, "application/json", "{\"error\":\"unauthorized\"}");
+    return;
+  }
+  if (!server_.hasArg("plain")) {
+    server_.send(400, "application/json", "{\"error\":\"body required\"}");
+    return;
+  }
+  DynamicJsonDocument doc(4096);
+  if (deserializeJson(doc, server_.arg("plain"))) {
+    server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
+    return;
+  }
+  Config next = core_->config().get();
+  if (doc.containsKey("i2c_sda")) next.i2cSda = doc["i2c_sda"] | 21;
+  if (doc.containsKey("i2c_scl")) next.i2cScl = doc["i2c_scl"] | 22;
+  if (doc.containsKey("sd_cs")) next.storage.sdCsPin = doc["sd_cs"] | 4;
+  if (doc.containsKey("modbus")) {
+    next.modbus.enabled = doc["modbus"]["enabled"] | false;
+    next.modbus.rxPin = doc["modbus"]["rx"] | 16;
+    next.modbus.txPin = doc["modbus"]["tx"] | 17;
+    next.modbus.deRePin = doc["modbus"]["de_re"] | 0;
+  }
+  if (doc.containsKey("can")) {
+    next.can.enabled = doc["can"]["enabled"] | false;
+    next.can.txPin = doc["can"]["tx"] | 5;
+    next.can.rxPin = doc["can"]["rx"] | 4;
+  }
+  if (doc.containsKey("lora")) {
+    next.lora.enabled = doc["lora"]["enabled"] | false;
+    next.lora.csPin = doc["lora"]["cs"] | 10;
+    next.lora.rstPin = doc["lora"]["rst"] | 14;
+    next.lora.dio1Pin = doc["lora"]["dio1"] | 26;
+    next.lora.busyPin = doc["lora"]["busy"] | 27;
+  }
+  if (doc.containsKey("zigbee")) {
+    next.zigbee.enabled = doc["zigbee"]["enabled"] | false;
+    next.zigbee.rxPin = doc["zigbee"]["rx"] | 18;
+    next.zigbee.txPin = doc["zigbee"]["tx"] | 19;
+  }
+  if (doc.containsKey("ethernet")) {
+    next.ethernet.enabled = doc["ethernet"]["enabled"] | false;
+    next.ethernet.mdcPin = doc["ethernet"]["mdc"] | 23;
+    next.ethernet.mdioPin = doc["ethernet"]["mdio"] | 18;
+    next.ethernet.csPin = doc["ethernet"]["cs"] | 5;
+  }
+  if (!core_->config().apply(next)) {
+    server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
+    return;
+  }
   server_.send(200, "application/json", "{\"ok\":true}");
 }
 
