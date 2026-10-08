@@ -6,6 +6,13 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.101.0] - 2026-10-08
+
+### Added
+
+- Selector de bus I2C en sensores (nativo o SC18IS602B).
+- Selector UART en sensores/modulos (GPIO o MAX14830) para Zigbee y Modbus.
+
 ## [1.100.0] - 2026-10-08
 
 ### Changed
@@ -1168,6 +1175,7 @@ Base completa de SEMA, lista para su alcance principal:
   - `DESIGN-SYSTEM.md`
   - `SECURITY.md`
 
+[1.101.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.101.0
 [1.100.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.100.0
 [1.99.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.99.0
 [1.98.0]: https://github.com/AlessandroKlein/SEMA/releases/tag/v1.98.0

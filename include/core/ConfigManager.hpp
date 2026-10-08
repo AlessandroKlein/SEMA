@@ -105,6 +105,8 @@ struct SensorSpec {
   String rom;            // dirección ROM 1-Wire del DS18B20 (16 hex; vacío = autodetección)
   uint8_t sda = 21;
   uint8_t scl = 22;
+  uint8_t bus = 0;     // I²C: 0 = nativo; != 0 = CS del SC18IS602B (expansor I²C por SPI)
+  uint8_t uart = 0;    // UART: 0 = GPIO nativo; != 0 = selector del MAX14830 (expansor UART por SPI)
   uint8_t pin = 0;
   uint8_t rxPin = 0;  // para sensores UART (p. ej. PMS5003)
   uint8_t txPin = 0;
@@ -150,6 +152,7 @@ struct ModbusConfig {
   uint8_t rxPin = 16;
   uint8_t txPin = 17;
   uint8_t deRePin = 0;        // DE/RE del transceiver RS485 (0 = sin control)
+  uint8_t uart = 0;           // 0 = GPIO nativo; != 0 = CS del MAX14830 (UART por SPI)
   uint32_t baud = 9600;
   uint8_t slaveId = 1;
   uint16_t registerAddr = 0;  // dirección del primer registro
@@ -183,6 +186,7 @@ struct ZigbeeConfig {
   bool enabled = false;
   uint8_t rxPin = 16;
   uint8_t txPin = 17;
+  uint8_t uart = 0;           // 0 = GPIO nativo; != 0 = CS del MAX14830 (UART por SPI)
   uint32_t baud = 115200;
 };
 
