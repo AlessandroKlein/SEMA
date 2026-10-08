@@ -624,7 +624,7 @@ void serveAuthedPage(WebServer& srv, bool authed, const String& body) {
     return;
   }
   String html = String("<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>SEMA</title>") +
-                String(kBaseCss) + "</head><body>" + String(kNav) +
+                String(kBaseCss) + "</head><body>" + String(kNav) + String(kThemeJs) +
                 "<div class=\"wrap\">" + body + "</div></body></html>";
   srv.send(200, "text/html", html);
 }

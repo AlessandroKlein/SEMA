@@ -1,6 +1,6 @@
 # Pendientes — SEMA
 
-> **Tipo:** Registro de pendientes | **Fecha:** 2026-10-07 | **Firmware:** v1.73.0
+> **Tipo:** Registro de pendientes | **Fecha:** 2026-10-07 | **Firmware:** v1.74.0
 
 Resultado de la comprobación de `MEJORAS.md`, `FUTURO.md` y `CONTINUACION.md`
 contra el código. Los ítems **no realizados** quedan aquí para retomarlos en otra
@@ -53,7 +53,6 @@ Se corrigieron dos inconsistencias de documentación:
 
 **Dashboard y web**
 - Multi-idioma (es/en).
-- Tema claro/oscuro persistente.
 
 **Comunicaciones**
 - LoRaWAN (red sobre LoRa).
