@@ -1778,9 +1778,9 @@ void HttpServer::onSensors() {
   {
     DynamicJsonDocument ddoc(8192);
     JsonArray dcat = ddoc.createNestedArray("catalog");
-    const char* models[] = {"BME280", "SHT40", "SCD30", "PMS5003", "VEML6075", "WH-SP-WD", "RG-9"};
-    const char* ids[] = {"ext", "int", "co2", "pm", "uv", "wind", "rain"};
-    for (int i = 0; i < 7; ++i) {
+    const char* models[] = {"BME280", "SHT40", "SCD30", "PMS5003", "VEML6075", "WH-SP-WD", "RG-9", "ESP32-ADC", "SOLAR"};
+    const char* ids[] = {"ext", "int", "co2", "pm", "uv", "wind", "rain", "batt", "solar"};
+    for (int i = 0; i < 9; ++i) {
       JsonObject c = dcat.createNestedObject();
       c["id"] = ids[i];
       c["model"] = models[i];
@@ -1813,9 +1813,13 @@ void HttpServer::onSensors() {
     add("uv", "light", wave(6.0f, 200.0f, 9000.0f, 2800), "lux");
     add("co2", "co2", wave(7.0f, 420.0f, 750.0f, 6000), "ppm");
     add("pm", "pm25", wave(8.0f, 8.0f, 25.0f, 5000), "µg/m³");
+    add("pm", "pm10", wave(8.5f, 12.0f, 40.0f, 5000), "µg/m³");
     add("wind", "wind_speed", wave(9.0f, 2.0f, 12.0f, 2400), "m/s");
+    add("wind", "wind_gust", wave(9.5f, 4.0f, 18.0f, 2400), "m/s");
     add("wind", "wind_direction", fmodf(t * 12.0f, 360.0f), "°");
     add("rain", "rain", wave(10.0f, 0.0f, 3.0f, 9000), "mm");
+    add("batt", "voltage", wave(11.0f, 11.5f, 13.6f, 6000), "V");
+    add("solar", "solar_radiation", wave(12.0f, 0.0f, 800.0f, 3600), "W/m²");
     add("clock", "clock", static_cast<float>(nowEpoch()), "epoch");
     ddoc["units"] = units;
     String dout;
