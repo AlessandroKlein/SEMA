@@ -722,17 +722,13 @@ void HttpServer::onNetworkPage() {
   const String body = R"html(
 <section><h2 data-i18n="network_title">Red (WiFi)</h2>
 <button class="sec" onclick="scanWifi()">🔍 Buscar redes</button><div id="wifiList"></div>
-<form onsubmit="saveNetwork();return false;">
+<form onsubmit="saveWifi();return false;">
 <select id="cfg_mode"><option value="STA">Estación (conectarse a un router)</option><option value="AP">Punto de acceso (AP propio)</option></select>
 <input id="cfg_ssid" placeholder="WiFi SSID">
 <div class="row">
 <input id="cfg_pass" type="password" placeholder="WiFi contraseña" style="flex:1">
 <button type="button" class="eye" onclick="togglePass()" title="Ver/ocultar contraseña">👁️</button>
 </div>
-<input id="cfg_host" placeholder="Hostname (mDNS)">
-<label class="switch"><input type="checkbox" id="cfg_mdns"><span class="sl"></span></label>
-<label class="muted">Habilitar mDNS (http://hostname.local)</label>
-<button type="button" class="sec" onclick="openMdns()">🔗 Abrir http://&lt;hostname&gt;.local</button>
 <details class="muted"><summary>Configuración avanzada (IP estática)</summary>
 <div class="row">
 <input id="cfg_ip" placeholder="IP (ej. 192.168.1.50)">
@@ -741,13 +737,22 @@ void HttpServer::onNetworkPage() {
 <input id="cfg_dns" placeholder="DNS (ej. 8.8.8.8)">
 </div>
 </details>
-<button type="submit">Guardar red (reinicia)</button>
+<button type="submit">Guardar WiFi (reinicia)</button>
+</form></section>
+<section><h2>mDNS</h2>
+<form onsubmit="saveMdns();return false;">
+<input id="cfg_host" placeholder="Hostname (mDNS)">
+<label class="switch"><input type="checkbox" id="cfg_mdns"><span class="sl"></span></label>
+<label class="muted">Habilitar mDNS (http://hostname.local)</label>
+<button type="button" class="sec" onclick="openMdns()">🔗 Abrir http://&lt;hostname&gt;.local</button>
+<button type="submit">Guardar mDNS</button>
 </form></section>
 <script>
 function togglePass(){const p=document.getElementById('cfg_pass');p.type=p.type==='password'?'text':'password'}
 async function loadNet(){try{const r=await(await fetch('/api/v1/config')).json();document.getElementById('cfg_mode').value=r.network?r.network.mode:'STA';document.getElementById('cfg_ssid').value=r.network?r.network.ssid:'';document.getElementById('cfg_pass').value=r.network?r.network.password:'';document.getElementById('cfg_host').value=r.network?r.network.hostname:'';document.getElementById('cfg_mdns').checked=!!(r.network&&r.network.mdns);document.getElementById('cfg_ip').value=r.network?r.network.ip:'';document.getElementById('cfg_gateway').value=r.network?r.network.gateway:'';document.getElementById('cfg_subnet').value=r.network?r.network.subnet:'';document.getElementById('cfg_dns').value=r.network?r.network.dns:''}catch(e){}}
 function openMdns(){const h=document.getElementById('cfg_host').value.trim();if(h)window.open('http://'+h+'.local','_blank');else alert('Poné un hostname primero')}
-async function saveNetwork(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,hostname:document.getElementById('cfg_host').value,mdns:document.getElementById('cfg_mdns').checked,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){alert('Error de red')}}
+async function saveWifi(){const b={mode:document.getElementById('cfg_mode').value,ssid:document.getElementById('cfg_ssid').value,password:document.getElementById('cfg_pass').value,ip:document.getElementById('cfg_ip').value,gateway:document.getElementById('cfg_gateway').value,subnet:document.getElementById('cfg_subnet').value,dns:document.getElementById('cfg_dns').value};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado (reiniciando…)':'Error')}catch(e){alert('Error de red')}}
+async function saveMdns(){const b={hostname:document.getElementById('cfg_host').value,mdns:document.getElementById('cfg_mdns').checked};try{const r=await fetch('/api/v1/config/network',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
 async function scanWifi(){document.getElementById('wifiList').innerHTML='<p class="muted">Escaneando…</p>';try{const r=await(await fetch('/api/v1/wifi/scan')).json();const n=(r.networks||[]).sort((a,b)=>b.rssi-a.rssi);if(!n.length){document.getElementById('wifiList').innerHTML='<p class="muted">Sin redes</p>';return}let h='';for(const x of n)h+='<div class="cat-item"><span>'+x.ssid+' <span class="muted">('+x.rssi+' dBm)</span></span><button data-ssid="'+x.ssid+'" onclick="pickSsid(this)">Usar</button></div>';document.getElementById('wifiList').innerHTML=h}catch(e){document.getElementById('wifiList').innerHTML='<p class="muted">Error al escanear</p>'}}
 function pickSsid(b){document.getElementById('cfg_ssid').value=b.getAttribute('data-ssid');document.getElementById('cfg_pass').focus()}
 loadNet();
@@ -862,7 +867,7 @@ void HttpServer::onSystemPage() {
 <script>
 function setNtp(v){const s=document.getElementById('cfg_ntp');const opts=[...s.options].map(o=>o.value);if(opts.includes(v)){s.value=v;document.getElementById('cfg_ntp_custom').value=''}else{s.value='__custom__';document.getElementById('cfg_ntp_custom').value=v}}
 function getNtp(){const s=document.getElementById('cfg_ntp');return s.value==='__custom__'?document.getElementById('cfg_ntp_custom').value.trim():s.value}
-async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp ESP: '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason))+'\nWiFi: '+(y.wifi_ssid||'—')+' · '+(y.wifi_ip||'—')+'\nmDNS: '+(y.wifi_mdns?(y.wifi_host||'')+'.local':'deshabilitado');const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
+async function load(){try{const s=await(await fetch('/api/v1/status')).json();document.getElementById('status').textContent=s.name+' — v'+s.firmware;const y=await(await fetch('/api/v1/system')).json();const rr=['UNKNOWN','POWERON','EXTERNAL','SOFTWARE','PANIC','INT_WDT','TASK_WDT','WDT','DEEPSLEEP','BROWNOUT','SDIO'];document.getElementById('sysinfo').textContent='Board: '+y.board+'\nFlash: '+y.flash_mb+' MB\nFirmware: '+y.firmware_file+'\nTemp chip (aprox): '+(y.esp_temp!==undefined?Number(y.esp_temp).toFixed(1)+' °C':'—')+'\nReinicios: '+(y.restart_count||0)+'\nReset: '+(rr[y.reset_reason]||('#'+y.reset_reason))+'\nWiFi: '+(y.wifi_ssid||'—')+' · '+(y.wifi_ip||'—')+'\nmDNS: '+(y.wifi_mdns?(y.wifi_host||'')+'.local':'deshabilitado');const c=await(await fetch('/api/v1/config')).json();const tz=c.system?c.system.timezone:'';const tzs=[...document.getElementById('cfg_timezone').options].map(o=>o.value);if(tzs.includes(tz))document.getElementById('cfg_timezone').value=tz;setNtp(c.system?c.system.ntp_server:'');if(c.system&&c.system.units)document.getElementById('cfg_units').value=c.system.units;if(c.system&&c.system.lang)document.getElementById('cfg_lang').value=c.system.lang;if(c.storage){document.getElementById('cfg_sd').checked=!!c.storage.sd_enabled;document.getElementById('cfg_sdcs').value=c.storage.sd_cs||4}}catch(e){}}
 async function saveSystem(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:document.getElementById('cfg_timezone').value,ntp_server:getNtp(),units:document.getElementById('cfg_units').value,lang:document.getElementById('cfg_lang').value})});applyLang(document.getElementById('cfg_lang').value);alert(r.ok?'Guardado':'Error')}catch(e){alert('Error de red')}}
 async function saveStorage(){try{const r=await fetch('/api/v1/config/system',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sd_enabled:document.getElementById('cfg_sd').checked,sd_cs:parseInt(document.getElementById('cfg_sdcs').value)||4})});alert(r.ok?'Guardado (reiniciá para aplicar)':'Error')}catch(e){alert('Error de red')}}
 async function checkUpdate(){document.getElementById('upd').textContent='Comprobando…';try{const r=await(await fetch('/api/v1/update/check')).json();if(r.update){document.getElementById('upd').innerHTML='Hay una nueva versión: <b>'+r.latest+'</b> (actual '+r.current+'). <a href="'+(r.url||'https://github.com/AlessandroKlein/SEMA/releases')+'" target="_blank">Ver release</a>'}else if(r.latest){document.getElementById('upd').textContent='Estás al día (v'+r.current+')'}else{document.getElementById('upd').textContent='No se pudo consultar GitHub'}}catch(e){document.getElementById('upd').textContent='Error al comprobar'}}
