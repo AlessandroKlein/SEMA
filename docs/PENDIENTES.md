@@ -1,6 +1,6 @@
 # Pendientes — SEMA
 
-> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-14 | **Firmware:** v1.105.0
+> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-14 | **Firmware:** v1.106.0
 
 Resultado de la comprobación de `MEJORAS.md`, `FUTURO.md` y `CONTINUACION.md`
 contra el código. Los ítems **no realizados** quedan aquí para retomarlos en otra
@@ -68,6 +68,16 @@ Se corrigieron dos inconsistencias de documentación:
 
 **Plataforma**
 - Multi-estación en un dashboard.
+
+### 2.4 Nuevos pendientes del usuario (2026-11-14)
+
+| Ítem | Estado | Detalle |
+|------|--------|---------|
+| Habilitar/deshabilitar elementos en runtime | 🔄 en curso (subagente `90b28726`) | Sensores, Ethernet, Modbus, CAN, LoRa, Zigbee: on/off por usuario final incluso en variante PCB, persistido en NVS, sin recompilar. |
+| Edición de pines solo en modo AP | 🔄 en curso (subagente `90b28726`) | En STA los pines quedan solo-lectura con nota i18n; en AP se permite editar. |
+| Repo base reutilizable | ⬜ pendiente | Extraer base (WiFi/Ethernet/config pines/web) sin lo meteorológico a un repo nuevo; arrancar al terminar la feature de runtime. |
+| Documentador dedicado de `Docs.git` | ⬜ regla permanente | Subagente que solo documenta código + repo Docs; aplicar a todo cambio de comportamiento público. |
+| Compatibilidad dual PCB↔modular con flags | ⬜ regla permanente | Toda feature/dato de compatibilidad en ambas variantes, gated por `-D SEMA_USE_*`. |
 
 ---
 

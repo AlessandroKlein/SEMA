@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.106.0] - 2026-11-14
+
+### Added
+
+- Toggle en runtime de elementos (sensores, buses, Ethernet, Modbus, CAN, LoRa, Zigbee) persistido en NVS, también en la variante PCB.
+- Edición de pines solo en modo AP (`pinsLocked()`); en STA los pines son solo-lectura con nota i18n (es/en).
+- `ap_mode` y `pins_from_file` expuestos en `/api/v1/system`.
+
 ## [1.105.0] - 2026-11-14
 
 ### Added

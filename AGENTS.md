@@ -94,9 +94,15 @@ no se dejan agentes ociosos.
 | Researcher | Investiga librerías ESP32/PlatformIO, decisiones de arquitectura, bloqueos |
 | Tester | `pio run` (validación), `pio test`, smoke de la API, scripts de QA |
 | Tester Visual | Capturas del dashboard web / UI del dispositivo |
-| Documentador | `README.md`, `docs/*`, `CHANGELOG.md`, comentarios inline |
+| Documentador | `README.md`, `docs/*`, `CHANGELOG.md`, comentarios inline, y repo `Docs.git` (MkDocs, subagente dedicado) |
 | Release Manager | Bump de versión, `firmware_manifest.json` + SHA-256, tag + `gh release` |
 | Traductor | i18n de la web (si aplica), docs en `es`/`en` |
+
+> **Documentador dedicado de `Docs.git`**: el repo de documentación unificada
+> (`git@github.com:AlessandroKlein/Docs.git`, MkDocs → GitHub Pages) lo mantiene un
+> **subagente Documentador exclusivo**, que solo documenta el código y el repo Docs.
+> Todo cambio de código con comportamiento público se refleja en `Docs.git` vía ese
+> subagente, no editándolo a mano desde el orquestador.
 
 ---
 
@@ -135,6 +141,11 @@ Identidades para OTA/manifest (`include/hw/HwProfile.hpp`): `esp32-wroom-4mb`,
 
 Mismo código fuente, dos perfiles por build flags. La única fuente de verdad del
 hardware es `include/hw/HwProfile.hpp` (board, features, transceiver, origen de pines).
+
+> **Compatibilidad dual (PCB ↔ modular)**: toda feature o dato de compatibilidad
+> (sensores, buses, pines, flags) debe funcionar en **ambas variantes**. Lo que sea
+> específico de una variante se expone detrás de un flag de compilación
+> (`-D SEMA_USE_*=0/1`) para poder deshabilitarlo, nunca se hardcodea a una sola.
 
 ---
 

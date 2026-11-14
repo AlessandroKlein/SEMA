@@ -342,8 +342,8 @@ function toggleTheme(){
 }
 try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add('light');}catch(e){}
 const I18N={
- es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',general_title:'General',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login'},
- en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',general_title:'General',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login'}
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',general_title:'General',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login',pins_locked_ap:'Conectate al AP para editar pines',pins_fixed_pcb:'Pines fijos (PCB)'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',general_title:'General',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login',pins_locked_ap:'Connect to the AP to edit pins',pins_fixed_pcb:'Fixed pins (PCB)'}
 };
 function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
 function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
@@ -739,8 +739,8 @@ try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add(
 const char kI18nJs[] PROGMEM = R"html(
 <script>
 const I18N={
- es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',general_title:'General',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login'},
- en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',general_title:'General',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login'}
+ es:{dashboard:'Dashboard',sensors:'Sensores',events:'Eventos',network:'Red',config:'Config',security:'Seguridad',wind:'Veleta',system:'Sistema',measurements:'Mediciones',events_title:'Eventos y alarmas',network_title:'Red (WiFi)',security_title:'Seguridad',api_keys:'Claves API',system_title:'Sistema',ntp_title:'NTP y zona horaria',general_title:'General',storage_title:'Almacenamiento (microSD)',ota_title:'Actualización (OTA)',actions:'Acciones',wind_title:'Veleta',sensors_config:'Configuración de sensores',pins_buses:'Pines de buses',io_title:'Expansores y salidas',save:'Guardar',add:'Añadir',close:'Cerrar',add_card:'Añadir tarjeta',wind_calib:'Calibración de la veleta',login_title:'Login',station_title:'Estación',logout:'Salir',scan:'Buscar redes',edit_layout:'Editar layout',save_layout:'Guardar layout',save_sensors:'Guardar sensores',save_wifi:'Guardar WiFi',save_mdns:'Guardar mDNS',check_update:'Comprobar actualización',upload_fw:'Subir firmware',restart:'Reiniciar',csv_history:'CSV histórico',login:'Login',pins_locked_ap:'Conectate al AP para editar pines',pins_fixed_pcb:'Pines fijos (PCB)'},
+ en:{dashboard:'Dashboard',sensors:'Sensors',events:'Events',network:'Network',config:'Config',security:'Security',wind:'Wind vane',system:'System',measurements:'Measurements',events_title:'Events and alarms',network_title:'Network (WiFi)',security_title:'Security',api_keys:'API keys',system_title:'System',ntp_title:'NTP and timezone',general_title:'General',storage_title:'Storage (microSD)',ota_title:'Update (OTA)',actions:'Actions',wind_title:'Wind vane',sensors_config:'Sensor configuration',pins_buses:'Bus pins',io_title:'Expanders and outputs',save:'Save',add:'Add',close:'Close',add_card:'Add card',wind_calib:'Wind vane calibration',login_title:'Login',station_title:'Station',logout:'Log out',scan:'Scan',edit_layout:'Edit layout',save_layout:'Save layout',save_sensors:'Save sensors',save_wifi:'Save WiFi',save_mdns:'Save mDNS',check_update:'Check update',upload_fw:'Upload firmware',restart:'Restart',csv_history:'CSV history',login:'Login',pins_locked_ap:'Connect to the AP to edit pins',pins_fixed_pcb:'Fixed pins (PCB)'}
 };
 function applyLang(l){const d=I18N[l]||I18N.es;document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k]});document.documentElement.lang=l||'es';try{localStorage.setItem('sema_lang',l||'es')}catch(e){}}
 function toggleLang(){const cur=((localStorage.getItem('sema_lang')||'es')==='es')?'en':'es';applyLang(cur)}
@@ -1030,6 +1030,7 @@ renderWind();loadWind();
 void HttpServer::onSensorsPage() {
   const bool authed = webAuthed();
   const String body = R"html(
+<p id="pinLockNote" class="muted" style="display:none"></p>
 <section><h2 data-i18n="sensors_config">Configuración de sensores</h2>
 <p class="muted">Marcá los sensores que tenés conectados y asigná los pines. Guardar aplica y reinicia los sensores.</p>
 <div id="sensorList" class="muted">Cargando…</div>
@@ -1070,7 +1071,9 @@ const TYPES=[
 let cfg={};
 let shiftEnabled=false;
 let reservedPins=new Set();
-async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;try{const y=await(await fetch('/api/v1/system')).json();shiftEnabled=!!y.shift_enabled;reservedPins=new Set(y.reserved_pins||[])}catch(e){}render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
+let pinsLocked=false;
+let pinsFromFile=false;
+async function load(){try{const r=await(await fetch('/api/v1/config')).json();cfg=r;try{const y=await(await fetch('/api/v1/system')).json();shiftEnabled=!!y.shift_enabled;reservedPins=new Set(y.reserved_pins||[]);pinsFromFile=!!y.pins_from_file;pinsLocked=pinsFromFile||!y.ap_mode}catch(e){}render();loadPins(r);renderIo()}catch(e){document.getElementById('sensorList').innerHTML='<p class="muted">Error al cargar</p>'}}
 function usedPins(){
   const s=new Set();
   // Solo pines "únicos" (punto a punto): PIN analógico/pulsos y RX/TX de UART.
@@ -1164,6 +1167,7 @@ function render(){
   h+='</div>';
   h+='<button class="sec" onclick="addDs()">➕ Añadir DS18B20</button>';
   list.innerHTML=h;
+  applyPinLock();
 }
 function addDs(){cfg.sensors=cfg.sensors||[];cfg.sensors.push({id:'ds18b20_'+(cfg.sensors.filter(s=>s.model==='DS18B20').length+1),model:'DS18B20',enabled:true,pin:0});render();}
 function delDs(i){const idx=(cfg.sensors||[]).indexOf((cfg.sensors||[]).filter(s=>s.model==='DS18B20')[i]);if(idx>=0)cfg.sensors.splice(idx,1);render();}
@@ -1241,6 +1245,7 @@ async function loadPins(r){
   }
   p+='</div>';
   document.getElementById('pinInfo').innerHTML=p;
+  applyPinLock();
 }
 async function saveBuses(){
   const g=id=>document.getElementById(id);
@@ -1254,15 +1259,14 @@ async function saveBuses(){
     zigbee:{enabled:g('busZigEn').checked,rx:parseInt(g('busZigRx').value)||18,tx:parseInt(g('busZigTx').value)||19,uart:parseInt(g('busZigUart').value)||0,uart_port:uartPortOf('busZigUart')},
     ethernet:eth
   };
-  try{const r=await fetch('/api/v1/config/buses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});uiAlert(r.ok?'Guardado':'Error')}catch(e){uiAlert('Error de red')}
+  try{const r=await fetch('/api/v1/config/buses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});uiAlert(r.ok?'Guardado. Reiniciando…':'Error')}catch(e){uiAlert('Error de red')}
 }
 async function saveI2c(){
   const g=id=>document.getElementById(id);
   const b={i2c_sda:parseInt(g('busI2cSda').value)||21,i2c_scl:parseInt(g('busI2cScl').value)||22};
   try{
     const r=await fetch('/api/v1/config/buses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
-    if(r.ok){uiAlert('Guardado. Reiniciando…');setTimeout(()=>{fetch('/api/v1/restart',{method:'POST'}).catch(()=>{})},900)}
-    else uiAlert('Error');
+    uiAlert(r.ok?'Guardado. Reiniciando…':'Error');
   }catch(e){uiAlert('Error de red')}
 }
 function renderIo(){
@@ -1305,6 +1309,7 @@ function renderIo(){
     h+='<button class="sec" onclick="addSh()">➕ Añadir registro</button>';
   }
   list.innerHTML=h;
+  applyPinLock();
 }
 function sel(id,val,label){return '<span style="margin-right:.3rem">'+label+'<select id="'+id+'" style="width:80px"><option value="0"'+(val==0?' selected':'')+'>—</option><option value="1"'+(val==1?' selected':'')+'>out</option><option value="2"'+(val==2?' selected':'')+'>in</option></select></span>';}
 function addSh(){
@@ -1341,6 +1346,14 @@ function saveIo(){
   const body={mcp23s17_cs:parseInt(document.getElementById('mcpCs').value)||0,mcp23s17_pins:pins,shift_registers:shift,spi_expanders:spx,gpio:[]};
   fetch('/api/v1/config/io',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>uiAlert(r.ok?'Guardado':'Error')).catch(()=>uiAlert('Error de red'));
 }
+function applyPinLock(){
+  const note=document.getElementById('pinLockNote');
+  if(note){if(pinsLocked){const L=(document.documentElement.lang==='en')?'en':'es';note.textContent=pinsFromFile?I18N[L].pins_fixed_pcb:I18N[L].pins_locked_ap;note.style.display=''}else{note.style.display='none'}}
+  if(!pinsLocked)return;
+  document.querySelectorAll('#sensorList select.p,#sensorList select.bus,#sensorList select.uart,#sensorList select.src,#dsBusPin').forEach(el=>el.disabled=true);
+  document.querySelectorAll('#pinInfo select').forEach(el=>el.disabled=true);
+  document.querySelectorAll('#ioList select,#ioList input.shl,#ioList input.shp').forEach(el=>el.disabled=true);
+}
 load();
 </script>
 )html";
@@ -1353,6 +1366,12 @@ bool HttpServer::webAuthed() {
     return true;  // sin login configurado → abierto (primera configuración)
   }
   return sessionAuthorized() || authorized();
+}
+
+bool HttpServer::pinsLocked() const {
+  // Los pines solo se editan en la variante modular (SEMA_PINS_FROM_FILE=0) y en modo AP:
+  // en STA el equipo está operando y un cableado erróneo puede dañar hardware o personas.
+  return (SEMA_PINS_FROM_FILE != 0) || !core_->wifi().isAp();
 }
 
 bool HttpServer::sessionAuthorized() {
@@ -1479,6 +1498,7 @@ void HttpServer::onSystem() {
   doc["board"] = SEMA_BOARD_ID;
   doc["flash_mb"] = SEMA_FLASH_MB;
   doc["pins_from_file"] = (SEMA_PINS_FROM_FILE != 0);
+  doc["ap_mode"] = core_->wifi().isAp();
   doc["demo"] = (SEMA_DEMO != 0);
   doc["native_eth"] = (SEMA_NATIVE_ETH != 0);
   doc["spi_sck"] = SEMA_SPI_SCK;
@@ -1611,8 +1631,10 @@ void HttpServer::onConfigSensors() {
     server_.send(400, "application/json", "{\"error\":\"invalid json\"}");
     return;
   }
-  Config next = core_->config().get();
+  const Config& cur = core_->config().get();
+  Config next = cur;
   next.sensors.clear();
+  const bool pinsLocked = this->pinsLocked();
   JsonArray arr = doc["sensors"].as<JsonArray>();
   for (JsonObject o : arr) {
     SensorSpec s;
@@ -1630,6 +1652,25 @@ void HttpServer::onConfigSensors() {
     s.unit = o["unit"] | "";
     s.scale = o["scale"] | 1.0f;
     s.offset = o["offset"] | 0.0f;
+    if (pinsLocked) {
+      // Pines bloqueados: conservá los del sensor ya existente (match por id o model+channel).
+      // Los flags `enabled` sí se aplican siempre; un sensor nuevo queda con pines por defecto.
+      for (const SensorSpec& old : cur.sensors) {
+        const bool same = (s.id.length() > 0 && s.id == old.id) ||
+                          (s.id.length() == 0 && s.model == old.model && s.channel == old.channel);
+        if (same) {
+          s.sda = old.sda;
+          s.scl = old.scl;
+          s.bus = old.bus;
+          s.uart = old.uart;
+          s.uartPort = old.uartPort;
+          s.pin = old.pin;
+          s.rxPin = old.rxPin;
+          s.txPin = old.txPin;
+          break;
+        }
+      }
+    }
     next.sensors.push_back(s);
   }
   if (!core_->config().apply(next)) {
@@ -1655,7 +1696,8 @@ void HttpServer::onConfigIo() {
     return;
   }
   Config next = core_->config().get();
-  if (doc.containsKey("mcp23s17_cs")) {
+  const bool pinsLocked = this->pinsLocked();
+  if (!pinsLocked && doc.containsKey("mcp23s17_cs")) {
     next.mcp23s17.csPin = doc["mcp23s17_cs"] | 0;
     JsonArray mp = doc["mcp23s17_pins"].as<JsonArray>();
     for (int i = 0; i < 16 && i < static_cast<int>(mp.size()); ++i) {
@@ -1663,7 +1705,7 @@ void HttpServer::onConfigIo() {
     }
   }
 #if SEMA_USE_SHIFT
-  if (doc.containsKey("shift_registers")) {
+  if (!pinsLocked && doc.containsKey("shift_registers")) {
     next.shiftRegisters.clear();
     JsonArray sr = doc["shift_registers"].as<JsonArray>();
     for (JsonObject o : sr) {
@@ -1678,7 +1720,7 @@ void HttpServer::onConfigIo() {
     }
   }
 #endif
-  if (doc.containsKey("spi_expanders")) {
+  if (!pinsLocked && doc.containsKey("spi_expanders")) {
     next.spiExpanders.clear();
     JsonArray se = doc["spi_expanders"].as<JsonArray>();
     for (JsonObject o : se) {
@@ -1688,7 +1730,7 @@ void HttpServer::onConfigIo() {
       next.spiExpanders.push_back(x);
     }
   }
-  if (doc.containsKey("gpio")) {
+  if (!pinsLocked && doc.containsKey("gpio")) {
     next.gpio.clear();
     JsonArray arr = doc["gpio"].as<JsonArray>();
     for (JsonObject o : arr) {
@@ -1725,47 +1767,66 @@ void HttpServer::onConfigBuses() {
     return;
   }
   Config next = core_->config().get();
-  if (doc.containsKey("i2c_sda")) next.i2cSda = doc["i2c_sda"] | 21;
-  if (doc.containsKey("i2c_scl")) next.i2cScl = doc["i2c_scl"] | 22;
-  if (doc.containsKey("sd_cs")) next.storage.sdCsPin = doc["sd_cs"] | 4;
+  const bool pinsLocked = this->pinsLocked();
+  if (!pinsLocked) {
+    if (doc.containsKey("i2c_sda")) next.i2cSda = doc["i2c_sda"] | 21;
+    if (doc.containsKey("i2c_scl")) next.i2cScl = doc["i2c_scl"] | 22;
+    if (doc.containsKey("sd_cs")) next.storage.sdCsPin = doc["sd_cs"] | 4;
+  }
+  // `enabled` se aplica siempre (encender/apagar en runtime); los pines solo si no están bloqueados.
   if (doc.containsKey("modbus")) {
     next.modbus.enabled = doc["modbus"]["enabled"] | false;
-    next.modbus.rxPin = doc["modbus"]["rx"] | 16;
-    next.modbus.txPin = doc["modbus"]["tx"] | 17;
-    next.modbus.deRePin = doc["modbus"]["de_re"] | 0;
-    next.modbus.uart = doc["modbus"]["uart"] | 0;
-    next.modbus.uartPort = doc["modbus"]["uart_port"] | 0;
+    if (!pinsLocked) {
+      next.modbus.rxPin = doc["modbus"]["rx"] | 16;
+      next.modbus.txPin = doc["modbus"]["tx"] | 17;
+      next.modbus.deRePin = doc["modbus"]["de_re"] | 0;
+      next.modbus.uart = doc["modbus"]["uart"] | 0;
+      next.modbus.uartPort = doc["modbus"]["uart_port"] | 0;
+    }
   }
   if (doc.containsKey("can")) {
     next.can.enabled = doc["can"]["enabled"] | false;
-    next.can.txPin = doc["can"]["tx"] | 5;
-    next.can.rxPin = doc["can"]["rx"] | 4;
+    if (!pinsLocked) {
+      next.can.txPin = doc["can"]["tx"] | 5;
+      next.can.rxPin = doc["can"]["rx"] | 4;
+    }
   }
   if (doc.containsKey("lora")) {
     next.lora.enabled = doc["lora"]["enabled"] | false;
-    next.lora.csPin = doc["lora"]["cs"] | 10;
-    next.lora.rstPin = doc["lora"]["rst"] | 14;
-    next.lora.dio1Pin = doc["lora"]["dio1"] | 26;
-    next.lora.busyPin = doc["lora"]["busy"] | 27;
+    if (!pinsLocked) {
+      next.lora.csPin = doc["lora"]["cs"] | 10;
+      next.lora.rstPin = doc["lora"]["rst"] | 14;
+      next.lora.dio1Pin = doc["lora"]["dio1"] | 26;
+      next.lora.busyPin = doc["lora"]["busy"] | 27;
+    }
   }
   if (doc.containsKey("zigbee")) {
     next.zigbee.enabled = doc["zigbee"]["enabled"] | false;
-    next.zigbee.rxPin = doc["zigbee"]["rx"] | 18;
-    next.zigbee.txPin = doc["zigbee"]["tx"] | 19;
-    next.zigbee.uart = doc["zigbee"]["uart"] | 0;
-    next.zigbee.uartPort = doc["zigbee"]["uart_port"] | 0;
+    if (!pinsLocked) {
+      next.zigbee.rxPin = doc["zigbee"]["rx"] | 18;
+      next.zigbee.txPin = doc["zigbee"]["tx"] | 19;
+      next.zigbee.uart = doc["zigbee"]["uart"] | 0;
+      next.zigbee.uartPort = doc["zigbee"]["uart_port"] | 0;
+    }
   }
   if (doc.containsKey("ethernet")) {
     next.ethernet.enabled = doc["ethernet"]["enabled"] | false;
-    next.ethernet.mdcPin = doc["ethernet"]["mdc"] | 23;
-    next.ethernet.mdioPin = doc["ethernet"]["mdio"] | 18;
-    next.ethernet.csPin = doc["ethernet"]["cs"] | 5;
+    if (!pinsLocked) {
+      next.ethernet.mdcPin = doc["ethernet"]["mdc"] | 23;
+      next.ethernet.mdioPin = doc["ethernet"]["mdio"] | 18;
+      next.ethernet.csPin = doc["ethernet"]["cs"] | 5;
+    }
   }
   if (!core_->config().apply(next)) {
     server_.send(500, "application/json", "{\"error\":\"config apply failed\"}");
     return;
   }
   server_.send(200, "application/json", "{\"ok\":true}");
+  // Reinicio limpio: Ethernet/CAN/Modbus/LoRa/Zigbee no se re-inicializan en caliente
+  // de forma segura (p. ej. el driver CAN no se desinstala al apagar), así que el cambio
+  // de `enabled` se aplica al reiniciar. Mismo patrón que onConfigNetwork.
+  delay(300);
+  ESP.restart();
 }
 
 void HttpServer::onWifiScan() {

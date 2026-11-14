@@ -90,6 +90,7 @@ private:
   bool authorized();
   bool sessionAuthorized();
   bool webAuthed();  // acceso web: sin login configurado, o sesión, o API key
+  bool pinsLocked() const;  // pines no editables: variante PCB o no estamos en AP
 
   ::WebServer server_;
   ::WebSocketsServer ws_{81};
