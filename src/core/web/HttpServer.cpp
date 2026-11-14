@@ -1048,6 +1048,7 @@ const TYPES=[
  {m:'SHT40',name:'SHT40',i:'i2c',d:'Temperatura y humedad (I²C).'},
  {m:'SHT31',name:'SHT31',i:'i2c',d:'Temperatura y humedad (I²C).'},
  {m:'AHT20',name:'AHT20',i:'i2c',d:'Temperatura y humedad (I²C).'},
+ {m:'AHT10',name:'AHT10',i:'i2c',d:'Temperatura y humedad (I²C, addr 0x38).'},
  {m:'BH1750',name:'BH1750',i:'i2c',d:'Luz ambiente en lux (I²C).'},
  {m:'VEML6075',name:'VEML6075',i:'i2c',d:'Luz ultravioleta UVA y UVB (I²C).'},
  {m:'SCD30',name:'SCD30',i:'i2c',d:'CO₂, temperatura y humedad (I²C).'},

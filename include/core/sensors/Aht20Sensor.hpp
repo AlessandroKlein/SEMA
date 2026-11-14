@@ -14,7 +14,8 @@ namespace sema {
 
 class Aht20Sensor : public Sensor {
 public:
-  Aht20Sensor(const char* id, uint8_t sda, uint8_t scl);
+  Aht20Sensor(const char* id, uint8_t sda, uint8_t scl,
+              const char* model = "AHT20");
 
   const char* id() const override;
   const char* model() const override;
@@ -26,6 +27,7 @@ public:
 
 private:
   const char* id_;
+  const char* model_;
   uint8_t sda_;
   uint8_t scl_;
   bool ok_ = false;

@@ -7,11 +7,12 @@ namespace sema {
 
 static Adafruit_AHTX0 aht;
 
-Aht20Sensor::Aht20Sensor(const char* id, uint8_t sda, uint8_t scl)
-    : id_(id), sda_(sda), scl_(scl) {}
+Aht20Sensor::Aht20Sensor(const char* id, uint8_t sda, uint8_t scl,
+                         const char* model)
+    : id_(id), model_(model), sda_(sda), scl_(scl) {}
 
 const char* Aht20Sensor::id() const { return id_; }
-const char* Aht20Sensor::model() const { return "AHT20"; }
+const char* Aht20Sensor::model() const { return model_; }
 const char* Aht20Sensor::interface() const { return "I2C"; }
 
 bool Aht20Sensor::begin() {

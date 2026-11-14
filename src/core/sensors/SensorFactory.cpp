@@ -102,6 +102,9 @@ Sensor* SensorFactory::create(const SensorSpec& spec) {
   if (spec.model == "AHT20") {
     return new Aht20Sensor(spec.id.c_str(), spec.sda, spec.scl);
   }
+  if (spec.model == "AHT10") {
+    return new Aht20Sensor(spec.id.c_str(), spec.sda, spec.scl, "AHT10");
+  }
 #endif
 #if SEMA_USE_SENSOR_ADC
   if (spec.model == "ADC") {
