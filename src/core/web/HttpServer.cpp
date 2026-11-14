@@ -26,19 +26,35 @@ const char kLoginHtml[] PROGMEM = R"html(
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SEMA — Acceso</title>
 <style>
-body{font-family:system-ui,sans-serif;background:#0d1117;color:#e6edf3;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-form{background:#161b22;padding:2rem;border-radius:8px;text-align:center}
-input{display:block;width:100%;box-sizing:border-box;padding:.5rem;margin:.6rem 0;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#e6edf3}
-button{width:100%;padding:.5rem;border:0;border-radius:4px;background:#1f6feb;color:#fff;cursor:pointer}
+:root{--bg:#0b0e14;--card:#151b26;--bd:#263043;--fg:#e6edf3;--muted:#8b98a9;--acc:#3b82f6}
+body.light{--bg:#f4f6fb;--card:#fff;--bd:#d9dee8;--fg:#1f2733;--muted:#5b6673;--acc:#2563eb}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:1rem;transition:background .2s,color .2s}
+form{background:var(--card);border:1px solid var(--bd);padding:2rem 1.8rem;border-radius:14px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+h1{margin:0 0 .2rem;font-size:1.4rem;letter-spacing:.02em}
+p.sub{color:var(--muted);font-size:.85rem;margin:0 0 1.4rem}
+label{display:block;font-size:.78rem;color:var(--muted);margin:.9rem 0 .3rem}
+input{display:block;width:100%;box-sizing:border-box;padding:.62rem .7rem;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);font-size:.95rem;transition:border-color .15s,box-shadow .15s}
+input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+button{width:100%;padding:.66rem;margin-top:1.2rem;border:0;border-radius:8px;background:var(--acc);color:#fff;cursor:pointer;font-size:.95rem;font-weight:600;transition:opacity .15s,transform .15s}
+button:hover{opacity:.92}
+button:active{transform:scale(.98)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 </style>
 </head>
 <body>
-<form method="POST" action="/login">
+<form method="POST" action="/login" autocomplete="off">
 <h1>SEMA</h1>
-<input type="text" name="username" placeholder="Usuario" value="admin">
-<input type="password" name="password" placeholder="Contraseña" autofocus>
+<p class="sub">Acceso al dashboard</p>
+<label for="username">Usuario</label>
+<input type="text" id="username" name="username" value="admin" autocomplete="username">
+<label for="password">Contraseña</label>
+<input type="password" id="password" name="password" autofocus autocomplete="current-password">
 <button type="submit">Entrar</button>
 </form>
+<script>
+try{if(localStorage.getItem('sema_theme')==='light')document.body.classList.add('light')}catch(e){}
+</script>
 </body>
 </html>
 )html";
@@ -82,6 +98,7 @@ void HttpServer::begin(SemaCore& core) {
   server_.on("/api/v1/energy", HTTP_GET, [this]() { onEnergy(); });
   server_.on("/api/v1/diagnostics", HTTP_GET, [this]() { onDiagnostics(); });
   server_.on("/api/v1/sensors", HTTP_GET, [this]() { onSensors(); });
+  server_.on("/api/v1/forecast", HTTP_GET, [this]() { onForecast(); });
   server_.on("/api/v1/wind/north", HTTP_POST, [this]() { onWindNorth(); });
   server_.on("/api/v1/wind/resistors", HTTP_POST, [this]() { onWindResistors(); });
   server_.on("/api/v1/dashboard/layout", HTTP_POST, [this]() { onDashboardLayout(); });
@@ -177,53 +194,64 @@ void HttpServer::onRoot() {
 <title>SEMA</title>
 <link rel="stylesheet" href="/gridstack.min.css">
 <style>
-:root{--bg:#0d1117;--fg:#e6edf3;--card:#161b22;--bd:#30363d;--muted:#8b949e;--acc:#1f6feb}
-body{font-family:system-ui,sans-serif;margin:1rem;background:var(--bg);color:var(--fg)}
-h1{margin:0 0 .25rem}h2{margin:1.25rem 0 .5rem}
+:root{--bg:#0b0e14;--bg2:#10141c;--card:#151b26;--bd:#263043;--fg:#e6edf3;--muted:#8b98a9;--acc:#3b82f6;--ok:#22c55e;--err:#f87171}
+body.light{--bg:#f4f6fb;--bg2:#eef1f7;--card:#fff;--bd:#d9dee8;--fg:#1f2733;--muted:#5b6673;--acc:#2563eb;--ok:#16a34a;--err:#dc2626}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:1rem;background:var(--bg);color:var(--fg);font-size:15px;line-height:1.5;transition:background .2s,color .2s}
+h1{margin:0 0 .35rem;font-size:1.35rem;letter-spacing:.02em}
+h2{margin:1.25rem 0 .5rem}
 .muted{color:var(--muted)}
 a{color:var(--muted);text-decoration:none}
-.card{height:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:.5rem;position:relative}
-.card .t{font-size:.72rem;color:var(--muted);text-transform:uppercase}
-.card .v{font-size:1.35rem;font-weight:600;margin:.1rem 0}
+.card{height:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:.65rem;position:relative}
+.card .t{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.card .v{font-size:1.4rem;font-weight:600;margin:.15rem 0}
 .card .v span{font-size:.75rem;color:var(--muted);font-weight:400}
-.card .s{font-size:.68rem;color:#58a6ff}
-.card .del{position:absolute;top:.2rem;right:.2rem;background:#30363d;color:#f85149;border:0;border-radius:4px;width:22px;height:22px;line-height:1;cursor:pointer;font-size:.8rem;padding:0}
+.card .s{font-size:.68rem;color:var(--acc)}
+.card .del{position:absolute;top:.25rem;right:.25rem;background:var(--bg2);color:var(--err);border:1px solid var(--bd);border-radius:6px;width:24px;height:24px;line-height:1;cursor:pointer;font-size:.8rem;padding:0}
 canvas.chart{width:100%;height:100%;display:block}
 .grid-stack{background:var(--bg)}
 .grid-stack>.grid-stack-item>.grid-stack-item-content{overflow:hidden}
-input,button{box-sizing:border-box;padding:.45rem;margin:.3rem 0;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg);font-size:.9rem}
+input,button{box-sizing:border-box;padding:.5rem;margin:.3rem 0;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);font-size:.9rem;font-family:inherit}
 input{display:block;width:100%}
-button{width:100%;background:var(--acc);color:#fff;border:0;cursor:pointer;border-radius:6px}
-button.sec{background:#21262d}
+button{width:100%;background:var(--acc);color:#fff;border:0;cursor:pointer;border-radius:8px;font-weight:500;transition:opacity .15s,transform .15s}
+button:hover{opacity:.9}
+button:active{transform:scale(.97)}
+button.sec{background:var(--bg2);color:var(--fg);border:1px solid var(--bd)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .bar{display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0}
 .bar button{flex:1;min-width:130px}
-.nav{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.55rem 1rem;margin:0 0 1rem;border:1px solid var(--bd);border-radius:12px;background:var(--card)}
-.nav a{color:var(--muted);text-decoration:none;padding:.3rem .6rem;border-radius:7px;font-size:.9rem}
-.nav a:hover{color:var(--fg);background:#21262d}
-.nav .out{color:#f85149}
-.nav-right{margin-left:auto;display:flex;gap:.4rem;align-items:center}
+.nav{display:flex;align-items:center;gap:.4rem;padding:.5rem .8rem;margin:0 0 1rem;border:1px solid var(--bd);border-radius:12px;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);flex-wrap:wrap}
+.nav-links{display:flex;gap:.2rem;flex-wrap:wrap;flex:1;min-width:0}
+.nav a{color:var(--muted);text-decoration:none;padding:.34rem .62rem;border-radius:8px;font-size:.88rem;white-space:nowrap}
+.nav a:hover{color:var(--fg);background:var(--bg2)}
+.nav .out{color:var(--err)}
+.nav-right{margin-left:auto;display:flex;gap:.35rem;align-items:center}
+.nav-right button,#publicBar button{width:auto;margin:0}
 .grid-wind{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
 label{font-size:.75rem;color:var(--muted);display:block}
-section{border:1px solid var(--bd);border-radius:8px;padding:1rem;margin:1rem 0;background:var(--card)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:none;z-index:50;overflow:auto}
+section{border:1px solid var(--bd);border-radius:12px;padding:1.2rem;margin:1rem 0;background:var(--card)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:none;z-index:50;overflow:auto;padding:1rem}
 .modal.open{display:block}
-.modal-box{background:var(--bg);border:1px solid var(--bd);border-radius:14px;max-width:520px;margin:3rem auto;padding:1.2rem;box-shadow:0 12px 40px rgba(0,0,0,.5);animation:pop .18s ease}
+.modal-box{background:var(--bg);border:1px solid var(--bd);border-radius:14px;max-width:520px;margin:3rem auto;padding:1.3rem;box-shadow:0 12px 40px rgba(0,0,0,.5);animation:pop .18s ease}
 @keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
-.catalog{max-height:60vh;overflow:auto;border:1px solid var(--bd);border-radius:6px;padding:.5rem}
-.cat-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem;border-bottom:1px solid #21262d;cursor:pointer}
-.cat-item:hover{background:var(--card)}
-.cat-item .add{background:#238636;border:0;border-radius:4px;color:#fff;padding:.2rem .6rem;cursor:pointer;width:auto}
-.cat-group{font-size:.72rem;color:var(--muted);text-transform:uppercase;margin:.6rem 0 .2rem}
+.catalog{max-height:60vh;overflow:auto;border:1px solid var(--bd);border-radius:8px;padding:.5rem;background:var(--bg)}
+.cat-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.55rem .6rem;border-bottom:1px solid var(--bd);cursor:pointer}
+.cat-item:hover{background:var(--bg2)}
+.cat-item .add{background:var(--ok);border:0;border-radius:8px;color:#fff;padding:.25rem .7rem;cursor:pointer;width:auto;font-size:.8rem}
+.cat-group{font-size:.72rem;color:var(--muted);text-transform:uppercase;margin:.6rem 0 .2rem;letter-spacing:.03em}
 .range{display:flex;gap:2px;margin:.2rem 0}
-.rbtn{width:auto;padding:.1rem .5rem;font-size:.68rem;background:#21262d;border:1px solid var(--bd);border-radius:3px;cursor:pointer;margin:0;color:var(--muted)}
+.rbtn{width:auto;padding:.15rem .55rem;font-size:.68rem;background:var(--bg2);border:1px solid var(--bd);border-radius:4px;cursor:pointer;margin:0;color:var(--muted)}
 .rbtn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.68rem;color:var(--muted);margin-top:.2rem}
 canvas.chart{width:100%;height:120px;min-height:110px;display:block}
 .edit-only{display:none}
 body.editing .edit-only{display:inline-block}
 body:not(.editing) .del{display:none}
-body.light{--bg:#f6f8fa;--fg:#24292f;--card:#fff;--bd:#d0d7de;--muted:#57606a}
-body.light input{background:#fff;color:#24292f}
+body.light input{background:#fff;color:#1f2733}
+@media(max-width:640px){
+ .nav-links{flex-basis:100%;order:2;margin-top:.3rem}
+ .grid-wind{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 <script src="/gridstack-all.min.js"></script>
 </head>
@@ -235,18 +263,20 @@ body.light input{background:#fff;color:#24292f}
   <a href="/login" style="color:var(--acc);text-decoration:none">🔐 Login</a>
 </div>
 
-<nav class="nav" id="mainNav">
-  <a href="/">📊 <span data-i18n="dashboard">Dashboard</span></a>
-  <a href="/sensors">🌡️ <span data-i18n="sensors">Sensores</span></a>
-  <a href="/events">🔔 <span data-i18n="events">Eventos</span></a>
-  <a href="/config/network">🌐 <span data-i18n="network">Red</span></a>
-  <a href="/config/sensors">🔌 <span data-i18n="config">Config</span></a>
-  <a href="/config/security">🔐 <span data-i18n="security">Seguridad</span></a>
-  <a href="/config/wind">🧭 <span data-i18n="wind">Veleta</span></a>
-  <a href="/config/system">⚙️ <span data-i18n="system">Sistema</span></a>
+<nav class="nav" id="mainNav" aria-label="Navegación principal">
+  <div class="nav-links">
+    <a href="/">📊 <span data-i18n="dashboard">Dashboard</span></a>
+    <a href="/sensors">🌡️ <span data-i18n="sensors">Sensores</span></a>
+    <a href="/events">🔔 <span data-i18n="events">Eventos</span></a>
+    <a href="/config/network">🌐 <span data-i18n="network">Red</span></a>
+    <a href="/config/sensors">🔌 <span data-i18n="config">Config</span></a>
+    <a href="/config/security">🔐 <span data-i18n="security">Seguridad</span></a>
+    <a href="/config/wind">🧭 <span data-i18n="wind">Veleta</span></a>
+    <a href="/config/system">⚙️ <span data-i18n="system">Sistema</span></a>
+  </div>
   <div class="nav-right">
-    <button class="sec" onclick="toggleLang()">🌐</button>
-    <button class="sec" onclick="toggleTheme()">🌓</button>
+    <button class="sec" onclick="toggleLang()" aria-label="Cambiar idioma">🌐</button>
+    <button class="sec" onclick="toggleTheme()" aria-label="Cambiar tema">🌓</button>
     <a href="/logout" class="out"><span data-i18n="logout">Salir</span></a>
   </div>
 </nav>
@@ -258,6 +288,12 @@ body.light input{background:#fff;color:#24292f}
 </div>
 
 <div class="grid-stack" id="grid"></div>
+
+<section>
+  <h2>🔮 Predicción</h2>
+  <p class="muted">Tendencia estimada de temperatura, humedad y lluvia.</p>
+  <div id="forecastList"><span class="muted">Cargando…</span></div>
+</section>
 
 <div class="modal" id="modal">
   <div class="modal-box">
@@ -365,14 +401,16 @@ function cardContent(it){
   const v=m?(isClock?new Date((+m.value)*1000).toLocaleTimeString():(+m.value).toFixed(2)):'—';
   const u=m&&!isClock?m.unit:'';
   const nm=m?m.measurement:it.key;
+  const st=(m&&!isClock)?(m.sensor_id+' · '+(m.quality||'')):'';
   return '<div class="card"><div class="t">'+measLabel(nm)+' <span class="q" title="'+measDesc(nm)+'">?</span></div>'+
          '<div class="v">'+v+' <span>'+u+'</span></div>'+
+         '<div class="s">'+st+'</div>'+
          '<button class="del" onclick="deleteCard(\''+cid(it.type,it.key)+'\')">✕</button></div>';
 }
 
 function renderCards(){
   if(!grid){
-    grid=GridStack.init({column:12, cellHeight:72, margin:6, float:false});
+    grid=GridStack.init({column:12, cellHeight:72, margin:6, float:false, columnOpts:{breakpoints:[{w:640,c:1},{w:768,c:2},{w:1024,c:4}]}});
   }
   grid.removeAll();
   for(const it of layout){
@@ -392,11 +430,12 @@ function fmtTime(ts){
 
 function drawChartCard(cv, key, rangeH){
   const ctx=cv.getContext('2d');
+  const cs=getComputedStyle(document.body),MUTED=cs.getPropertyValue('--muted').trim()||'#8b949e',GRID=cs.getPropertyValue('--bd').trim()||'#263043';
   const dpr=window.devicePixelRatio||1;
   const w=cv.clientWidth||cv.width||200, h=cv.clientHeight||cv.height||130;
   cv.width=w*dpr; cv.height=h*dpr; ctx.scale(dpr,dpr);
   ctx.clearRect(0,0,w,h);
-  ctx.fillStyle='#8b949e'; ctx.font='10px system-ui';
+  ctx.fillStyle=MUTED; ctx.font='10px system-ui';
   ctx.fillText('Cargando…',8,14);
 
   fetch('/api/v1/history?limit=3000').then(r=>r.json()).then(r=>{
@@ -407,7 +446,7 @@ function drawChartCard(cv, key, rangeH){
     const unit=(items[0]||{}).unit||'';
     ctx.clearRect(0,0,w,h);
 
-    if(items.length<2){ ctx.fillStyle='#8b949e'; ctx.font='10px system-ui'; ctx.fillText('Sin datos suficientes',8,14); return; }
+    if(items.length<2){ ctx.fillStyle=MUTED; ctx.font='10px system-ui'; ctx.fillText('Sin datos suficientes',8,14); return; }
 
     const padL=36,padR=8,padT=8,padB=18;
     const pw=w-padL-padR, ph=h-padT-padB;
@@ -417,7 +456,7 @@ function drawChartCard(cv, key, rangeH){
     const range=max-min;
 
     // Rejilla + eje Y (valores)
-    ctx.strokeStyle='#21262d'; ctx.fillStyle='#8b949e'; ctx.font='9px system-ui';
+    ctx.strokeStyle=GRID; ctx.fillStyle=MUTED; ctx.font='9px system-ui';
     for(let i=0;i<=3;i++){
       const y=padT+ph*i/3;
       ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
@@ -431,7 +470,7 @@ function drawChartCard(cv, key, rangeH){
       ctx.fillText(fmtTime(ts), x-12, h-5);
     }
     // Unidad (esquina superior izquierda)
-    ctx.fillStyle='#8b949e'; ctx.font='9px system-ui';
+    ctx.fillStyle=MUTED; ctx.font='9px system-ui';
     ctx.fillText(unit, 2, padT-1);
 
     // Series (una por sensor)
@@ -557,6 +596,22 @@ async function loadConfig(){
   }catch(e){}
 }
 
+function loadForecast(){
+  var el=document.getElementById('forecastList');
+  fetch('/api/v1/forecast').then(function(r){return r.json()}).then(function(d){
+    var preds=(d.predictions||[]);
+    if(!preds.length){ el.innerHTML='<span class="muted">Aún no hay datos suficientes.</span>'; return; }
+    var h='';
+    preds.forEach(function(p){
+      h+='<div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline;margin:.35rem 0"><b style="min-width:88px">'+measLabel(p.measurement)+'</b>';
+      (p.horizons||[]).forEach(function(hz){
+        h+='<span class="muted" style="font-size:.78rem">+'+hz.hours+'h <b style="color:var(--fg)">'+(hz.available?(+hz.value).toFixed(1):'—')+'</b><span style="font-size:.66rem"> ('+(hz.available?Math.round(hz.confidence*100)+'%':'—')+')</span></span>';
+      });
+      h+='</div>';
+    });
+    el.innerHTML=h;
+  }).catch(function(){ el.innerHTML='<span class="muted">Sin datos de predicción.</span>'; });
+}
 async function boot(){
   await loadConfig();
   // Si no hay layout guardado, usar el por defecto al recibir la primera lectura.
@@ -568,6 +623,10 @@ async function boot(){
   }
   setInterval(refresh,5000);
   setInterval(drawCharts,60000);
+  loadForecast();
+  setInterval(loadForecast,60000);
+  let rto=null;
+  window.addEventListener('resize',()=>{clearTimeout(rto);rto=setTimeout(drawCharts,150);});
 }
 if(!window.SEMA_AUTH){
   document.getElementById('mainNav').style.display='none';
@@ -588,37 +647,43 @@ boot();
 namespace {
 const char kBaseCss[] PROGMEM = R"html(
 <style>
-:root{--bg:#0d1117;--fg:#e6edf3;--card:#161b22;--bd:#30363d;--muted:#8b949e;--acc:#1f6feb}
+:root{--bg:#0b0e14;--bg2:#10141c;--card:#151b26;--bd:#263043;--fg:#e6edf3;--muted:#8b98a9;--acc:#3b82f6;--ok:#22c55e;--err:#f87171}
+body.light{--bg:#f4f6fb;--bg2:#eef1f7;--card:#fff;--bd:#d9dee8;--fg:#1f2733;--muted:#5b6673;--acc:#2563eb;--ok:#16a34a;--err:#dc2626}
 *{box-sizing:border-box}body{margin:0;padding:1rem;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif}
 .wrap{max-width:820px;margin:0 auto}
 h2{font-size:1.05rem;margin:0 0 .6rem;font-weight:600}
 section{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:1.1rem;margin:0 auto 1rem;max-width:760px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-input,select{width:100%;padding:.55rem .6rem;margin:.3rem 0;background:#0d1117;color:var(--fg);border:1px solid var(--bd);border-radius:7px;font-size:.9rem}
+input,select{width:100%;padding:.55rem .6rem;margin:.3rem 0;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:7px;font-size:.9rem;font-family:inherit}
 input:focus,select:focus{outline:none;border-color:var(--acc)}
-button{background:var(--acc);color:#fff;border:0;padding:.55rem 1rem;border-radius:7px;cursor:pointer;margin:.3rem .3rem 0 0;font-size:.88rem}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button{background:var(--acc);color:#fff;border:0;padding:.55rem 1rem;border-radius:7px;cursor:pointer;margin:.3rem .3rem 0 0;font-size:.88rem;font-family:inherit}
 button:hover{opacity:.9}
-button.sec{background:#21262d}
-button.theme{background:transparent;border:1px solid var(--bd);font-size:1rem}
+button.sec{background:var(--bg2);color:var(--fg)}
+button.theme{background:transparent;border:1px solid var(--bd);font-size:1rem;color:var(--fg)}
 .muted{color:var(--muted);font-size:.8rem}
 a{color:var(--acc);text-decoration:none}
-.nav{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.55rem 1rem;margin-bottom:1.2rem;border:1px solid var(--bd);border-radius:12px;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.nav{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.55rem 1rem;margin-bottom:1.2rem;border:1px solid var(--bd);border-radius:12px;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);flex-wrap:wrap}
 .nav-links{display:flex;gap:.25rem;flex-wrap:wrap;justify-content:center}
 .nav a{color:var(--muted);text-decoration:none;padding:.3rem .6rem;border-radius:7px;font-size:.9rem}
-.nav a:hover{color:var(--fg);background:#21262d}
+.nav a:hover{color:var(--fg);background:var(--bg2)}
 .nav a.on{color:#fff;background:var(--acc)}
-.nav .out{color:#f85149}
+.nav .out{color:var(--err)}
 .nav-right{margin-left:auto;display:flex;gap:.4rem;align-items:center}
 .switch{position:relative;display:inline-block;width:38px;height:21px;vertical-align:middle}
 .switch input{opacity:0;width:0;height:0}
-.switch .sl{position:absolute;inset:0;background:#30363d;border-radius:21px;cursor:pointer;transition:.2s}
+.switch .sl{position:absolute;inset:0;background:var(--bd);border-radius:21px;cursor:pointer;transition:.2s}
 .switch .sl:before{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
-.switch input:checked+.sl{background:#238636}
+.switch input:checked+.sl{background:var(--ok)}
 .switch input:checked+.sl:before{transform:translateX(17px)}
 .q{display:inline-block;width:16px;height:16px;border:1px solid var(--bd);border-radius:50%;text-align:center;line-height:14px;font-size:.68rem;color:var(--muted);cursor:help;margin-left:.25rem;font-style:normal}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
-.eye{width:auto;padding:.45rem .7rem;margin:.3rem 0;background:#21262d;border:1px solid var(--bd);border-radius:6px;cursor:pointer;font-size:1rem}
+.eye{width:auto;padding:.45rem .7rem;margin:.3rem 0;background:var(--bg2);border:1px solid var(--bd);border-radius:6px;cursor:pointer;font-size:1rem;color:var(--fg)}
 details{margin:.4rem 0;border:1px solid var(--bd);border-radius:6px;padding:.4rem .6rem}
 summary{cursor:pointer;color:var(--acc);font-size:.82rem;padding:.2rem 0}
+table{width:100%;border-collapse:collapse;font-size:.86rem;margin:.3rem 0}
+th,td{padding:.45rem .6rem;text-align:left;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em}
+tbody tr:hover td{background:var(--bg2)}
 .ui-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:99}
 .ui-modal.open{display:flex}
 .ui-modal-box{background:var(--bg);border:1px solid var(--bd);border-radius:14px;max-width:420px;width:90%;padding:1.3rem;box-shadow:0 12px 40px rgba(0,0,0,.5);animation:pop .18s ease}
@@ -626,25 +691,26 @@ summary{cursor:pointer;color:var(--acc);font-size:.82rem;padding:.2rem 0}
 .ui-modal-box p{color:var(--muted);margin:.2rem 0 1rem;font-size:.9rem}
 .ui-modal-btns{display:flex;gap:.5rem;justify-content:flex-end}
 .ui-modal-btns button{width:auto;margin:0}
-.ui-modal-btns button.sec{background:#21262d}
+.ui-modal-btns button.sec{background:var(--bg2);color:var(--fg)}
 .cat-item{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.5rem .6rem;border-bottom:1px solid var(--bd);font-size:.9rem}
 .cat-item:last-child{border-bottom:0}
-code{background:#21262d;padding:.1rem .4rem;border-radius:4px;font-size:.85em}
+code{background:var(--bg2);padding:.1rem .4rem;border-radius:4px;font-size:.85em;color:var(--fg)}
+pre{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:.7rem;overflow-x:auto;font-size:.78rem}
 select option:disabled{color:#484f58;background:#1a1e24;font-style:italic}
 button{transition:opacity .15s,transform .15s}
 button:active{transform:scale(.97)}
 section{transition:box-shadow .2s}
 section:hover{box-shadow:0 3px 10px rgba(0,0,0,.18)}
 input,select{transition:border-color .15s,box-shadow .15s}
-input:focus,select:focus{box-shadow:0 0 0 2px rgba(31,111,235,.25)}
-body.light{--bg:#f6f8fa;--fg:#24292f;--card:#fff;--bd:#d0d7de;--muted:#57606a}
-body.light input{background:#fff;color:#24292f}
-body.light code{background:#f0f3f6}
+input:focus,select:focus{box-shadow:0 0 0 2px rgba(59,130,246,.25)}
+body.light input{background:#fff;color:#1f2733}
+body.light code{background:#eef1f7}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
 </style>
 )html";
 
 const char kNav[] PROGMEM = R"html(
-<nav class="nav">
+<nav class="nav" aria-label="Navegación principal">
 <div class="nav-links">
 <a href="/">📊 <span data-i18n="dashboard">Dashboard</span></a>
 <a href="/sensors">🌡️ <span data-i18n="sensors">Sensores</span></a>
@@ -656,8 +722,8 @@ const char kNav[] PROGMEM = R"html(
 <a href="/config/system">⚙️ <span data-i18n="system">Sistema</span></a>
 </div>
 <div class="nav-right">
-<button class="theme" onclick="toggleLang()" title="Idioma / Language">🌐</button>
-<button class="theme" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
+<button class="theme" onclick="toggleLang()" aria-label="Cambiar idioma" title="Idioma / Language">🌐</button>
+<button class="theme" onclick="toggleTheme()" aria-label="Cambiar tema" title="Cambiar tema">🌓</button>
 <a href="/logout" class="out"><span data-i18n="logout">Salir</span></a>
 </div>
 </nav>
@@ -995,7 +1061,10 @@ const TYPES=[
  {m:'PCNT',name:'Pluviómetro',i:'pulse',ch:'rain',d:'Lluvia (contador de pulsos).'},
  {m:'PMS5003',name:'PMS5003',i:'uart',d:'Partículas PM1/PM2.5/PM10 (UART).'},
  {m:'CO',name:'CO',i:'ana',d:'Monóxido de carbono (analógico).'},
- {m:'SOLAR',name:'SOLAR',i:'ana',d:'Radiación solar (analógico).'}
+ {m:'SOLAR',name:'SOLAR',i:'ana',d:'Radiación solar (analógico).'},
+ {m:'CCS811',name:'CCS811',i:'i2c',d:'Calidad de aire: CO₂ equivalente (eCO₂) y TVOC (I²C).'},
+ {m:'HDC1080',name:'HDC1080',i:'i2c',d:'Temperatura y humedad (I²C).'},
+ {m:'S12SD',name:'S12SD (UV)',i:'ana',d:'Radiación ultravioleta UVI (analógico).'}
 ];
 let cfg={};
 let shiftEnabled=false;
@@ -1068,7 +1137,7 @@ function render(){
     h+='<label class="switch"><input type="checkbox" data-k="'+key+'" '+(en?'checked':'')+'><span class="sl"></span></label>';
     h+='<label style="flex:1;margin:0 .4rem">'+t.name+' <span class="muted">('+t.i+')</span></label><span class="q" title="'+t.d+'">?</span>';
     if(t.i==='i2c'){
-      h+='<span class="muted">ID<select class="a" data-k="'+key+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option><option value="73"'+(addr==73?' selected':'')+'>0x49</option><option value="74"'+(addr==74?' selected':'')+'>0x4A</option><option value="75"'+(addr==75?' selected':'')+'>0x4B</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option></select></span>';
+      h+='<span class="muted">ID<select class="a" data-k="'+key+'" style="width:64px"><option value="0"'+(addr==0?' selected':'')+'>auto</option><option value="72"'+(addr==72?' selected':'')+'>0x48</option><option value="73"'+(addr==73?' selected':'')+'>0x49</option><option value="74"'+(addr==74?' selected':'')+'>0x4A</option><option value="75"'+(addr==75?' selected':'')+'>0x4B</option><option value="118"'+(addr==118?' selected':'')+'>0x76</option><option value="119"'+(addr==119?' selected':'')+'>0x77</option><option value="68"'+(addr==68?' selected':'')+'>0x44</option><option value="69"'+(addr==69?' selected':'')+'>0x45</option><option value="35"'+(addr==35?' selected':'')+'>0x23</option><option value="92"'+(addr==92?' selected':'')+'>0x5C</option><option value="56"'+(addr==56?' selected':'')+'>0x38</option><option value="97"'+(addr==97?' selected':'')+'>0x61</option><option value="88"'+(addr==88?' selected':'')+'>0x58</option><option value="90"'+(addr==90?' selected':'')+'>0x5A</option><option value="91"'+(addr==91?' selected':'')+'>0x5B</option></select></span>';
       h+='<span class="muted">Bus<select class="bus" data-k="'+key+'" style="width:118px">'+sc18Options(cur.bus||0)+'</select></span>';
     }else if(t.i==='uart'){
       const urt=cur.uart||0;
@@ -2046,6 +2115,31 @@ void HttpServer::onDiagnostics() {
     o["model"] = d.model;
   }
 
+  String out;
+  serializeJson(doc, out);
+  server_.send(200, "application/json", out);
+}
+
+void HttpServer::onForecast() {
+  Forecast& f = core_->forecast();
+  DynamicJsonDocument doc(1024);
+  JsonArray arr = doc.createNestedArray("predictions");
+  const char* mags[] = {"temperature", "humidity", "rain"};
+  const uint32_t horizons[] = {3, 6, 12, 24};
+  for (const char* m : mags) {
+    JsonObject o = arr.createNestedObject();
+    o["measurement"] = m;
+    JsonArray hz = o.createNestedArray("horizons");
+    for (uint32_t h : horizons) {
+      float value = 0.0f, confidence = 0.0f;
+      const bool ok = f.predict(m, h, value, confidence);
+      JsonObject p = hz.createNestedObject();
+      p["hours"] = h;
+      p["available"] = ok;
+      p["value"] = value;
+      p["confidence"] = confidence;
+    }
+  }
   String out;
   serializeJson(doc, out);
   server_.send(200, "application/json", out);

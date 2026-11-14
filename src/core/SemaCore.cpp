@@ -191,6 +191,7 @@ void SemaCore::setup() {
     health_.taskHeartbeat("sensors.read");
     http_.broadcastMeasurements(sensors_.measurements());
     for (const Measurement& m : sensors_.measurements()) {
+      forecast_.addSample(m.measurement.c_str(), m.timestamp, m.value);
       history_.append(m);
       publishers_.publishAll(m);
     }

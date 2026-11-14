@@ -13,7 +13,7 @@
 modulares: el hardware define las capacidades y una **web local configura todo**
 (sensores, buses, pines, alarmas, publicadores, calibración) sin recompilar.
 
-Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.103.0**
+Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.104.0**
 (`include/core/Version.hpp`), `hw_version = rev0`, `config_schema_version = 1`,
 `protocol_version = 1`.
 
@@ -109,14 +109,22 @@ no se dejan agentes ociosos.
 | `esp32doit-devkit-v1` | ESP32-WROOM clásico | 4 MB | LAN8720A nativa (RMII) | configurables (`SEMA_PINS_FROM_FILE=0`) |
 | `esp32-s3-devkitc-1` | ESP32-S3 | 8 MB | W5500 por SPI (sin MAC nativa) | configurables (`=0`) |
 | `esp32-wroom-32u` | ESP32-WROOM-32U | 16 MB | LAN8720A nativa (RMII) | **fijos** (`SEMA_PINS_FROM_FILE=1`, PCB) |
+| `esp32-wroom-32u-32mb` | ESP32-WROOM-32U | 32 MB | LAN8720A nativa (RMII) | **fijos** (`=1`, PCB) |
+| `esp32-p4` | ESP32-P4 (RISC-V) | 32 MB | W5500 por SPI (experimental) | **fijos** (`=1`) |
 | `demo` | extiende `esp32doit-devkit-v1` | 4 MB | — | `-D SEMA_DEMO=1` (valores ficticios) |
 
-Memorias contempladas por el usuario: **4 / 8 / 16 / 32 MB**. Implementadas hoy:
-4, 8 y 16 MB (`partitions_4mb.csv`, `partitions_8mb.csv`, `partitions_16mb.csv`).
-**32 MB es un pendiente** (no hay `partitions_32mb.csv` ni `SEMA_FLASH_MB=32`).
+Memorias contempladas por el usuario: **4 / 8 / 16 / 32 MB**. Implementadas las
+cuatro (`partitions_4mb.csv`, `partitions_8mb.csv`, `partitions_16mb.csv`,
+`partitions_32mb.csv`).
 
 Identidades para OTA/manifest (`include/hw/HwProfile.hpp`): `esp32-wroom-4mb`,
-`esp32-s3-8mb`, `esp32-wroom32u-16mb`.
+`esp32-s3-8mb`, `esp32-wroom32u-16mb`, `esp32-wroom32u-32mb`, `esp32-p4-32mb`.
+
+> ⚠️ **Decisión pendiente (Ethernet WROOM32U)**: la PCB WROOM-32U real usa W5500
+> en VSPI (18/19/23, CS=GPIO5) compartiendo bus con SD (CS=GPIO4) y LoRa, pero el
+> perfil de firmware aún define `SEMA_NATIVE_ETH 1` (LAN8720A RMII) con SPI en
+> 14/12/15. Falta consolidar W5500 al bus SPI compartido (driver Arduino Ethernet)
+> o añadir un segundo bus SPI. Ver `docs/PCB-V1-CORRECCIONES.md` §8.
 
 ### 4.2 Dos variantes del firmware
 

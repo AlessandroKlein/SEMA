@@ -33,6 +33,7 @@
 #include "core/Scheduler.hpp"
 #include "core/Version.hpp"
 #include "core/network/WiFiManager.hpp"
+#include "core/prediction/Forecast.hpp"
 #include "core/PowerManager.hpp"
 #include "core/Watchdog.hpp"
 #include "core/publishers/HttpPublisher.hpp"
@@ -98,6 +99,7 @@ public:
   EventLog& eventLog() { return eventLog_; }
   GpioManager& gpio() { return gpio_; }
   ShiftRegisterManager& shift() { return shift_; }
+  Forecast& forecast() { return forecast_; }
   uint32_t restartCount() const { return restartCount_; }
 #if SEMA_USE_MODBUS
   ModbusManager& modbus() { return modbus_; }
@@ -156,6 +158,7 @@ private:
   Scheduler scheduler_;
   WiFiManager wifi_;
   HttpServer http_;
+  Forecast forecast_;
 };
 
 }  // namespace sema

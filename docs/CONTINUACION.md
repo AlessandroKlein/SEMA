@@ -1,6 +1,6 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-10-03 | **Firmware:** v1.103.0 | **Releases:** 89
+> **Tipo:** Guía de continuación | **Fecha:** 2026-11-14 | **Firmware:** v1.104.0 | **Releases:** 90
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.

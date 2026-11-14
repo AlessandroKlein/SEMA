@@ -6,6 +6,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.104.0] - 2026-11-14
+
+### Added
+
+- Pronóstico a corto plazo (temperatura/humedad/lluvia) con endpoint `/api/v1/forecast` y sección "Predicción" en el dashboard.
+- Sensores en el catálogo web: CCS811 (eCO₂/TVOC, I²C), HDC1080 (temperatura/humedad, I²C) y S12SD (UV, analógico); direcciones I²C 0x5A/0x5B.
+- Identidad de board `esp32-wroom32u-32mb` (variante 32 MB de la PCB WROOM-32U).
+
+### Fixed
+
+- `EthernetManager`: `g_eth_netif` declarado bajo `#if !SEMA_NATIVE_ETH` (permite compilar ESP32-P4, que usa W5500).
+
 ## [1.103.0] - 2026-10-08
 
 ### Changed

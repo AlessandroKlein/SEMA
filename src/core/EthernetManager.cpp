@@ -23,7 +23,7 @@
 
 namespace sema {
 
-#if defined(BOARD_ESP32_S3)
+#if !SEMA_NATIVE_ETH
 static esp_netif_t* g_eth_netif = nullptr;
 #endif
 

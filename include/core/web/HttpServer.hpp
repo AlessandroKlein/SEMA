@@ -58,6 +58,7 @@ private:
   void onEnergy();
   void onDiagnostics();
   void onSensors();
+  void onForecast();
   void onWindNorth();
   void onWindResistors();
   void onDashboardLayout();

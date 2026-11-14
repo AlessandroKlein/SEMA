@@ -25,14 +25,18 @@
 //     -D SEMA_PINS_FROM_FILE=0   → pines configurables en runtime (web).
 // =============================================================================
 
-#if !defined(BOARD_ESP32_WROOM) && !defined(BOARD_ESP32_S3) && !defined(BOARD_ESP32_WROOM32U)
-#error "Define BOARD_ESP32_WROOM, BOARD_ESP32_WROOM32U o BOARD_ESP32_S3 en build_flags"
+#if !defined(BOARD_ESP32_WROOM) && !defined(BOARD_ESP32_S3) && !defined(BOARD_ESP32_WROOM32U) && !defined(BOARD_ESP32_P4)
+#error "Define BOARD_ESP32_WROOM, BOARD_ESP32_WROOM32U, BOARD_ESP32_S3 o BOARD_ESP32_P4 en build_flags"
 #endif
 
 // --- Identidad de la board (para OTA / manifest) ---
 #if defined(BOARD_ESP32_WROOM)
 #define SEMA_BOARD_ID "esp32-wroom-4mb"
 #define SEMA_FLASH_MB 4
+#define SEMA_NATIVE_ETH 1
+#elif defined(BOARD_ESP32_WROOM32U_32MB)
+#define SEMA_BOARD_ID "esp32-wroom32u-32mb"
+#define SEMA_FLASH_MB 32
 #define SEMA_NATIVE_ETH 1
 #elif defined(BOARD_ESP32_WROOM32U)
 #define SEMA_BOARD_ID "esp32-wroom32u-16mb"
@@ -41,6 +45,12 @@
 #elif defined(BOARD_ESP32_S3)
 #define SEMA_BOARD_ID "esp32-s3-8mb"
 #define SEMA_FLASH_MB 8
+#define SEMA_NATIVE_ETH 0
+#elif defined(BOARD_ESP32_P4)
+// ESP32-P4: RISC-V sin WiFi/BT ni MAC Ethernet nativa (usa W5500 por SPI).
+// Perfil experimental: la web local de configuración depende de WiFi.
+#define SEMA_BOARD_ID "esp32-p4-32mb"
+#define SEMA_FLASH_MB 32
 #define SEMA_NATIVE_ETH 0
 #endif
 
