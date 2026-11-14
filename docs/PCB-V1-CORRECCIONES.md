@@ -141,8 +141,10 @@ confirmar porque afectan el tipo de sensor en el firmware:
 El **ESP32-P4 es RISC-V y no tiene WiFi/Bluetooth** (ni MAC Ethernet nativa): se
 usa para edge-AI/HMI con mucha RAM/CPU y Ethernet por SPI (W5500). En SEMA es un
 perfil **experimental**: la web local de configuración depende de WiFi, así que el
-P4 solo aplica como nodo de cómputo/concentrador con Ethernet. Queda registrado
-como `esp32-p4` en `platformio.ini`.
+P4 solo aplica como nodo de cómputo/concentrador con Ethernet. El env `esp32-p4`
+quedó **deshabilitado** en `platformio.ini`: la plataforma `espressif32 7.1.3`
+instalada no trae el board P4 ni el core RISC-V (requiere `espressif32 ≥ 7.2`).
+El código ya está preparado (`BOARD_ESP32_P4` en `HwProfile.hpp`).
 
 ---
 
