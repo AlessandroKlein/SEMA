@@ -110,7 +110,7 @@ no se dejan agentes ociosos.
 | `esp32-s3-devkitc-1` | ESP32-S3 | 8 MB | W5500 por SPI (sin MAC nativa) | configurables (`=0`) |
 | `esp32-wroom-32u` | ESP32-WROOM-32U | 16 MB | LAN8720A nativa (RMII) | **fijos** (`SEMA_PINS_FROM_FILE=1`, PCB) |
 | `esp32-wroom-32u-32mb` | ESP32-WROOM-32U | 32 MB | LAN8720A nativa (RMII) | **fijos** (`=1`, PCB) |
-| `esp32-p4` | ESP32-P4 (RISC-V) | 32 MB | W5500 por SPI (experimental) | **fijos** (`=1`) |
+| `esp32-p4` *(env deshabilitado)* | ESP32-P4 (RISC-V) | 32 MB | W5500 por SPI | **fijos** (`=1`) — requiere PlatformIO `espressif32 ≥ 7.2` (no disponible hoy) |
 | `demo` | extiende `esp32doit-devkit-v1` | 4 MB | — | `-D SEMA_DEMO=1` (valores ficticios) |
 
 Memorias contempladas por el usuario: **4 / 8 / 16 / 32 MB**. Implementadas las
