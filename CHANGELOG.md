@@ -6,6 +6,21 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.105.0] - 2026-11-14
+
+### Added
+
+- Sensor AHT10 como modelo propio (alias del driver AHT20; auto-detección AHT10/AHT20).
+- `docs/PCB-V1-CORRECCIONES.md` §9: requisitos de firmware del usuario (elementos habilitables por usuario final, edición de pines solo en modo AP, repo base reutilizable).
+
+### Changed
+
+- Mapa de pines v2: veleta WH-SP-WD → GPIO14 (pulsos/reed), anemómetro WH-SP-WS01 → PCNT (3.3V/10k).
+
+### Fixed
+
+- Env `esp32-p4` deshabilitado: el board `esp32-p4-function-ev` no existe en la plataforma `espressif32 7.1.3` instalada (requiere `espressif32 ≥ 7.2`).
+
 ## [1.104.0] - 2026-11-14
 
 ### Added

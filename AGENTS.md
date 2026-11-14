@@ -13,7 +13,7 @@
 modulares: el hardware define las capacidades y una **web local configura todo**
 (sensores, buses, pines, alarmas, publicadores, calibración) sin recompilar.
 
-Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.104.0**
+Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.105.0**
 (`include/core/Version.hpp`), `hw_version = rev0`, `config_schema_version = 1`,
 `protocol_version = 1`.
 
@@ -192,3 +192,27 @@ Docs-only **no** genera release (ver `docs/VERSIONADO.md`).
 `AGENTS.md` se actualiza cuando cambia algo que un chat nuevo necesita saber para
 arrancar: nueva board, nueva variante, nuevo repo, cambio de flujo o de equipo.
 Es docs-only (sin release).
+
+---
+
+## 8. Operación del teamagent (cómo trabaja el chat principal)
+
+- El **equipo de 9 roles ya está activo** (§3): no hay que "crear" agentes uno a
+  uno. El usuario solo **manda la idea/datos** y el orquestador **completa lo que
+  falta** (hardware, versión, alcance, referencias al repo) y **despacha la tarea
+  completa al rol** que corresponda con `subagent`/`subagent_fork`.
+- Se despacha **por tarea**, no se mantienen agentes ociosos. El resultado del
+  agente lo **integra el orquestador** (compila, verifica, commitea).
+
+### 8.1 Modo pausa / reanudación
+
+El usuario puede **pausar en cualquier momento** y retomar otro día:
+
+| El usuario dice | Qué hace el orquestador |
+|-----------------|-------------------------|
+| `pausa` / `pausá` | Detiene el trabajo, **guarda el estado en los archivos de memoria** (este `AGENTS.md`, `docs/CONTINUACION.md`, `docs/PENDIENTES.md`) y queda a la espera. |
+| `continuá` / `seguí` | **Lee de nuevo** `AGENTS.md` + `docs/CONTINUACION.md` + `docs/PENDIENTES.md`, retoma desde el último estado guardado sin re-explicar el proyecto. |
+
+> La memoria persistente es la garantía de reanudación: **cada cierre de tarea deja
+> los pendientes actualizados** en `docs/PENDIENTES.md` y `docs/CONTINUACION.md`, así
+> un chat nuevo (o el mismo, otro día) arranca leyendo y sigue sin perder contexto.

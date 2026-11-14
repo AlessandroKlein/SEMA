@@ -28,11 +28,11 @@ limitaciones.
    chip-select: **GPIO5 = W5500** y **GPIO4 = microSD**.
 5. **Ethernet RMII (LAN8720A) NO aplica a esta placa**: se usa W5500 por SPI.
 
-> ⚠️ **Hallazgo de firmware (pendiente de decisión):** `include/hw/HwProfile.hpp`
+> ⚠️ **Hallazgo de firmware (W5500 opcional/planeado):** `include/hw/HwProfile.hpp`
 > para `BOARD_ESP32_WROOM` define `SEMA_NATIVE_ETH 1` (LAN8720A RMII) y el bus SPI
-> LoRa/SD en GPIO 14/12/15. **Tu placa real usa W5500 (SPI) en VSPI 18/19/23**, así
-> que hay que consolidar W5500 al bus SPI compartido (driver Arduino Ethernet) o
-> añadir un segundo bus SPI. Ver §8.
+> LoRa/SD en GPIO 14/12/15. **Tu placa real usa W5500 (SPI) en VSPI 18/19/23** (hoy
+> planeado, opcional según el usuario). Para activarlo hay que consolidar W5500 al
+> bus SPI compartido (driver Arduino Ethernet) o añadir un segundo bus SPI. Ver §8–§9.
 
 ---
 
@@ -46,11 +46,13 @@ limitaciones.
 | 4 | PMS5003 (partículas) | RX 16 / TX 17 / SET 33 / RESET 32 | UART | ✅ OK |
 | 5 | DS18B20 (1-Wire) | **GPIO27** | 1-Wire | ✅ corregido (estaba siempre aquí) |
 | 6 | WH-SP-RG (pluviómetro) | **GPIO13** | PCNT (pulsos) | ✅ OK |
-| 7 | WH-SP-WS01 (anemómetro) | **GPIO39** | ADC1_CH3 | ⚠️ ver §4 |
-| 8 | CCS811-HDC1080 | SDA 21 / SCL 22 | I2C `0x5A`/`0x40` | ✅ OK |
-| 9 | BME280 + AHT20 | SDA 21 / SCL 22 | I2C `0x76`/`0x38` | ✅ OK |
+| 7 | WH-SP-WS01 (anemómetro) | **GPIO39** | PCNT (pulsos, 3.3V/10k) | ✅ corregido (ver §4) |
+| 8 | WH-SP-WD (veleta) | **GPIO14** | pulsos/reed (3.3V/10k) | ⚠️ ver §4 |
+| 9 | CCS811-HDC1080 | SDA 21 / SCL 22 | I2C `0x5A`/`0x40` | ✅ OK |
+| 10 | BME280 + AHT20 | SDA 21 / SCL 22 | I2C `0x76`/`0x38` | ✅ OK |
 
-> **Pines libres (confirmados por el usuario):** GPIO **25, 26, 14, 12, 15, 2**.
+> **Pines libres (confirmados por el usuario):** GPIO **25, 26, 12, 15, 2**
+> (GPIO14 ahora es la veleta).
 > Como reserva quedan los strapping GPIO12 (MTDI), GPIO15 (MTDO) y GPIO2
 > (strapping + LED onboard) — no usarlos salvo necesidad extrema. GPIO25/26 son
 > ADC2 (no legibles con WiFi activo); sirven como GPIO digital de propósito general.
@@ -87,23 +89,23 @@ limitaciones.
 
 ---
 
-## 4. Viento: WS01 (anemómetro) en GPIO39 — a verificar
+## 4. Viento: WS01 (anemómetro) y veleta (WD) — resuelto 2026-11-14
 
-Tu mensaje asigna **WH-SP-WS01 (anemómetro) → GPIO39 (ADC1_CH3)**. Dos cosas a
-confirmar porque afectan el tipo de sensor en el firmware:
+El usuario confirmó que **todos los elementos de viento/lluvia están alimentados a
+3V3 con resistencia de 10 kΩ** → son **sensores de pulsos (reed/hall)**, no
+analógicos. Lectura por **PCNT**, no ADC.
 
-1. **Anemómetro = pulsos, no analógico (normalmente).** El anemómetro de cazoletas
-   (velocidad del viento) suele ser un reed/hall que emite **pulsos** → se lee por
-   **PCNT**, no por ADC. La veleta (dirección) sí es un divisor resistivo → **ADC**.
-   - Si tu WS01 es de salida **analógica (0–5 V)**, está bien en GPIO39/ADC.
-   - Si es de **pulsos (reed/hall)**, debe ir a PCNT (p. ej. GPIO36 o un libre).
-2. **¿Dónde quedó la veleta (WH-SP-WD, dirección)?** No aparece en tu lista. Antes
-   estaba en GPIO39; si ahora GPIO39 es el anemómetro, la veleta necesita otro pin
-   ADC1 (GPIO34/35/36/39 están tomados; quedan solo-entrada 34–39 → solo GPIO36
-   libre como ADC1).
+1. **Anemómetro WH-SP-WS01 → GPIO39**: lectura por **PCNT** (pulsos). GPIO39 es
+   solo-entrada, lo cual sirve para contar pulsos. La resistencia de 10 kΩ es el
+   pull-up del reed.
+2. **Veleta WH-SP-WD → GPIO14** (movida por el usuario en la nueva PCB): si es de
+   pulsos/reed va bien en GPIO14. ⚠️ **Ojo**: GPIO14 es **ADC2** (no legible con
+   WiFi activo, ver §1 regla 1) y además es **JTAG TMS**. Si la veleta fuese en
+   realidad un **divisor resistivo (analógico)**, GPIO14 no sirve — necesitaría un
+   ADC1 (32–39). Confirmar el tipo real del módulo antes de fabricar la v2.
 
-> En SEMA, `WH-SP-WS01` se modela como **PCNT** (velocidad) y `WH-SP-WD` como
-> **ADC** (dirección). Verificar contra el datasheet real del módulo.
+> En SEMA, `WH-SP-WS01` y `WH-SP-RG` se modelan como **PCNT** (conteo de pulsos) y
+> `WH-SP-WD` como **PCNT** (si es reed) — verificar contra el datasheet real.
 
 ---
 
@@ -114,10 +116,10 @@ confirmar porque afectan el tipo de sensor en el firmware:
 | SPI VSPI (SD + W5500) | 18 (SCK), 23 (MOSI), 19 (MISO) + CS4/CS5 | ✅ Usado |
 | I2C (todos los sensores I2C) | 21 (SDA), 22 (SCL) | ✅ Usado |
 | UART (PMS5003 + serial) | 16 (RX), 17 (TX) | ✅ Usado |
-| ADC1 (34, 35, 39) | MQ-7, S12SD, WS01 | ✅ Usado |
+| ADC1 (34, 35) | MQ-7, S12SD | ✅ Usado |
 | 1-Wire | 27 (DS18B20) | ✅ Usado |
-| PCNT | 13 (pluviómetro) | ✅ Usado |
-| Libres | 25, 26, 14, 12, 15, 2 | ✅ 6 pines |
+| PCNT | 13 (pluviómetro), 39 (anemómetro), 14 (veleta) | ✅ Usado |
+| Libres | 25, 26, 12, 15, 2 | ✅ 5 pines |
 
 ---
 
@@ -150,14 +152,30 @@ El código ya está preparado (`BOARD_ESP32_P4` en `HwProfile.hpp`).
 
 ## 8. Acciones de firmware derivadas de este mapa
 
-1. **Ethernet W5500 (decisión pendiente):** `include/hw/HwProfile.hpp` define
-   `SEMA_NATIVE_ETH 1` (RMII) para `BOARD_ESP32_WROOM`. Para que el W5500 del PCB
-   funcione hay que **consolidar W5500 al bus VSPI compartido** (driver Arduino
-   Ethernet) o **añadir un segundo bus SPI**. Hoy no se puede solo poner
-   `SEMA_NATIVE_ETH 0` porque el driver ESP-IDF de W5500 y el SPI de Arduino (SD/
-   LoRa) pelearían por los mismos pines 18/19/23.
+1. **Ethernet W5500 (opcional):** el usuario lo tiene **planeado pero opcional** —
+   como todo elemento, debe poder **habilitarse/deshabilitarse** por usuario final
+   (incluso en la variante PCB, donde un cliente puede no necesitar algún elemento).
+   `include/hw/HwProfile.hpp` define `SEMA_NATIVE_ETH 1` (RMII) para
+   `BOARD_ESP32_WROOM`. Para habilitar W5500 hay que **consolidar W5500 al bus VSPI
+   compartido** (driver Arduino Ethernet) o **añadir un segundo bus SPI**. Ver §9.
 2. **Pines de sensores** (si se hace variante `SEMA_PINS_FROM_FILE=1`): DS18B20→27,
-   pluviómetro→13, anemómetro→39, S12SD→35, MQ-7→34, PMS5003→16/17/33/32.
+   pluviómetro→13, anemómetro→39 (PCNT), veleta→14 (PCNT/reed), S12SD→35, MQ-7→34,
+   PMS5003→16/17/33/32.
 3. **Identidad 32 MB**: ya corregida en v1.104.0 (`esp32-wroom32u-32mb`), pero la
    placa real es devkit v1 (4 MB), no WROOM-32U — el env `esp32-wroom-32u*` no
    aplica a este PCB.
+
+## 9. Requisitos de firmware del usuario (2026-11-14)
+
+1. **Elementos habilitables/deshabilitables por usuario final** — incluso en la
+   variante PCB (`SEMA_PINS_FROM_FILE=1`): el PCB fija los *pines*, pero el usuario
+   decide *qué elementos activa* desde la web (p. ej. no tener LoRa o W5500 si no
+   los usa). Hoy los elementos se compilan con `-D SEMA_USE_*` (tiempo de
+   compilación); falta un **toggle en runtime** (NVS) para PCB.
+2. **Modificación de pines SOLO en modo AP** — en la variante modular
+   (`SEMA_PINS_FROM_FILE=0`), la edición de pines debe permitirse únicamente en
+   **modo AP** (entrar manteniendo pulsado un botón N segundos), para evitar dañar
+   el hardware o exponer la config a terceros por error.
+3. **Repo base reutilizable** — extraer a un repositorio propio (WiFi, Ethernet,
+   configuración de pines, web de configuración, buses) **sin** lo específico de la
+   estación meteorológica, para `git clone` → nuevo proyecto.
