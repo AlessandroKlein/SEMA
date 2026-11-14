@@ -1,15 +1,16 @@
 # PCB v1 — Revisión de pines y correcciones (rumbo a v2 SMD)
 
-> **Fecha:** 2026-11-14 · **Base:** ESP32 devkit v1 (WROOM, 4 MB) · **Firmware:** v1.103.0
+> **Fecha:** 2026-11-14 · **Base:** ESP32 devkit v1 (WROOM, 4 MB) · **Firmware:** v1.104.0
 >
-> **Hardware real confirmado por el usuario (m00216):** la placa usa **W5500 (SPI
-> Ethernet, CS=GPIO5)** + **VSPI (SCK18/MOSI23/MISO19)** + **microSD (CS=GPIO4)** +
-> **I2C (SDA21/SCL22)** + **UART (TX17/RX16)**. **No usa Ethernet RMII nativo.**
+> **Hardware real confirmado por el usuario:** la placa usa **W5500 (SPI Ethernet,
+> CS=GPIO5)** + **VSPI (SCK18/MOSI23/MISO19)** + **microSD (CS=GPIO4)** + **I2C
+> (SDA21/SCL22)** + **UART (TX17/RX16)**. **No usa Ethernet RMII nativo.** La base
+> es un **ESP32 devkit v1** (módulo WROOM, 4 MB), no un WROOM-32U.
 
 Revisión de la asignación de pines de tu PCB v1 contra (a) las reglas de oro del
-ESP32-WROOM y (b) las reservas reales de la placa (bus SPI VSPI para SD/W5500 y
-sensores). Los errores marcados **ERROR** son bloqueantes para que el sensor
-funcione; los **WARNING** funcionan pero con limitaciones.
+ESP32-WROOM y (b) las reservas reales de la placa (bus SPI VSPI para SD/W5500).
+Los errores marcados **ERROR** son bloqueantes; los **WARNING** funcionan con
+limitaciones.
 
 ---
 
@@ -24,38 +25,35 @@ funcione; los **WARNING** funcionan pero con limitaciones.
    arrancar), GPIO5 (SDIO), GPIO12 (VDD_SDIO, debe estar BAJO), GPIO15 (debe estar
    BAJO al arrancar). Usarlos para otra cosa puede impedir el arranque.
 4. **Bus SPI (VSPI)** reserva **GPIO 18 (SCK) / 23 (MOSI) / 19 (MISO)** con dos
-   chip-select: **GPIO5 = W5500** y **GPIO4 = microSD**. Los pines de HSPI
-   (GPIO 12/13/14/15) **están libres** en esta placa (no hay RMII ni LoRa en HSPI).
-5. **Ethernet RMII (LAN8720A) NO aplica a esta placa**: se usa W5500 por SPI, así
-   que los pines RMII (GPIO 0, 25, 26, 27) quedan libres para otros usos.
+   chip-select: **GPIO5 = W5500** y **GPIO4 = microSD**.
+5. **Ethernet RMII (LAN8720A) NO aplica a esta placa**: se usa W5500 por SPI.
 
-> ⚠️ **Hallazgo de firmware (a corregir en la integración):** `include/hw/HwProfile.hpp`
-> para `BOARD_ESP32_WROOM` y `BOARD_ESP32_WROOM32U` define `SEMA_NATIVE_ETH 1`
-> (LAN8720A RMII) y el bus SPI LoRa/SD en GPIO 14/12/15. **Tu placa real usa W5500
-> (SPI) en VSPI 18/19/23**, así que hay que cambiar `SEMA_NATIVE_ETH 0` y los pines
-> SPI a 18/19/23 para que Ethernet y SD funcionen en tu PCB.
+> ⚠️ **Hallazgo de firmware (pendiente de decisión):** `include/hw/HwProfile.hpp`
+> para `BOARD_ESP32_WROOM` define `SEMA_NATIVE_ETH 1` (LAN8720A RMII) y el bus SPI
+> LoRa/SD en GPIO 14/12/15. **Tu placa real usa W5500 (SPI) en VSPI 18/19/23**, así
+> que hay que consolidar W5500 al bus SPI compartido (driver Arduino Ethernet) o
+> añadir un segundo bus SPI. Ver §8.
 
 ---
 
-## 2. Revisión por sensor (mapa final resuelto para v2)
+## 2. Mapa final de pines (v2 SMD, corregido 2026-11-14)
 
-| # | Sensor | Pin v1 | Veredicto | Pin v2 (resuelto) |
-|---|--------|--------|-----------|-------------------|
-| 1 | BH1750 (luz, I2C) | I2C | ✅ OK | SDA 21 / SCL 22. Dirección `0x23`. |
-| 2 | MQ-7 (CO, ADC) | GPIO34 | ✅ OK (ADC1_CH6) | Mantener. Ver §3 (heater + RL). |
-| 3 | S12SD (UV, ADC) | GPIO35 | ✅ OK (ADC1_CH7) | Mantener GPIO35. |
-| 4 | PMS5003 (UART) | set GPIO15, reset GPIO2 | ❌ ERROR | **RX 16 / TX 17 / SET 33 / RESET 32** (corregido). |
-| 5 | WH-SP-WS01 (anemómetro) | GPIO36 | ✅ OK | Mantener GPIO36 (pulsos PCNT, solo-entrada OK). Solo era la **etiqueta** invertida. |
-| 6 | WH-SP-WD (veleta) | GPIO26 | ❌ ERROR | **GPIO39** (ADC1_CH3). GPIO26 era ADC2 + LoRa `DIO1`. |
-| 7 | WH-SP-RG (pluviómetro) | GPIO25 | ⚠️ WARNING | **GPIO13** (pulsos PCNT). GPIO25 era ADC2. |
-| 8 | CCS811-HDC1080 (I2C) | I2C | ✅ OK | SDA 21 / SCL 22. `0x5A`/`0x5B` + `0x40`. |
-| 9 | BME280 + AHT10/AHT20 (I2C) | I2C | ✅ OK | SDA 21 / SCL 22. `0x76` + `0x38`. |
-| 10 | DS18B20 (1-Wire) | GPIO37 | ❌ ERROR | **GPIO14** (salida, 1-Wire). El único libre salida-capable sin strapping. |
+| # | Sensor | Pin v2 | Tipo | Estado |
+|---|--------|--------|------|--------|
+| 1 | BH1750 (luz) | SDA 21 / SCL 22 | I2C `0x23` | ✅ OK |
+| 2 | MQ-7 (CO) | GPIO34 | ADC1_CH6 | ✅ OK (ver §3 heater) |
+| 3 | S12SD (UV) | GPIO35 | ADC1_CH7 | ✅ OK |
+| 4 | PMS5003 (partículas) | RX 16 / TX 17 / SET 33 / RESET 32 | UART | ✅ OK |
+| 5 | DS18B20 (1-Wire) | **GPIO27** | 1-Wire | ✅ corregido (estaba siempre aquí) |
+| 6 | WH-SP-RG (pluviómetro) | **GPIO13** | PCNT (pulsos) | ✅ OK |
+| 7 | WH-SP-WS01 (anemómetro) | **GPIO39** | ADC1_CH3 | ⚠️ ver §4 |
+| 8 | CCS811-HDC1080 | SDA 21 / SCL 22 | I2C `0x5A`/`0x40` | ✅ OK |
+| 9 | BME280 + AHT20 | SDA 21 / SCL 22 | I2C `0x76`/`0x38` | ✅ OK |
 
-> **Pines libres para sensores (confirmados por el usuario):** GPIO 14, 12, 13, 15,
-> 2, 39. Asignados: **14 → DS18B20**, **39 → veleta**, **13 → pluviómetro**. Sobran
-> como reserva GPIO 12 (MTDI strapping), GPIO 15 (MTDO strapping) y GPIO 2
-> (strapping + LED onboard) — no usarlos salvo necesidad extrema.
+> **Pines libres (confirmados por el usuario):** GPIO **25, 26, 14, 12, 15, 2**.
+> Como reserva quedan los strapping GPIO12 (MTDI), GPIO15 (MTDO) y GPIO2
+> (strapping + LED onboard) — no usarlos salvo necesidad extrema. GPIO25/26 son
+> ADC2 (no legibles con WiFi activo); sirven como GPIO digital de propósito general.
 
 ---
 
@@ -81,64 +79,58 @@ funcione; los **WARNING** funcionan pero con limitaciones.
 - Requiere alimentación estable (el ventilador consume picos); un capacitor de
   ~100 µF cerca del módulo evita reinicios.
 
-### DS18B20 (1-Wire) — mover de GPIO37 a GPIO14
+### DS18B20 (1-Wire) — GPIO27 (no 14, no 37)
 - 1-Wire es **bidireccional open-drain**: el maestro debe poder bajar la línea.
   GPIO34–39 son solo-entrada, por eso GPIO37 **no funciona**.
-- **GPIO14** es el único pin libre salida-capable sin strapping (GPIO12/15/2 son
-  strapping y quedan como reserva). No es ADC2 ni RMII en esta placa (VSPI usa
-  18/19/23). Pull-up de 4,7 kΩ a 3V3.
+- **GPIO27** es un GPIO de propósito general (no strapping, no solo-entrada) y era
+  el pin original del sensor. Pull-up de 4,7 kΩ a 3V3.
 
 ---
 
-## 4. Intercambio de etiquetas WS01 / WD
+## 4. Viento: WS01 (anemómetro) en GPIO39 — a verificar
 
-Tu descripción tiene **invertidas** las dos estaciones de viento:
+Tu mensaje asigna **WH-SP-WS01 (anemómetro) → GPIO39 (ADC1_CH3)**. Dos cosas a
+confirmar porque afectan el tipo de sensor en el firmware:
 
-| Modelo real | Magnitud | Tipo de señal | Tu etiqueta actual |
-|-------------|----------|---------------|--------------------|
-| **WH-SP-WS01** | Velocidad del viento (anemómetro, cazoletas) | **Pulsos** (reed/hall) → PCNT | Lo marcaste como "dirección" |
-| **WH-SP-WD** | Dirección del viento (veleta) | **Analógico** resistivo → ADC + tabla | Lo marcaste como "velocidad" |
+1. **Anemómetro = pulsos, no analógico (normalmente).** El anemómetro de cazoletas
+   (velocidad del viento) suele ser un reed/hall que emite **pulsos** → se lee por
+   **PCNT**, no por ADC. La veleta (dirección) sí es un divisor resistivo → **ADC**.
+   - Si tu WS01 es de salida **analógica (0–5 V)**, está bien en GPIO39/ADC.
+   - Si es de **pulsos (reed/hall)**, debe ir a PCNT (p. ej. GPIO36 o un libre).
+2. **¿Dónde quedó la veleta (WH-SP-WD, dirección)?** No aparece en tu lista. Antes
+   estaba en GPIO39; si ahora GPIO39 es el anemómetro, la veleta necesita otro pin
+   ADC1 (GPIO34/35/36/39 están tomados; quedan solo-entrada 34–39 → solo GPIO36
+   libre como ADC1).
 
-- La veleta (WH-SP-WD) es un divisor resistivo: va a **ADC1** (GPIO39) y se
-  decodifica con una tabla de resistencias. SEMA ya modela `"WH-SP-WD"` como veleta.
-- El anemómetro (WH-SP-WS01, GPIO36) y el pluviómetro (WH-SP-RG, GPIO13) son
-  **pulsos de reed**: van a **PCNT**, no a ADC. El capacitor de 1 µF a GND es para
-  debounce del reed (correcto).
+> En SEMA, `WH-SP-WS01` se modela como **PCNT** (velocidad) y `WH-SP-WD` como
+> **ADC** (dirección). Verificar contra el datasheet real del módulo.
 
 ---
 
-## 5. Presupuesto de pines (actualizado a W5500 + VSPI)
+## 5. Presupuesto de pines (W5500 + VSPI)
 
-Tu placa usa **W5500 por SPI (VSPI)** en vez de RMII, lo que **libera** los pines
-RMII (0, 25, 26, 27) y deja el bus SPI compartido entre SD (CS4) y W5500 (CS5):
-
-| Recurso | Pines | Estado en tu placa |
-|---------|-------|--------------------|
+| Recurso | Pines | Estado |
+|---------|-------|--------|
 | SPI VSPI (SD + W5500) | 18 (SCK), 23 (MOSI), 19 (MISO) + CS4/CS5 | ✅ Usado |
 | I2C (todos los sensores I2C) | 21 (SDA), 22 (SCL) | ✅ Usado |
 | UART (PMS5003 + serial) | 16 (RX), 17 (TX) | ✅ Usado |
-| HSPI (GPIO 12/13/14/15) | libre | ✅ Reasignado a sensores |
-| ADC1 (34, 35, 36, 39) | entrada analógica/pulsos | ✅ MQ-7, S12SD, anemómetro, veleta |
-| GPIO14 | salida (DS18B20) | ✅ 1-Wire |
-| Strapping (0, 2, 5, 12, 15) | reserva | ⚠️ 5 = CS W5500 (OK por diseño); 2/12/15 como reserva |
-
-**Conclusión:** con W5500 + VSPI no falta ningún pin. El DS18B20 va a **GPIO14**
-(salida), la veleta a **GPIO39** (ADC1) y el pluviómetro a **GPIO13** (pulso). No
-es necesario soltar buses ni pasarse a otra board.
+| ADC1 (34, 35, 39) | MQ-7, S12SD, WS01 | ✅ Usado |
+| 1-Wire | 27 (DS18B20) | ✅ Usado |
+| PCNT | 13 (pluviómetro) | ✅ Usado |
+| Libres | 25, 26, 14, 12, 15, 2 | ✅ 6 pines |
 
 ---
 
 ## 6. Recomendaciones de diseño para la v2 (SMD)
 
-1. **Bus I2C único** (SDA=GPIO21, SCL=GPIO22) con pull-ups de 4,7 kΩ. Todos los
-   sensores I2C conviven en un solo bus: BH1750 `0x23`, BME280 `0x76`, AHT20 `0x38`,
-   CCS811 `0x5A`, HDC1080 `0x40`.
-2. **Entradas ADC al exterior** (veleta, UV, CO): resistor serie (1k) + capacitor
+1. **Bus I2C único** (SDA=GPIO21, SCL=GPIO22) con pull-ups de 4,7 kΩ: BH1750
+   `0x23`, BME280 `0x76`, AHT20 `0x38`, CCS811 `0x5A`, HDC1080 `0x40`.
+2. **Entradas ADC al exterior** (UV, CO, viento): resistor serie (1k) + capacitor
    0,1 µF a GND + TVS/ESD para proteger contra descargas.
-3. **Sensores de pulsos** (anemómetro GPIO36, pluviómetro GPIO13): pull-up 10k a
-   3V3 + cap 1 µF a GND (debounce).
+3. **Sensores de pulsos** (pluviómetro GPIO13, y anemómetro si es PCNT): pull-up
+   10k a 3V3 + cap 1 µF a GND (debounce).
 4. **MQ-7**: etapa de heater dedicada (MOSFET + pin de control) y conector de 5 V.
-5. **DS18B20**: GPIO14 (salida) + pull-up 4,7 kΩ.
+5. **DS18B20**: GPIO27 + pull-up 4,7 kΩ.
 6. **Pines de depuración**: dejar GPIO1/GPIO3 (UART0) libres para serial de log.
 7. **No tocar los strapping** (GPIO2, GPIO12, GPIO15) salvo que no quede alternativa.
 
@@ -150,18 +142,20 @@ El **ESP32-P4 es RISC-V y no tiene WiFi/Bluetooth** (ni MAC Ethernet nativa): se
 usa para edge-AI/HMI con mucha RAM/CPU y Ethernet por SPI (W5500). En SEMA es un
 perfil **experimental**: la web local de configuración depende de WiFi, así que el
 P4 solo aplica como nodo de cómputo/concentrador con Ethernet. Queda registrado
-como `esp32-p4` en `platformio.ini` con la salvedad de que el core Arduino para P4
-está madurando.
+como `esp32-p4` en `platformio.ini`.
 
 ---
 
-## 8. Acciones de firmware derivadas de este mapa (pendiente de integración)
+## 8. Acciones de firmware derivadas de este mapa
 
-1. **`include/hw/HwProfile.hpp`**: `SEMA_NATIVE_ETH` debe ser `0` (W5500) para
-   `BOARD_ESP32_WROOM`/`BOARD_ESP32_WROOM32U` (hoy es `1` = RMII).
-2. **Bus SPI LoRa/SD**: cambiar de GPIO 14/12/15 a **18/23/19** (VSPI) para que SD
-   y LoRa compartan bus con el W5500 (cada uno con su CS: SD=4, W5500=5).
-3. **Pines de sensores fijos** (si `SEMA_PINS_FROM_FILE=1`): DS18B20→14, veleta→39,
-   pluviómetro→13, anemómetro→36, S12SD→35, MQ-7→34, PMS5003→16/17/33/32.
-4. **Identidad 32 MB** (bug ya detectado): el env `esp32-wroom-32u-32mb` hereda
-   `SEMA_FLASH_MB 16`; corregir a 32 y `SEMA_BOARD_ID "esp32-wroom32u-32mb"`.
+1. **Ethernet W5500 (decisión pendiente):** `include/hw/HwProfile.hpp` define
+   `SEMA_NATIVE_ETH 1` (RMII) para `BOARD_ESP32_WROOM`. Para que el W5500 del PCB
+   funcione hay que **consolidar W5500 al bus VSPI compartido** (driver Arduino
+   Ethernet) o **añadir un segundo bus SPI**. Hoy no se puede solo poner
+   `SEMA_NATIVE_ETH 0` porque el driver ESP-IDF de W5500 y el SPI de Arduino (SD/
+   LoRa) pelearían por los mismos pines 18/19/23.
+2. **Pines de sensores** (si se hace variante `SEMA_PINS_FROM_FILE=1`): DS18B20→27,
+   pluviómetro→13, anemómetro→39, S12SD→35, MQ-7→34, PMS5003→16/17/33/32.
+3. **Identidad 32 MB**: ya corregida en v1.104.0 (`esp32-wroom32u-32mb`), pero la
+   placa real es devkit v1 (4 MB), no WROOM-32U — el env `esp32-wroom-32u*` no
+   aplica a este PCB.
