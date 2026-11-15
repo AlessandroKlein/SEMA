@@ -1,6 +1,6 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.109.0 | **Releases:** 91
+> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.110.0 | **Releases:** 92
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.
@@ -9,6 +9,7 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 
 ## 0. Estado actual (2026-11-15)
 
+- **v1.110.0** — expansores UART/SPI/mux/ADC (SC16IS752, SC18IS602B, TCA9548A, ADS1115) vía ESP32-Base v0.5.0.
 - **v1.109.0** — rediseño visual del dashboard web (paleta dark OLED, acento teal/cyan, monospace, glow). Vía ESP32-Base v0.4.0.
 - **v1.108.0** — migración a ESP-IDF core 3.x + ESP32-C6 + detección de chip + expansores:
   - **Core 3.x** (espressif32 8.0.0, arduino-esp32 3.x): watchdog `esp_task_wdt_config_t`,
@@ -21,9 +22,9 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
   - **6 envs compilan SUCCESS**: devkit 85.5%/18.8%, demo 85.7%/18.8%, s3 48.5%/18.3%,
     c6 50.3%/16.9%, wroom-32u 49.8%/18.8%, wroom-32u-32mb 37.4%/18.8%.
 - **Roadmap domótica** (`docs/PENDIENTES.md` §2.5): Fase 0a ✅ (expansores GPIO/PWM);
-  0b UART/mux/ADC pendiente; Fases 1-4 (Modbus TCP+BACnet, mesh ESP-NOW, coordinador, radio) pendientes.
+  0b ✅ UART/SPI/mux/ADC; Fases 1-4 (Modbus TCP+BACnet, mesh ESP-NOW, coordinador, radio) pendientes.
 - **Pendiente**: Ethernet W5500 (consolidar bus SPI),
-  envs S2/C3 para validar compilación, Docs.git sincronizar → v1.109.0 (subagente Documentador).
+  envs S2/C3 para validar compilación, Docs.git sincronizar → v1.110.0 (subagente Documentador).
 
 ---
 

@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.110.0] - 2026-11-15
+
+### Added
+
+- **Expansores UART/SPI/mux/ADC** (vía `ESP32-Base` v0.4.0 → v0.5.0): SC16IS752 (UART dual por I²C), SC18IS602B (puente I²C→SPI), TCA9548A (mux I²C de 8 canales), ADS1115 (ADC 16-bit de 4 canales). Flags `SEMA_USE_SC16IS752/SC18IS602B/TCA9548A/ADS1115` (default OFF) + configuración + rutas web. MAX14830 diferido (sin librería en registry).
+
 ## [1.109.0] - 2026-11-15
 
 ### Changed
