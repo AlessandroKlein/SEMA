@@ -108,7 +108,8 @@ target) y **habilita solo lo compatible** (capability matrix), para soportar los
 SoC de la lista del usuario.
 
 **Realidad verificada (espressif32 8.0.0 + arduino core 3.x):** los ~40 SoC de
-la lista colapsan a **9 targets IDF**; hoy compilan **5**:
+la lista colapsan a **11 targets IDF** (los 9 de abajo + C2/ESP8684 + S31
+pre-release); hoy compilan **6** (C6 validado con env propio):
 
 | Target | WiFi | BLE/BT | 802.15.4 | USB-OTG | Eth MAC | Núcleos | Arq | ¿Compila hoy? |
 |---|---|---|---|---|---|---|---|---|
@@ -116,7 +117,7 @@ la lista colapsan a **9 targets IDF**; hoy compilan **5**:
 | esp32s2 | 4 | ✗ | ✗ | ✓ | ✗ | 1 | Xtensa | ✅ |
 | esp32s3 | 4 | BLE5 | ✗ | ✓ | ✗ | 2 | Xtensa | ✅ |
 | esp32c3 (y ESP8685) | 4 | BLE5 | ✗ | ✗ | ✗ | 1 | RISC-V | ✅ |
-| esp32c6 | 6 | BLE5 | ✓ | ✗ | ✗ | 1 | RISC-V | ✅ (arduino core 3.x / espressif32 8.0.0) |
+| esp32c6 | 6 | BLE5 | ✓ | ✗ | ✗ | 1 | RISC-V | ✅ (env `esp32-c6-devkitc-1` añadido y validado) |
 | esp32h2 (H4/H21) | ✗ | BLE5 | ✓ | ✗ | ✗ | 1 | RISC-V | ❌ requiere arduino-esp32 3.x |
 | esp32c5 | 6 | BLE5 | ✓ | ✗ | ✗ | 1 | RISC-V | ❌ IDF más nuevo |
 | esp32c61 | 6 | BLE5 | ✗ | ✗ | ✗ | 1 | RISC-V | ❌ IDF más nuevo |
@@ -135,10 +136,12 @@ Nota: "ESP32-S31NRV16/32 (Pre-release)" no se reconoce como parte oficial
   `base::chipRevision()`, `base::flashSize()`, `base::psramSize()`,
   `base::coreCount()` — wrappers finos de `ESP.getChipModel()` etc.
 
-**Plan:** implementar `chip.hpp` + matriz **después de Fase 0a** (0a toca
-`include/base/` flags; evitar colisión de escritura). Luego añadir envs S2/C3/C6
-para validar compilación. H2/C5/C61/P4 = sin board en espressif32 8.0.0 (esperar
-PlatformIO más nuevo).
+**Estado (2026-11-15):** `chip.hpp` + `ChipInfo.hpp` **implementados** en
+ESP32-Base v0.3.0 (11 targets). Env `esp32-c6-devkitc-1` **añadido y validado**
+(v0.3.1: PowerManager GPIO-wakeup + guard de `ethernet` en `HttpServer::onNetwork`
++ OneWire fijado a commit con soporte C6). Pendiente: envs **S2/C3** para validar
+compilación; H2/C5/C61/P4 = sin board en espressif32 8.0.0 (esperar PlatformIO
+más nuevo).
 
 ---
 

@@ -25,8 +25,8 @@
 //     -D SEMA_PINS_FROM_FILE=0   → pines configurables en runtime (web).
 // =============================================================================
 
-#if !defined(BOARD_ESP32_WROOM) && !defined(BOARD_ESP32_S3) && !defined(BOARD_ESP32_WROOM32U) && !defined(BOARD_ESP32_P4)
-#error "Define BOARD_ESP32_WROOM, BOARD_ESP32_WROOM32U, BOARD_ESP32_S3 o BOARD_ESP32_P4 en build_flags"
+#if !defined(BOARD_ESP32_WROOM) && !defined(BOARD_ESP32_S3) && !defined(BOARD_ESP32_WROOM32U) && !defined(BOARD_ESP32_P4) && !defined(BOARD_ESP32_C6)
+#error "Define BOARD_ESP32_WROOM, BOARD_ESP32_WROOM32U, BOARD_ESP32_S3, BOARD_ESP32_P4 o BOARD_ESP32_C6 en build_flags"
 #endif
 
 // --- Identidad de la board (para OTA / manifest) ---
@@ -44,6 +44,13 @@
 #define SEMA_NATIVE_ETH 1
 #elif defined(BOARD_ESP32_S3)
 #define SEMA_BOARD_ID "esp32-s3-8mb"
+#define SEMA_FLASH_MB 8
+#define SEMA_NATIVE_ETH 0
+#elif defined(BOARD_ESP32_C6)
+// ESP32-C6: RISC-V single-core, WiFi 6 + BLE 5 + 802.15.4 (Matter/Thread/
+// Zigbee). Sin MAC Ethernet nativa ni controlador CAN (TWAI). Objetivo: esclavo
+// que descarga web/Ethernet del principal, o coordinador 802.15.4.
+#define SEMA_BOARD_ID "esp32-c6-8mb"
 #define SEMA_FLASH_MB 8
 #define SEMA_NATIVE_ETH 0
 #elif defined(BOARD_ESP32_P4)
