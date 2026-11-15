@@ -1,28 +1,26 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-11-14 | **Firmware:** v1.106.0 | **Releases:** 90
+> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.107.0 | **Releases:** 90
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.
 
 ---
 
-## 0. Estado al pausar (2026-11-14 → retomar 2026-11-15)
+## 0. Estado actual (2026-11-15)
 
-- **v1.106.0 liberada** (toggle runtime de elementos + edición de pines solo en AP).
-- **Docs.git sincronizado** v1.103.0 → v1.106.0 (commit `08a1bac6`).
-- **Repo base `ESP32-Base` creado** (público). Plan: `docs/REPO-BASE-PLAN.md`.
-- **Fase 1 interrumpida a mitad** (se pausó por pedido del usuario):
-  - `ESP32-Base` tiene el commit `221dfb3` con el esqueleto (`library.json`,
-    `README.md`, `LICENSE`, `include/base/board_config.h`, `core_hooks.h`) y los
-    módulos genéricos **copiados** bajo `include/core/` — pero **sin renombrar** a
-    `base::` / `include/base/`.
-  - La rama SEMA `refactor/base-f1` se **descartó** (estaba a medias y con un commit
-    mezclado). `main` quedó limpio en `d26ba26`.
-  - Al retomar: re-despachar F1 desde `ESP32-Base` `221dfb3` (renombrar namespace +
-    mover a `include/base/` + resolver los 7 acoples + extraer el lado SEMA) y
-    verificar `pio run -e esp32doit-devkit-v1`.
-- **Pendiente**: Ethernet W5500 (consolidar bus SPI), Fase 2/3 del repo base.
+- **v1.107.0** — extracción de la base reutilizable `ESP32-Base` completada:
+  - **F1** base extraída a `ESP32-Base` (`namespace base::`, esqueleto + módulos).
+  - **F2/F3** SEMA consume la base por `lib_deps` `ESP32-Base#v0.1.0` (tag); 65
+    módulos genéricos movidos fuera de SEMA; `src/core/SemaGlue.cpp` implementa los
+    14 hooks `base::CoreHooks` (dominio meteorológico: sensores, derivadas, pronóstico).
+  - Code review "APROBADO CON CAMBIOS" → correcciones aplicadas (deduplicación de
+    derivadas, const-correctness, flag muerto `SEMA_FIXED_HARDWARE` eliminado).
+    `main` en `66d5289`; `ESP32-Base` en `b97bc88` (tag `v0.1.0`).
+  - 4 envs compilan SUCCESS con base v0.1.0 (devkit, demo, s3, wroom-32u).
+- **Docs.git sincronizado** v1.103.0 → v1.106.0 (commit `08a1bac6`); pendiente
+  sincronizar → v1.107.0 (subagente Documentador).
+- **Pendiente**: rediseño de la web (fase 5 del objetivo), Ethernet W5500 (consolidar bus SPI).
 
 ---
 

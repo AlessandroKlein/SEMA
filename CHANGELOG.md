@@ -6,6 +6,20 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.107.0] - 2026-11-15
+
+### Changed
+
+- Extracción de la base reutilizable `ESP32-Base` (librería PlatformIO, `namespace base::`): SEMA la consume por `lib_deps` `https://github.com/AlessandroKlein/ESP32-Base.git#v0.1.0` (WiFi, Ethernet, web, NVS, runtime, publicadores, alarmas, buses, infraestructura).
+- Los 65 módulos genéricos de `src/core/**`/`include/core/**` pasan a `ESP32-Base`; SEMA conserva el dominio meteorológico (sensores, derivadas, pronóstico) vía `src/core/SemaGlue.cpp` (14 hooks `base::CoreHooks`).
+- Las magnitudes derivadas (dew_point, heat_index, qnh, vpd, …) ahora fluyen a history/publish/rules/forecast además de la web (se calculan una sola vez en `SensorManager::readAll()`).
+
+### Fixed
+
+- Duplicación de magnitudes derivadas en `/api/v1/sensors` (se emitían dos veces).
+- Const-correctness: getters `const` en `SemaCore` y hooks de viento mutables (`/api/v1/wind/north`, `/api/v1/wind/resistors`) sin `const_cast`.
+- Flag muerto `SEMA_FIXED_HARDWARE` eliminado (consolidado en `SEMA_PINS_FROM_FILE`).
+
 ## [1.106.0] - 2026-11-14
 
 ### Added

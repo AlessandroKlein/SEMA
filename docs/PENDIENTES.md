@@ -1,6 +1,6 @@
 # Pendientes — SEMA
 
-> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-14 | **Firmware:** v1.106.0
+> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-15 | **Firmware:** v1.107.0
 
 Resultado de la comprobación de `MEJORAS.md`, `FUTURO.md` y `CONTINUACION.md`
 contra el código. Los ítems **no realizados** quedan aquí para retomarlos en otra
@@ -75,7 +75,7 @@ Se corrigieron dos inconsistencias de documentación:
 |------|--------|---------|
 | Habilitar/deshabilitar elementos en runtime | ✅ hecho (v1.106.0) | Toggle runtime de elementos (sensores, buses, Ethernet, Modbus, CAN, LoRa, Zigbee) persistido en NVS, incluso en PCB. |
 | Edición de pines solo en modo AP | ✅ hecho (v1.106.0) | `pinsLocked()`: en STA/PCB los pines quedan solo-lectura; `/api/v1/system` expone `ap_mode`/`pins_from_file`. |
-| Repo base reutilizable | 🔄 en curso (Fase 1, pausada) | Repo `AlessandroKlein/ESP32-Base` creado; F1 iniciada (commit `221dfb3`: esqueleto + módulos copiados, **sin renombrar** a `base::`). Re-despachar F1 para: rename namespace + `include/base/` + resolver 7 acoples + lado SEMA. Quedan F2/F3. Plan: `docs/REPO-BASE-PLAN.md`. |
+| Repo base reutilizable | ✅ hecho (v1.107.0) | `AlessandroKlein/ESP32-Base` (tag `v0.1.0`, commit `b97bc88`); SEMA consume por `lib_deps`; 65 módulos genéricos movidos; `src/core/SemaGlue.cpp` con 14 hooks. F1+F2+F3 completadas, code review aplicado. Plan: `docs/REPO-BASE-PLAN.md`. |
 | Documentador dedicado de `Docs.git` | ✅ regla permanente | Docs.git sincronizado v1.103.0 → v1.106.0 (commit `08a1bac6`). |
 | Compatibilidad dual PCB↔modular con flags | ✅ regla permanente | Registrada en AGENTS.md §4.2. |
 | Ethernet W5500 (consolidar bus SPI) | ⬜ pendiente | PCB WROOM-32U usa W5500 en VSPI 18/19/23 (CS=GPIO5) pero el firmware define `SEMA_NATIVE_ETH 1` (RMII). Decidir: Arduino Ethernet en bus compartido vs 2º bus SPI. Ver `docs/PCB-V1-CORRECCIONES.md` §8. |
