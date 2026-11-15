@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.109.0] - 2026-11-15
+
+### Changed
+
+- **Rediseño visual del dashboard web**: paleta dark OLED (`#0F172A`), acento teal/cyan (`#22d3ee`), valores numéricos en monospace, glow sutil, transición suave de tema y `--warn` ámbar. Vía `ESP32-Base` v0.3.1 → v0.4.0.
+
 ## [1.108.0] - 2026-11-15
 
 ### Changed
