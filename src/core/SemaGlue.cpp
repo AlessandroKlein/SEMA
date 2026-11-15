@@ -161,7 +161,7 @@ String measurementLabelsJson() {
 // /api/v1/sensors — catálogo + mediciones (crudas + derivadas + reloj), con
 // conversión de unidades según el flag `imperial`.
 String sensorsJson(const base::SemaCore& core, bool imperial) {
-  base::SemaCore& c = const_cast<base::SemaCore&>(core);
+  const base::SemaCore& c = core;
   const String units = c.config().get().system.units;
 
 #if SEMA_DEMO
@@ -257,9 +257,6 @@ String sensorsJson(const base::SemaCore& core, bool imperial) {
     o["healthy"] = s.healthy;
   }
 
-  std::vector<base::Measurement> derived;
-  g_derived.compute(c.sensors().measurements(), derived, units);
-
   JsonArray arr = doc.createNestedArray("measurements");
   for (const base::Measurement& m : c.sensors().measurements()) {
     String u;
@@ -271,16 +268,6 @@ String sensorsJson(const base::SemaCore& core, bool imperial) {
     o["measurement"] = m.measurement;
     o["value"] = v;
     o["unit"] = u;
-    o["quality"] = base::qualityName(m.quality);
-    o["sequence"] = m.sequence;
-  }
-  for (const base::Measurement& m : derived) {
-    JsonObject o = arr.createNestedObject();
-    o["sensor_id"] = m.sensorId;
-    o["channel_id"] = m.channelId;
-    o["measurement"] = m.measurement;
-    o["value"] = m.value;
-    o["unit"] = m.unit;
     o["quality"] = base::qualityName(m.quality);
     o["sequence"] = m.sequence;
   }
@@ -330,8 +317,8 @@ String forecastJson() {
 
 // /api/v1/wind/north — auto-calibración del norte de la veleta.
 // La base ya chequea auth antes de llamar al hook.
-String windNorthJson(const base::SemaCore& core, int& status) {
-  base::SemaCore& c = const_cast<base::SemaCore&>(core);
+String windNorthJson(base::SemaCore& core, int& status) {
+  base::SemaCore& c = core;
   const base::SystemConfig& sys = c.config().get().system;
   if (sys.weather.windDirectionPin == 0) {
     status = 400;
@@ -352,8 +339,8 @@ String windNorthJson(const base::SemaCore& core, int& status) {
 
 // /api/v1/wind/resistors — red de resistencias de la veleta.
 // La base ya chequea auth y presencia de body antes de llamar al hook.
-String windResistorsJson(const base::SemaCore& core, const String& body, int& status) {
-  base::SemaCore& c = const_cast<base::SemaCore&>(core);
+String windResistorsJson(base::SemaCore& core, const String& body, int& status) {
+  base::SemaCore& c = core;
   DynamicJsonDocument doc(512);
   if (deserializeJson(doc, body)) {
     status = 400;

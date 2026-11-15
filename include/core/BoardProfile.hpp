@@ -1,25 +1,13 @@
 #pragma once
 
 // =============================================================================
-// SEMA — Board Profile (D-0050) — pines fijos para PCB personalizada
+// SEMA — Board Profile (D-0050) — pines por defecto del catálogo fijo
 // =============================================================================
-// Define los pines por defecto del catálogo de sensores. Para una PCB propia:
-//
-//   1. Poné `SEMA_FIXED_HARDWARE` en `1`.
-//      → deshabilita la configuración de pines por web: el catálogo `sensors[]`
-//        de la configuración se ignora y se usa el catálogo fijo de abajo.
-//   2. Ajustá los pines (`SEMA_PIN_*`) a tu diseño.
-//
-// Con `SEMA_FIXED_HARDWARE = 0` (por defecto) los pines son configurables desde
-// la web; los `SEMA_PIN_*` solo se usan como fallback cuando la config no define
-// sensores.
+// Define los pines por defecto (`SEMA_PIN_*`) usados por SemaGlue para el
+// catálogo de sensores por defecto (BME280/SHT40/DS18B20/BH1750/AHT20/ADC).
+// Los pines configurables por web (variante modular) y el catálogo fijo de la
+// variante PCB (`SEMA_PINS_FROM_FILE=1`) los gestiona `include/hw/HwProfile.hpp`.
 // =============================================================================
-
-// 0 = pines configurables desde la web (por defecto).
-// 1 = pines fijos (catálogo de sensores NO tomado de la config web).
-#ifndef SEMA_FIXED_HARDWARE
-#define SEMA_FIXED_HARDWARE 0
-#endif
 
 // Pines por defecto del catálogo fijo.
 #ifndef SEMA_PIN_I2C_SDA
