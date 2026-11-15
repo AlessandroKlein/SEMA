@@ -43,20 +43,20 @@ veleta/pluviómetro, catálogo de magnitudes).
 
 ## 2. Nombre y consumo recomendado
 
-**Nombre sugerido:** `SemaBase` (repo `AlessandroKlein/SemaBase`), namespace
+**Nombre sugerido:** `ESP32-Base` (repo `AlessandroKlein/ESP32-Base`), namespace
 neutro `base::` (hoy todo es `sema::`).
 
 **Consumo recomendado: (a) PlatformIO `lib_deps` apuntando a git + tag.**
 
 ```ini
 lib_deps =
-    https://github.com/AlessandroKlein/SemaBase.git#v1.0.0
+    https://github.com/AlessandroKlein/ESP32-Base.git#v1.0.0
 ```
 
 La base se empaqueta como **librería PlatformIO** (`library.json` + `src/` +
 `include/`), no como proyecto. Justificación:
 
-- `git clone SemaBase` + `pio run` = proyecto nuevo listo, y `SEMA` solo pinnea
+- `git clone ESP32-Base` + `pio run` = proyecto nuevo listo, y `SEMA` solo pinnea
   un tag; subir de versión = cambiar el `#vX.Y.Z` (nada de submodules anidados).
 - PlatformIO resuelve la dependencia en Windows sin pasos manuales.
 - **Descartado (b) submodule**: añade dos `git` a mantener y rompe el "siempre
@@ -64,7 +64,7 @@ La base se empaqueta como **librería PlatformIO** (`library.json` + `src/` +
 - **Descartado (c) vendorizado**: copia estática que se desincroniza y no es
   "siempre actualizado".
 
-`SemaBase` lleva su propio SemVer + tag + `CHANGELOG` (docs-only, sin release de
+`ESP32-Base` lleva su propio SemVer + tag + `CHANGELOG` (docs-only, sin release de
 firmware). El release de firmware sigue siendo de SEMA (§5).
 
 ---
@@ -86,7 +86,7 @@ firmware). El release de firmware sigue siendo de SEMA (§5).
 ## 4. Plan por fases
 
 ### Fase 1 — Extraer la base (mínimo viable)
-- Crear `SemaBase` como librería PlatformIO con `library.json` + `src/` + `include/`.
+- Crear `ESP32-Base` como librería PlatformIO con `library.json` + `src/` + `include/`.
 - Mover §1.1; renombrar namespace `sema` → `base` (cambio mecánico).
 - `HwProfile.hpp` (identidad de board y flags) **se queda en SEMA**; la base
   entrega `board_config.h` con defaults `#ifndef` para que cada proyecto lo llene.
@@ -102,10 +102,10 @@ firmware). El release de firmware sigue siendo de SEMA (§5).
   limpiar acoples 1-7.
 
 ### Fase 3 — SEMA consume la base
-- `platformio.ini` de SEMA: `lib_deps = .../SemaBase.git#vX.Y.Z`.
+- `platformio.ini` de SEMA: `lib_deps = .../ESP32-Base.git#vX.Y.Z`.
 - `main.cpp` queda fino: registra dominio meteorológico (sensores + derived +
   forecast + catálogo) y arranca el core base.
-- Actualizar flujo de release para versionar `SemaBase` por separado.
+- Actualizar flujo de release para versionar `ESP32-Base` por separado.
 - **Esfuerzo: medio** (~1 día-agente): cableado + release + Docs.
 
 ---
@@ -120,7 +120,7 @@ firmware). El release de firmware sigue siendo de SEMA (§5).
    la base debe honrarlos por `#ifndef` (patrón ya usado en `SensorFlags.hpp`). Si no,
    la base compila todo y rompe el ahorro de flash.
 3. **Sistema de release.** `firmware_manifest.json` + SHA-256 + `gh release` son de
-   SEMA (por board) y **no se mueven**; lo nuevo es que `SemaBase` versiona por tag
+   SEMA (por board) y **no se mueven**; lo nuevo es que `ESP32-Base` versiona por tag
    propio. Riesgo: versiones desincronizadas si no se pineea el tag en `lib_deps`.
 4. **Web assets.** `GridstackAssets.h` + `gen_gridstack.py` mezclan shell genérico con
    dashboard meteorológico; al partir, regenerar assets sin perder el shell.
