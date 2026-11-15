@@ -23,7 +23,7 @@ bool Aht20Sensor::begin() {
 
 bool Aht20Sensor::healthy() const { return ok_; }
 
-uint8_t Aht20Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Aht20Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 2) {
     return 0;
   }
@@ -32,7 +32,7 @@ uint8_t Aht20Sensor::measure(Measurement out[], uint8_t max) {
   aht.getEvent(&humidity, &temp);
   const float t = temp.temperature;
   const float h = humidity.relative_humidity;
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   uint8_t n = 0;
 
@@ -41,7 +41,7 @@ uint8_t Aht20Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "temperature";
   out[n].value = t;
   out[n].unit = "degC";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -51,7 +51,7 @@ uint8_t Aht20Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "humidity";
   out[n].value = h;
   out[n].unit = "percent";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;

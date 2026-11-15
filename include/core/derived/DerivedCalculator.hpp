@@ -17,10 +17,10 @@ namespace sema {
 
 class DerivedCalculator {
 public:
-  void configure(const SystemConfig& sys) { sys_ = sys; }
+  void configure(const base::SystemConfig& sys) { sys_ = sys; }
 
   // Añade a `out` las magnitudes derivadas calculables, convertidas a `units`.
-  void compute(const std::vector<Measurement>& raw, std::vector<Measurement>& out,
+  void compute(const std::vector<base::Measurement>& raw, std::vector<base::Measurement>& out,
                const String& units);
 
   // Conversión de unidades (canónica métrica → imperial si procede).
@@ -28,12 +28,12 @@ public:
                            const String& unit, bool imperial, String& outUnit);
 
   // Ángulo bruto (0–360°, 0 = norte) de la veleta, sin offset.
-  static float windVaneRawAngle(uint16_t adc, const SystemConfig& sys);
+  static float windVaneRawAngle(uint16_t adc, const base::SystemConfig& sys);
   // Dirección de viento (0–360°) con el offset de norte aplicado.
-  static float windDirection(uint16_t adc, const SystemConfig& sys);
+  static float windDirection(uint16_t adc, const base::SystemConfig& sys);
 
 private:
-  SystemConfig sys_;
+  base::SystemConfig sys_;
   float rainTotal_ = 0.0f;   // precipitación acumulada (mm)
   uint32_t lastRainTs_ = 0;  // timestamp de la última muestra de lluvia
 };

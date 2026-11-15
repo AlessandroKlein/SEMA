@@ -25,7 +25,7 @@ bool As3935Sensor::begin() {
 
 bool As3935Sensor::healthy() const { return ok_; }
 
-uint8_t As3935Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t As3935Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 1) {
     return 0;
   }
@@ -34,13 +34,13 @@ uint8_t As3935Sensor::measure(Measurement out[], uint8_t max) {
     return 0;
   }
 
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
   out[0].sensorId = id_;
   out[0].channelId = "distance";
   out[0].measurement = "lightning_distance";
   out[0].value = lightning.distanceToStorm();
   out[0].unit = "km";
-  out[0].quality = Quality::Valid;
+  out[0].quality = base::Quality::Valid;
   out[0].sequence = ++sequence_;
   out[0].timestamp = ts;
   return 1;

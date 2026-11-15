@@ -25,7 +25,7 @@ bool Ccs811Sensor::begin() {
 
 bool Ccs811Sensor::healthy() const { return ok_; }
 
-uint8_t Ccs811Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Ccs811Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 2) {
     return 0;
   }
@@ -33,7 +33,7 @@ uint8_t Ccs811Sensor::measure(Measurement out[], uint8_t max) {
     return 0;
   }
 
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
   uint8_t n = 0;
 
   // eCO₂ (CO₂ equivalente): devuelve 0 mientras el sensor calienta (~20 min).
@@ -42,7 +42,7 @@ uint8_t Ccs811Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "eco2";
   out[n].value = ccs811.geteCO2();
   out[n].unit = "ppm";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -52,7 +52,7 @@ uint8_t Ccs811Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "tvoc";
   out[n].value = ccs811.getTVOC();
   out[n].unit = "ppb";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;

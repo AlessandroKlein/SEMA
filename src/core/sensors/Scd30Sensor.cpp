@@ -22,7 +22,7 @@ bool Scd30Sensor::begin() {
 
 bool Scd30Sensor::healthy() const { return ok_; }
 
-uint8_t Scd30Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Scd30Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 3) {
     return 0;
   }
@@ -35,7 +35,7 @@ uint8_t Scd30Sensor::measure(Measurement out[], uint8_t max) {
   const float co2 = scd30.CO2;
   const float t = scd30.temperature;
   const float h = scd30.relative_humidity;
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   uint8_t n = 0;
 
@@ -44,7 +44,7 @@ uint8_t Scd30Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "co2";
   out[n].value = co2;
   out[n].unit = "ppm";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -54,7 +54,7 @@ uint8_t Scd30Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "temperature";
   out[n].value = t;
   out[n].unit = "degC";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -64,7 +64,7 @@ uint8_t Scd30Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "humidity";
   out[n].value = h;
   out[n].unit = "percent";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;

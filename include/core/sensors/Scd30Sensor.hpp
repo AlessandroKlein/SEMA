@@ -7,11 +7,11 @@
 // =============================================================================
 // SEMA — Driver SCD30 (CO₂, temperatura y humedad) sobre I²C
 // =============================================================================
-// D-0043 / README §13 (Fase 5 — calidad ambiental). Sensor NDIR de CO₂.
+// D-0043 / README §13 (Fase 5 — calidad ambiental). base::Sensor NDIR de CO₂.
 
 namespace sema {
 
-class Scd30Sensor : public Sensor {
+class Scd30Sensor : public base::Sensor {
 public:
   Scd30Sensor(const char* id, uint8_t sda, uint8_t scl);
 
@@ -20,7 +20,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

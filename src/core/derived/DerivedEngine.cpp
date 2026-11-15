@@ -34,15 +34,15 @@ float DerivedEngine::absoluteHumidity(float tempC, float relHum) {
   return 216.7f * e / (tempC + 273.15f);
 }
 
-void DerivedEngine::compute(std::vector<Measurement>& measurements) {
+void DerivedEngine::compute(std::vector<base::Measurement>& measurements) {
   // Busca un sensor que aporte temperatura y humedad simultáneamente (mismo id).
-  const Measurement* temp = nullptr;
-  const Measurement* hum = nullptr;
-  for (const Measurement& m : measurements) {
+  const base::Measurement* temp = nullptr;
+  const base::Measurement* hum = nullptr;
+  for (const base::Measurement& m : measurements) {
     if (m.channelId != "temperature") {
       continue;
     }
-    for (const Measurement& h : measurements) {
+    for (const base::Measurement& h : measurements) {
       if (h.sensorId == m.sensorId && h.channelId == "humidity") {
         temp = &m;
         hum = &h;
@@ -60,46 +60,46 @@ void DerivedEngine::compute(std::vector<Measurement>& measurements) {
   const float td = dewPoint(temp->value, hum->value);
   const float hi = heatIndex(temp->value, hum->value);
 
-  Measurement dew;
+  base::Measurement dew;
   dew.sensorId = "DERIVED";
   dew.channelId = "dew_point";
   dew.measurement = "dew_point";
   dew.value = td;
   dew.unit = "degC";
-  dew.quality = Quality::Valid;
+  dew.quality = base::Quality::Valid;
   dew.sequence = temp->sequence;
   dew.timestamp = temp->timestamp;
   measurements.push_back(dew);
 
-  Measurement heat;
+  base::Measurement heat;
   heat.sensorId = "DERIVED";
   heat.channelId = "heat_index";
   heat.measurement = "heat_index";
   heat.value = hi;
   heat.unit = "degC";
-  heat.quality = Quality::Valid;
+  heat.quality = base::Quality::Valid;
   heat.sequence = temp->sequence;
   heat.timestamp = temp->timestamp;
   measurements.push_back(heat);
 
-  Measurement vpres;
+  base::Measurement vpres;
   vpres.sensorId = "DERIVED";
   vpres.channelId = "vapor_pressure";
   vpres.measurement = "vapor_pressure";
   vpres.value = saturationVaporPressure(temp->value) * hum->value / 100.0f;
   vpres.unit = "hPa";
-  vpres.quality = Quality::Valid;
+  vpres.quality = base::Quality::Valid;
   vpres.sequence = temp->sequence;
   vpres.timestamp = temp->timestamp;
   measurements.push_back(vpres);
 
-  Measurement ahum;
+  base::Measurement ahum;
   ahum.sensorId = "DERIVED";
   ahum.channelId = "absolute_humidity";
   ahum.measurement = "absolute_humidity";
   ahum.value = absoluteHumidity(temp->value, hum->value);
   ahum.unit = "g/m3";
-  ahum.quality = Quality::Valid;
+  ahum.quality = base::Quality::Valid;
   ahum.sequence = temp->sequence;
   ahum.timestamp = temp->timestamp;
   measurements.push_back(ahum);

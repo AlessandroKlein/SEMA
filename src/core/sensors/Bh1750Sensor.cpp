@@ -24,7 +24,7 @@ bool Bh1750Sensor::begin() {
 
 bool Bh1750Sensor::healthy() const { return ok_; }
 
-uint8_t Bh1750Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Bh1750Sensor::measure(base::Measurement out[], uint8_t max) {
   if (max < 1) {
     return 0;
   }
@@ -34,24 +34,24 @@ uint8_t Bh1750Sensor::measure(Measurement out[], uint8_t max) {
   out[0].measurement = "light";
   out[0].unit = "lux";
   out[0].sequence = ++sequence_;
-  out[0].timestamp = nowEpoch();
+  out[0].timestamp = base::nowEpoch();
 
   if (!ok_) {
     out[0].value = 0.0f;
-    out[0].quality = Quality::SensorDisconnected;
+    out[0].quality = base::Quality::SensorDisconnected;
     return 1;
   }
 
   Wire.requestFrom(kBh1750Addr, 2);
   if (Wire.available() < 2) {
     out[0].value = 0.0f;
-    out[0].quality = Quality::CommunicationError;
+    out[0].quality = base::Quality::CommunicationError;
     return 1;
   }
 
   const uint16_t raw = static_cast<uint16_t>((Wire.read() << 8) | Wire.read());
   out[0].value = raw / 1.2f;  // lux
-  out[0].quality = Quality::Valid;
+  out[0].quality = base::Quality::Valid;
   return 1;
 }
 

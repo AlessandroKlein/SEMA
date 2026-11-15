@@ -38,7 +38,7 @@ bool PcntSensor::begin() {
 
 bool PcntSensor::healthy() const { return ok_; }
 
-uint8_t PcntSensor::measure(Measurement out[], uint8_t max) {
+uint8_t PcntSensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 1) {
     return 0;
   }
@@ -48,14 +48,14 @@ uint8_t PcntSensor::measure(Measurement out[], uint8_t max) {
   pcnt_counter_clear(PCNT_UNIT_0);
 
   const float value = count * scale_;
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   out[0].sensorId = id_;
   out[0].channelId = channel_;
   out[0].measurement = channel_;
   out[0].value = value;
   out[0].unit = unit_;
-  out[0].quality = Quality::Valid;
+  out[0].quality = base::Quality::Valid;
   out[0].sequence = ++sequence_;
   out[0].timestamp = ts;
   return 1;

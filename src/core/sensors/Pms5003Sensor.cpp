@@ -24,7 +24,7 @@ bool Pms5003Sensor::begin() {
 
 bool Pms5003Sensor::healthy() const { return ok_; }
 
-uint8_t Pms5003Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Pms5003Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 3) {
     return 0;
   }
@@ -32,7 +32,7 @@ uint8_t Pms5003Sensor::measure(Measurement out[], uint8_t max) {
     return 0;  // sin trama válida este ciclo
   }
 
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
   uint8_t n = 0;
 
   out[n].sensorId = id_;
@@ -40,7 +40,7 @@ uint8_t Pms5003Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "pm1";
   out[n].value = data.pm10_env;
   out[n].unit = "ug/m3";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -50,7 +50,7 @@ uint8_t Pms5003Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "pm25";
   out[n].value = data.pm25_env;
   out[n].unit = "ug/m3";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -60,7 +60,7 @@ uint8_t Pms5003Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "pm10";
   out[n].value = data.pm100_env;
   out[n].unit = "ug/m3";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;

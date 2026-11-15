@@ -19,21 +19,21 @@ bool CoSensor::begin() {
 
 bool CoSensor::healthy() const { return ok_; }
 
-uint8_t CoSensor::measure(Measurement out[], uint8_t max) {
+uint8_t CoSensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 1) {
     return 0;
   }
 
   const int raw = analogRead(pin_);
   const float value = raw * scale_ + offset_;
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   out[0].sensorId = id_;
   out[0].channelId = "co";
   out[0].measurement = "co";
   out[0].value = value;
   out[0].unit = "ppm";
-  out[0].quality = Quality::Valid;
+  out[0].quality = base::Quality::Valid;
   out[0].sequence = ++sequence_;
   out[0].timestamp = ts;
   return 1;

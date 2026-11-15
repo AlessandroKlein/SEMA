@@ -51,13 +51,13 @@ bool Ds18b20Sensor::begin() {
 
 bool Ds18b20Sensor::healthy() const { return ok_; }
 
-uint8_t Ds18b20Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Ds18b20Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 1) {
     return 0;
   }
 
   // TODO(D-0044): sustituir por epoch UTC real vía NTP/RTC.
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   if (hasRom_) {
     // Lectura por dirección ROM (cada sensor mapeado a su propia magnitud).
@@ -68,8 +68,8 @@ uint8_t Ds18b20Sensor::measure(Measurement out[], uint8_t max) {
     out[0].measurement = "temperature";
     out[0].value = t;
     out[0].unit = "degC";
-    out[0].quality = (t == DEVICE_DISCONNECTED_C) ? Quality::SensorDisconnected
-                                                  : Quality::Valid;
+    out[0].quality = (t == DEVICE_DISCONNECTED_C) ? base::Quality::SensorDisconnected
+                                                  : base::Quality::Valid;
     out[0].sequence = ++sequence_;
     out[0].timestamp = ts;
     return 1;
@@ -86,8 +86,8 @@ uint8_t Ds18b20Sensor::measure(Measurement out[], uint8_t max) {
     out[i].measurement = "temperature";
     out[i].value = t;
     out[i].unit = "degC";
-    out[i].quality = (t == DEVICE_DISCONNECTED_C) ? Quality::SensorDisconnected
-                                                  : Quality::Valid;
+    out[i].quality = (t == DEVICE_DISCONNECTED_C) ? base::Quality::SensorDisconnected
+                                                  : base::Quality::Valid;
     out[i].sequence = ++sequence_;
     out[i].timestamp = ts;
   }

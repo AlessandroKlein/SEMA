@@ -22,7 +22,7 @@ bool Sht40Sensor::begin() {
 
 bool Sht40Sensor::healthy() const { return ok_; }
 
-uint8_t Sht40Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Sht40Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 2) {
     return 0;
   }
@@ -33,7 +33,7 @@ uint8_t Sht40Sensor::measure(Measurement out[], uint8_t max) {
   const float t = temp.temperature;
   const float h = humidity.relative_humidity;
   // TODO(D-0044): sustituir por epoch UTC real vía NTP/RTC (README §127-129).
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   uint8_t n = 0;
 
@@ -42,7 +42,7 @@ uint8_t Sht40Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "temperature";
   out[n].value = t;
   out[n].unit = "degC";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -52,7 +52,7 @@ uint8_t Sht40Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "humidity";
   out[n].value = h;
   out[n].unit = "percent";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;

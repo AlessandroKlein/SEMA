@@ -8,11 +8,11 @@
 // SEMA — Driver SHT40 (temperatura y humedad) sobre I²C
 // =============================================================================
 // D-0002 / D-0043. Otro modelo para las mismas magnitudes que el BME280,
-// encapsulado detrás de la misma interfaz Sensor.
+// encapsulado detrás de la misma interfaz base::Sensor.
 
 namespace sema {
 
-class Sht40Sensor : public Sensor {
+class Sht40Sensor : public base::Sensor {
 public:
   Sht40Sensor(const char* id, uint8_t sda, uint8_t scl);
 
@@ -21,7 +21,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

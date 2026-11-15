@@ -5,14 +5,14 @@
 #include "core/sensors/Sensor.hpp"
 
 // =============================================================================
-// SEMA — Sensor analógico genérico (ADC interno)
+// SEMA — base::Sensor analógico genérico (ADC interno)
 // =============================================================================
 // D-0051 / README §32-33, §37. Lee un pin ADC y aplica escala/offset (D-0055),
 // p. ej. batería con divisor resistivo.
 
 namespace sema {
 
-class AdcSensor : public Sensor {
+class AdcSensor : public base::Sensor {
 public:
   AdcSensor(const char* id, uint8_t pin, const char* channel,
             const char* unit, float scale, float offset);
@@ -22,7 +22,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

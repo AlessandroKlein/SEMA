@@ -65,7 +65,7 @@
 
 namespace sema {
 
-Sensor* SensorFactory::create(const SensorSpec& spec) {
+base::Sensor* SensorFactory::create(const base::SensorSpec& spec) {
   // Los drivers retienen el puntero al id; el catálogo (config.sensors) vive
   // durante todo el runtime (se crea una vez al arrancar y no se reasigna).
 #if SEMA_USE_SENSOR_BME280

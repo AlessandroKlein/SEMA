@@ -44,7 +44,7 @@ static bool read16(uint8_t reg, uint16_t* out) {
   return true;
 }
 
-uint8_t Hdc1080Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Hdc1080Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 2) {
     return 0;
   }
@@ -57,7 +57,7 @@ uint8_t Hdc1080Sensor::measure(Measurement out[], uint8_t max) {
 
   const float t = (static_cast<float>(tRaw) / 65536.0f) * 165.0f - 40.0f;
   const float h = (static_cast<float>(hRaw) / 65536.0f) * 100.0f;
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   uint8_t n = 0;
 
@@ -66,7 +66,7 @@ uint8_t Hdc1080Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "temperature";
   out[n].value = t;
   out[n].unit = "degC";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -76,7 +76,7 @@ uint8_t Hdc1080Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "humidity";
   out[n].value = h;
   out[n].unit = "percent";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;

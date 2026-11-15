@@ -14,7 +14,7 @@
 
 namespace sema {
 
-class Hdc1080Sensor : public Sensor {
+class Hdc1080Sensor : public base::Sensor {
 public:
   Hdc1080Sensor(const char* id, uint8_t sda, uint8_t scl);
 
@@ -23,7 +23,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

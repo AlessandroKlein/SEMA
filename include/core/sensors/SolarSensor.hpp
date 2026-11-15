@@ -12,7 +12,7 @@
 
 namespace sema {
 
-class SolarSensor : public Sensor {
+class SolarSensor : public base::Sensor {
 public:
   SolarSensor(const char* id, uint8_t pin, float scale, float offset);
 
@@ -21,7 +21,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

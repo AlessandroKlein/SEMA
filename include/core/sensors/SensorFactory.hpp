@@ -12,7 +12,7 @@ namespace sema {
 
 class SensorFactory {
 public:
-  static Sensor* create(const SensorSpec& spec);
+  static base::Sensor* create(const base::SensorSpec& spec);
 };
 
 }  // namespace sema

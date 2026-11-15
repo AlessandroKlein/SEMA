@@ -15,7 +15,7 @@ class DallasTemperature;  // <DallasTemperature.h>
 
 namespace sema {
 
-class Ds18b20Sensor : public Sensor {
+class Ds18b20Sensor : public base::Sensor {
 public:
   Ds18b20Sensor(const char* id, uint8_t pin, const char* rom);
   ~Ds18b20Sensor() override;
@@ -25,7 +25,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

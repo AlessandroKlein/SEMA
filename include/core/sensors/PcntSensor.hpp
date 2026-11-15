@@ -5,14 +5,14 @@
 #include "core/sensors/Sensor.hpp"
 
 // =============================================================================
-// SEMA — Sensor de conteo de pulsos (PCNT)
+// SEMA — base::Sensor de conteo de pulsos (PCNT)
 // =============================================================================
 // D-0051 / README §21. Usa el contador de pulsos hardware del ESP32 para medir
 // pluviómetros de cangilón, anemómetros, etc. value = pulsos · scale.
 
 namespace sema {
 
-class PcntSensor : public Sensor {
+class PcntSensor : public base::Sensor {
 public:
   PcntSensor(const char* id, uint8_t pin, const char* channel,
              const char* unit, float scale);
@@ -22,7 +22,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

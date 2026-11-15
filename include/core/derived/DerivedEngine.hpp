@@ -15,7 +15,7 @@ namespace sema {
 class DerivedEngine {
 public:
   // Añade mediciones derivadas (punto de rocío, índice de calor, …) a `measurements`.
-  static void compute(std::vector<Measurement>& measurements);
+  static void compute(std::vector<base::Measurement>& measurements);
 
   // Fórmulas públicas y testables.
   static float dewPoint(float tempC, float relHum);            // °C

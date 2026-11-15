@@ -22,14 +22,14 @@ bool Bmp280Sensor::begin() {
 
 bool Bmp280Sensor::healthy() const { return ok_; }
 
-uint8_t Bmp280Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Bmp280Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 2) {
     return 0;
   }
 
   const float t = bmp.readTemperature();
   const float p = bmp.readPressure() / 100.0f;  // Pa → hPa
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   uint8_t n = 0;
 
@@ -38,7 +38,7 @@ uint8_t Bmp280Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "temperature";
   out[n].value = t;
   out[n].unit = "degC";
-  out[n].quality = isnan(t) ? Quality::CommunicationError : Quality::Valid;
+  out[n].quality = isnan(t) ? base::Quality::CommunicationError : base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -48,7 +48,7 @@ uint8_t Bmp280Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "pressure";
   out[n].value = p;
   out[n].unit = "hPa";
-  out[n].quality = isnan(p) ? Quality::CommunicationError : Quality::Valid;
+  out[n].quality = isnan(p) ? base::Quality::CommunicationError : base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;

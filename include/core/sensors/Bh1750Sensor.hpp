@@ -9,11 +9,11 @@
 // =============================================================================
 // D-0043 / README §13. Implementación I²C directa mínima (modo continuo alta
 // resolución); puede sustituirse por una librería mantenida sin cambiar la
-// interfaz Sensor.
+// interfaz base::Sensor.
 
 namespace sema {
 
-class Bh1750Sensor : public Sensor {
+class Bh1750Sensor : public base::Sensor {
 public:
   Bh1750Sensor(const char* id, uint8_t sda, uint8_t scl);
 
@@ -22,7 +22,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

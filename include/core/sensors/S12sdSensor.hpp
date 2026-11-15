@@ -14,7 +14,7 @@
 
 namespace sema {
 
-class S12sdSensor : public Sensor {
+class S12sdSensor : public base::Sensor {
 public:
   S12sdSensor(const char* id, uint8_t pin, float scale, float offset);
 
@@ -23,7 +23,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

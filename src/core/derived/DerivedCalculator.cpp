@@ -65,22 +65,22 @@ float barometricAltitude(float pressureHpa) {
   return 44330.0f * (1.0f - powf(pressureHpa / 1013.25f, 1.0f / 5.255f));
 }
 
-void emit(std::vector<Measurement>& out, const char* measurement, float value,
+void emit(std::vector<base::Measurement>& out, const char* measurement, float value,
           const char* unit) {
-  Measurement m;
+  base::Measurement m;
   m.sensorId = "DERIVED";
   m.channelId = measurement;
   m.measurement = measurement;
   m.value = value;
   m.unit = unit;
-  m.quality = Quality::Valid;
-  m.timestamp = nowEpoch();
+  m.quality = base::Quality::Valid;
+  m.timestamp = base::nowEpoch();
   out.push_back(m);
 }
 
-bool hasRaw(const std::vector<Measurement>& raw, const char* measurement) {
-  for (const Measurement& m : raw) {
-    if (m.measurement == measurement && m.quality == Quality::Valid) {
+bool hasRaw(const std::vector<base::Measurement>& raw, const char* measurement) {
+  for (const base::Measurement& m : raw) {
+    if (m.measurement == measurement && m.quality == base::Quality::Valid) {
       return true;
     }
   }
@@ -88,25 +88,25 @@ bool hasRaw(const std::vector<Measurement>& raw, const char* measurement) {
 }
 
 // 16 posiciones de la veleta WH-SP-WD: 8 resistencias directas + 8 en paralelo.
-void windVanePositions(const SystemConfig& sys, float angles[16],
+void windVanePositions(const base::SystemConfig& sys, float angles[16],
                        uint16_t adcVals[16]) {
   for (int i = 0; i < 8; ++i) {
-    const float rd = sys.windResistors[i];
+    const float rd = sys.weather.windResistors[i];
     angles[2 * i] = i * 45.0f;
     adcVals[2 * i] =
-        (uint16_t)lroundf(4095.0f * rd / (rd + sys.windRpull));
+        (uint16_t)lroundf(4095.0f * rd / (rd + sys.weather.windRpull));
 
-    const float rn = sys.windResistors[(i + 1) % 8];
+    const float rn = sys.weather.windResistors[(i + 1) % 8];
     const float rp = (rd * rn) / (rd + rn);
     angles[2 * i + 1] = i * 45.0f + 22.5f;
     adcVals[2 * i + 1] =
-        (uint16_t)lroundf(4095.0f * rp / (rp + sys.windRpull));
+        (uint16_t)lroundf(4095.0f * rp / (rp + sys.weather.windRpull));
   }
 }
 
 }  // namespace
 
-float DerivedCalculator::windVaneRawAngle(uint16_t adc, const SystemConfig& sys) {
+float DerivedCalculator::windVaneRawAngle(uint16_t adc, const base::SystemConfig& sys) {
   float angles[16];
   uint16_t adcVals[16];
   windVanePositions(sys, angles, adcVals);
@@ -123,8 +123,8 @@ float DerivedCalculator::windVaneRawAngle(uint16_t adc, const SystemConfig& sys)
   return angles[best];
 }
 
-float DerivedCalculator::windDirection(uint16_t adc, const SystemConfig& sys) {
-  float a = windVaneRawAngle(adc, sys) - sys.windNorthOffset;
+float DerivedCalculator::windDirection(uint16_t adc, const base::SystemConfig& sys) {
+  float a = windVaneRawAngle(adc, sys) - sys.weather.windNorthOffset;
   while (a < 0.0f) a += 360.0f;
   while (a >= 360.0f) a -= 360.0f;
   return a;
@@ -165,15 +165,15 @@ float DerivedCalculator::convertUnit(float value, const String& measurement,
   return value;
 }
 
-void DerivedCalculator::compute(const std::vector<Measurement>& raw,
-                                std::vector<Measurement>& out,
+void DerivedCalculator::compute(const std::vector<base::Measurement>& raw,
+                                std::vector<base::Measurement>& out,
                                 const String& units) {
   const bool imperial = (units == "imperial");
 
   // --- Extrae las magnitudes crudas disponibles (sensor encendido). ---
   float t = NAN, rh = NAN, p = NAN, wind = NAN, rain = NAN, pm25 = NAN, pm10 = NAN;
-  for (const Measurement& m : raw) {
-    if (m.quality != Quality::Valid) continue;
+  for (const base::Measurement& m : raw) {
+    if (m.quality != base::Quality::Valid) continue;
     if (m.measurement == "temperature" && isnan(t)) t = m.value;
     else if (m.measurement == "humidity" && isnan(rh)) rh = m.value;
     else if (m.measurement == "pressure" && isnan(p)) p = m.value;
@@ -194,7 +194,7 @@ void DerivedCalculator::compute(const std::vector<Measurement>& raw,
     emit(out, "wind_chill", convertUnit(windChillC(t, wind), "wind_chill", "degC", imperial, u), u.c_str());
   }
   if (!isnan(p) && !isnan(t)) {
-    emit(out, "qnh", convertUnit(qnh(p, sys_.altitude, t), "qnh", "hPa", imperial, u), u.c_str());
+    emit(out, "qnh", convertUnit(qnh(p, sys_.weather.altitude, t), "qnh", "hPa", imperial, u), u.c_str());
     emit(out, "barometric_altitude", convertUnit(barometricAltitude(p), "barometric_altitude", "m", imperial, u), u.c_str());
   }
   if (!isnan(pm25)) {
@@ -204,7 +204,7 @@ void DerivedCalculator::compute(const std::vector<Measurement>& raw,
   // --- Tasa de lluvia y acumulado (PCNT con channel "rain", mm). ---
   if (!isnan(rain) && hasRaw(raw, "rain")) {
     rainTotal_ += rain;
-    const uint32_t ts = nowEpoch();
+    const uint32_t ts = base::nowEpoch();
     float rate = 0.0f;
     if (lastRainTs_ != 0 && ts > lastRainTs_) {
       rate = rain / ((ts - lastRainTs_) / 3600.0f);  // mm/h
@@ -215,8 +215,8 @@ void DerivedCalculator::compute(const std::vector<Measurement>& raw,
   }
 
   // --- Dirección de viento (veleta WH-SP-WD por tabla de resistencias). ---
-  if (sys_.windDirectionPin != 0) {
-    const uint16_t adc = analogRead(sys_.windDirectionPin);
+  if (sys_.weather.windDirectionPin != 0) {
+    const uint16_t adc = analogRead(sys_.weather.windDirectionPin);
     emit(out, "wind_direction", windDirection(adc, sys_), "deg");
   }
 }

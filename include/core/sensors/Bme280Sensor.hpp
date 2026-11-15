@@ -7,12 +7,12 @@
 // =============================================================================
 // SEMA — Driver BME280 (temperatura, humedad y presión) sobre I²C
 // =============================================================================
-// D-0043. Envuelve una librería mantenida detrás de la interfaz Sensor, de modo
+// D-0043. Envuelve una librería mantenida detrás de la interfaz base::Sensor, de modo
 // que el Core nunca depende del modelo físico.
 
 namespace sema {
 
-class Bme280Sensor : public Sensor {
+class Bme280Sensor : public base::Sensor {
 public:
   Bme280Sensor(const char* id, uint8_t sda, uint8_t scl);
 
@@ -21,7 +21,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

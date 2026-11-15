@@ -22,7 +22,7 @@ bool Veml6075Sensor::begin() {
 
 bool Veml6075Sensor::healthy() const { return ok_; }
 
-uint8_t Veml6075Sensor::measure(Measurement out[], uint8_t max) {
+uint8_t Veml6075Sensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 3) {
     return 0;
   }
@@ -30,7 +30,7 @@ uint8_t Veml6075Sensor::measure(Measurement out[], uint8_t max) {
   const float uva = uv.readUVA();
   const float uvb = uv.readUVB();
   const float uvi = uv.readUVI();
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   uint8_t n = 0;
 
@@ -39,7 +39,7 @@ uint8_t Veml6075Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "uva";
   out[n].value = uva;
   out[n].unit = "W/m2";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -49,7 +49,7 @@ uint8_t Veml6075Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "uvb";
   out[n].value = uvb;
   out[n].unit = "W/m2";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;
@@ -59,7 +59,7 @@ uint8_t Veml6075Sensor::measure(Measurement out[], uint8_t max) {
   out[n].measurement = "uvi";
   out[n].value = uvi;
   out[n].unit = "index";
-  out[n].quality = Quality::Valid;
+  out[n].quality = base::Quality::Valid;
   out[n].sequence = ++sequence_;
   out[n].timestamp = ts;
   ++n;

@@ -13,7 +13,7 @@
 
 namespace sema {
 
-class Ccs811Sensor : public Sensor {
+class Ccs811Sensor : public base::Sensor {
 public:
   Ccs811Sensor(const char* id, uint8_t sda, uint8_t scl, uint8_t address = 0);
 
@@ -22,7 +22,7 @@ public:
   const char* interface() const override;
 
   bool begin() override;
-  uint8_t measure(Measurement out[], uint8_t max) override;
+  uint8_t measure(base::Measurement out[], uint8_t max) override;
   bool healthy() const override;
 
 private:

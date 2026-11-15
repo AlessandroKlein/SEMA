@@ -20,21 +20,21 @@ bool AdcSensor::begin() {
 
 bool AdcSensor::healthy() const { return ok_; }
 
-uint8_t AdcSensor::measure(Measurement out[], uint8_t max) {
+uint8_t AdcSensor::measure(base::Measurement out[], uint8_t max) {
   if (!ok_ || max < 1) {
     return 0;
   }
 
   const int raw = analogRead(pin_);
   const float value = raw * scale_ + offset_;
-  const uint32_t ts = nowEpoch();
+  const uint32_t ts = base::nowEpoch();
 
   out[0].sensorId = id_;
   out[0].channelId = channel_;
   out[0].measurement = channel_;
   out[0].value = value;
   out[0].unit = unit_;
-  out[0].quality = Quality::Valid;
+  out[0].quality = base::Quality::Valid;
   out[0].sequence = ++sequence_;
   out[0].timestamp = ts;
   return 1;
