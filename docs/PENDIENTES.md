@@ -73,11 +73,12 @@ Se corrigieron dos inconsistencias de documentación:
 
 | Ítem | Estado | Detalle |
 |------|--------|---------|
-| Habilitar/deshabilitar elementos en runtime | 🔄 en curso (subagente `90b28726`) | Sensores, Ethernet, Modbus, CAN, LoRa, Zigbee: on/off por usuario final incluso en variante PCB, persistido en NVS, sin recompilar. |
-| Edición de pines solo en modo AP | 🔄 en curso (subagente `90b28726`) | En STA los pines quedan solo-lectura con nota i18n; en AP se permite editar. |
-| Repo base reutilizable | ⬜ pendiente | Extraer base (WiFi/Ethernet/config pines/web) sin lo meteorológico a un repo nuevo; arrancar al terminar la feature de runtime. |
-| Documentador dedicado de `Docs.git` | ⬜ regla permanente | Subagente que solo documenta código + repo Docs; aplicar a todo cambio de comportamiento público. |
-| Compatibilidad dual PCB↔modular con flags | ⬜ regla permanente | Toda feature/dato de compatibilidad en ambas variantes, gated por `-D SEMA_USE_*`. |
+| Habilitar/deshabilitar elementos en runtime | ✅ hecho (v1.106.0) | Toggle runtime de elementos (sensores, buses, Ethernet, Modbus, CAN, LoRa, Zigbee) persistido en NVS, incluso en PCB. |
+| Edición de pines solo en modo AP | ✅ hecho (v1.106.0) | `pinsLocked()`: en STA/PCB los pines quedan solo-lectura; `/api/v1/system` expone `ap_mode`/`pins_from_file`. |
+| Repo base reutilizable | 🔄 en curso (Fase 1, pausada) | Repo `AlessandroKlein/ESP32-Base` creado; F1 iniciada (commit `221dfb3`: esqueleto + módulos copiados, **sin renombrar** a `base::`). Re-despachar F1 para: rename namespace + `include/base/` + resolver 7 acoples + lado SEMA. Quedan F2/F3. Plan: `docs/REPO-BASE-PLAN.md`. |
+| Documentador dedicado de `Docs.git` | ✅ regla permanente | Docs.git sincronizado v1.103.0 → v1.106.0 (commit `08a1bac6`). |
+| Compatibilidad dual PCB↔modular con flags | ✅ regla permanente | Registrada en AGENTS.md §4.2. |
+| Ethernet W5500 (consolidar bus SPI) | ⬜ pendiente | PCB WROOM-32U usa W5500 en VSPI 18/19/23 (CS=GPIO5) pero el firmware define `SEMA_NATIVE_ETH 1` (RMII). Decidir: Arduino Ethernet en bus compartido vs 2º bus SPI. Ver `docs/PCB-V1-CORRECCIONES.md` §8. |
 
 ---
 

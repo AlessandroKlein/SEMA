@@ -13,7 +13,7 @@
 modulares: el hardware define las capacidades y una **web local configura todo**
 (sensores, buses, pines, alarmas, publicadores, calibración) sin recompilar.
 
-Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.105.0**
+Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.106.0**
 (`include/core/Version.hpp`), `hw_version = rev0`, `config_schema_version = 1`,
 `protocol_version = 1`.
 
@@ -25,6 +25,7 @@ Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.105.0
 |------|-----|-----|
 | Código (este) | `git@github.com:AlessandroKlein/SEMA.git` | Firmware SEMA |
 | Documentación | `git@github.com:AlessandroKlein/Docs.git` | Wiki unificada (MkDocs → GitHub Pages) |
+| Base reutilizable | `git@github.com:AlessandroKlein/ESP32-Base.git` | Librería PlatformIO (WiFi/Ethernet/pines/web/NVS/runtime) sin lo meteorológico; SEMA la consume por `lib_deps` git+tag |
 | Servidor central | `git@github.com:AlessandroKlein/Webs.git` | Servidor central multi-proyecto (fuera del alcance del firmware; SEMA solo se conecta con `server_key`) |
 
 - Sistema operativo de trabajo: **Windows**; `git` y `gh` instalados y logueados
