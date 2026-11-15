@@ -1,6 +1,6 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.107.0 | **Releases:** 90
+> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.108.0 | **Releases:** 90
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.
@@ -9,18 +9,20 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 
 ## 0. Estado actual (2026-11-15)
 
-- **v1.107.0** — extracción de la base reutilizable `ESP32-Base` completada:
-  - **F1** base extraída a `ESP32-Base` (`namespace base::`, esqueleto + módulos).
-  - **F2/F3** SEMA consume la base por `lib_deps` `ESP32-Base#v0.1.0` (tag); 65
-    módulos genéricos movidos fuera de SEMA; `src/core/SemaGlue.cpp` implementa los
-    14 hooks `base::CoreHooks` (dominio meteorológico: sensores, derivadas, pronóstico).
-  - Code review "APROBADO CON CAMBIOS" → correcciones aplicadas (deduplicación de
-    derivadas, const-correctness, flag muerto `SEMA_FIXED_HARDWARE` eliminado).
-    `main` en `66d5289`; `ESP32-Base` en `b97bc88` (tag `v0.1.0`).
-  - 4 envs compilan SUCCESS con base v0.1.0 (devkit, demo, s3, wroom-32u).
-- **Docs.git sincronizado** v1.103.0 → v1.106.0 (commit `08a1bac6`); pendiente
-  sincronizar → v1.107.0 (subagente Documentador).
-- **Pendiente**: rediseño de la web (fase 5 del objetivo), Ethernet W5500 (consolidar bus SPI).
+- **v1.108.0** — migración a ESP-IDF core 3.x + ESP32-C6 + detección de chip + expansores:
+  - **Core 3.x** (espressif32 8.0.0, arduino-esp32 3.x): watchdog `esp_task_wdt_config_t`,
+    Ethernet W5500 `ETH_W5500_DEFAULT_CONFIG(spi_host, spi_devcfg)`, FreeRTOS `TaskHandle_t`.
+  - **ESP32-Base v0.3.1** (`d2c67be`): extracción (v0.1.0) + expansores I²C
+    MCP23S17/PCA9685/PCF8574 (v0.2.0) + detección de chip `chip.hpp`/`ChipInfo.hpp`
+    (v0.3.0) + compat C6 (v0.3.1).
+  - **ESP32-C6** (`esp32-c6-devkitc-1`, RISC-V, 8 MB) añadido y validado: objetivo
+    Matter/Thread/esclavo; Ethernet/LoRa/Modbus/CAN/Zigbee deshabilitados por flags.
+  - **6 envs compilan SUCCESS**: devkit 85.5%/18.8%, demo 85.7%/18.8%, s3 48.5%/18.3%,
+    c6 50.3%/16.9%, wroom-32u 49.8%/18.8%, wroom-32u-32mb 37.4%/18.8%.
+- **Roadmap domótica** (`docs/PENDIENTES.md` §2.5): Fase 0a ✅ (expansores GPIO/PWM);
+  0b UART/mux/ADC pendiente; Fases 1-4 (Modbus TCP+BACnet, mesh ESP-NOW, coordinador, radio) pendientes.
+- **Pendiente**: rediseño de la web (fase 5 del objetivo), Ethernet W5500 (consolidar bus SPI),
+  envs S2/C3 para validar compilación, Docs.git sincronizar → v1.108.0 (subagente Documentador).
 
 ---
 
