@@ -19,7 +19,7 @@
 // cambiar de versión; si divergen, el banner de arranque muestra el valor de
 // platformio.ini (el que realmente llega al compilador).
 
-#define SEMA_FW_VERSION              "1.111.0"
+#define SEMA_FW_VERSION              "1.112.0"
 #define SEMA_HW_VERSION              "rev0"
 #define SEMA_CONFIG_SCHEMA_VERSION   1
 #define SEMA_PROTOCOL_VERSION        1

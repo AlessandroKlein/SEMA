@@ -33,32 +33,46 @@
 #if defined(BOARD_ESP32_WROOM)
 #define SEMA_BOARD_ID "esp32-wroom-4mb"
 #define SEMA_FLASH_MB 4
-#define SEMA_NATIVE_ETH 1
+#define SEMA_BOARD_NATIVE_ETH 1
 #elif defined(BOARD_ESP32_WROOM32U_32MB)
 #define SEMA_BOARD_ID "esp32-wroom32u-32mb"
 #define SEMA_FLASH_MB 32
-#define SEMA_NATIVE_ETH 1
+#define SEMA_BOARD_NATIVE_ETH 1
 #elif defined(BOARD_ESP32_WROOM32U)
 #define SEMA_BOARD_ID "esp32-wroom32u-16mb"
 #define SEMA_FLASH_MB 16
-#define SEMA_NATIVE_ETH 1
+#define SEMA_BOARD_NATIVE_ETH 1
 #elif defined(BOARD_ESP32_S3)
 #define SEMA_BOARD_ID "esp32-s3-8mb"
 #define SEMA_FLASH_MB 8
-#define SEMA_NATIVE_ETH 0
+#define SEMA_BOARD_NATIVE_ETH 0
 #elif defined(BOARD_ESP32_C6)
 // ESP32-C6: RISC-V single-core, WiFi 6 + BLE 5 + 802.15.4 (Matter/Thread/
 // Zigbee). Sin MAC Ethernet nativa ni controlador CAN (TWAI). Objetivo: esclavo
 // que descarga web/Ethernet del principal, o coordinador 802.15.4.
 #define SEMA_BOARD_ID "esp32-c6-8mb"
 #define SEMA_FLASH_MB 8
-#define SEMA_NATIVE_ETH 0
+#define SEMA_BOARD_NATIVE_ETH 0
 #elif defined(BOARD_ESP32_P4)
 // ESP32-P4: RISC-V sin WiFi/BT ni MAC Ethernet nativa (usa W5500 por SPI).
 // Perfil experimental: la web local de configuración depende de WiFi.
 #define SEMA_BOARD_ID "esp32-p4-32mb"
 #define SEMA_FLASH_MB 32
+#define SEMA_BOARD_NATIVE_ETH 0
+#endif
+
+// --- PHY Ethernet: flag explícito gana sobre el default de la board ---
+//   -D SEMA_ETH_PHY_LAN8720A → LAN8720A por RMII (requiere MAC Ethernet nativa)
+//   -D SEMA_ETH_PHY_W5500    → W5500 por SPI (ahorra pines; sin MAC nativa)
+// Sin flag: se usa el default de la board (SEMA_BOARD_NATIVE_ETH).
+#ifndef SEMA_NATIVE_ETH
+#if defined(SEMA_ETH_PHY_LAN8720A)
+#define SEMA_NATIVE_ETH 1
+#elif defined(SEMA_ETH_PHY_W5500)
 #define SEMA_NATIVE_ETH 0
+#else
+#define SEMA_NATIVE_ETH SEMA_BOARD_NATIVE_ETH
+#endif
 #endif
 
 #define SEMA_ON 1

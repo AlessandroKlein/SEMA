@@ -1,20 +1,21 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.111.0 | **Releases:** 93
+> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.112.0 | **Releases:** 94
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.
 
 ---
 
-## 0. Estado actual (2026-11-15) — PAUSADO por el usuario
+## 0. Estado actual (2026-11-16)
 
-- **v1.111.0** — **Fase 1**: servidor Modbus TCP (sockets lwIP, transporte-agnóstico) + servidor BACnet/IP (UDP 47808, autocontenido) + transceivers RS-485 (MAX3485ED/SN65HVD75DR/TD501D485H/ADM2483BRWZ) y CAN (SN65HVD234DR/SN65HVD233DR). Vía ESP32-Base v0.6.0 (Modbus TCP) + v0.7.0 (BACnet). Flags `SEMA_USE_MODBUS_TCP` / `SEMA_USE_BACNET`. **Sin dependencia GPL** (la librería BACnet evaluada era client-only).
+- **v1.112.0** — **Fase 2a**: mesh ESP-NOW (`MeshManager` maestro/esclavo: ANNOUNCE/SENSOR_DATA/COMMAND/ACK/HEARTBEAT; flag `SEMA_USE_MESH_ESPNOW`) + **selector de PHY Ethernet por flag** (`SEMA_ETH_PHY_LAN8720A` / `SEMA_ETH_PHY_W5500`, gana sobre el default de board) con driver SPI custom para W5500 (honra `SEMA_ETH_SPI_*`). Vía ESP32-Base v0.8.0.
+- **v1.111.0** — **Fase 1**: Modbus TCP (sockets lwIP) + BACnet/IP (UDP 47808, autocontenido) + transceivers RS-485/CAN. Flags `SEMA_USE_MODBUS_TCP` / `SEMA_USE_BACNET`. Sin dependencia GPL (librería evaluada era client-only). Vía ESP32-Base v0.6.0 + v0.7.0.
 - **v1.110.0** — expansores UART/SPI/mux/ADC (SC16IS752, SC18IS602B, TCA9548A, ADS1115) vía ESP32-Base v0.5.0.
 - **v1.109.0** — rediseño visual del dashboard web (paleta dark OLED, acento teal/cyan, monospace). Vía ESP32-Base v0.4.0.
 - **v1.108.0** — migración ESP-IDF core 3.x + ESP32-C6 + detección de chip + expansores I²C.
-- **Roadmap domótica** (`docs/PENDIENTES.md` §2.5): Fase 0a ✅, 0b ✅, **Fase 1 ✅** (Modbus TCP + BACnet/IP + transceivers); Fase 2 (mesh ESP-NOW + master-slave), Fase 3 (coordinador árbol), Fase 4 (radio C6/H2 + BLE) pendientes.
-- **Pendiente al reanudar**: (1) confirmar resultado del subagente Documentador (Docs.git → v1.111.0); (2) Fase 2 = mesh ESP-NOW; (3) envs S2/C3; (4) Ethernet W5500 (consolidar bus SPI).
+- **Roadmap domótica** (`docs/PENDIENTES.md` §2.5): Fase 0a ✅, 0b ✅, Fase 1 ✅, **Fase 2a ✅** (mesh ESP-NOW). Fase 2b (esclavos C3/S2/S3 + offload web/Ethernet), Fase 3 (coordinador árbol), Fase 4 (radio C6/H2 + BLE) pendientes.
+- **Pendiente**: (1) Fase 2b = esclavos mesh (C3/S2/S3); (2) envs S2/C3; (3) consolidar W5500 al bus SPI compartido en WROOM32U (el flag `SEMA_ETH_PHY_W5500` ya permite elegir PHY; falta ajustar el perfil PCB).
 
 ---
 

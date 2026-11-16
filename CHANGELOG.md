@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.112.0] - 2026-11-16
+
+### Added
+
+- **Selector de PHY Ethernet por flag**: `SEMA_ETH_PHY_LAN8720A` / `SEMA_ETH_PHY_W5500` eligen entre LAN8720A (RMII, MAC nativa) y W5500 (SPI) independientemente de la board. El flag gana sobre el default de board, para poder "ahorrar pines" y mover el W5500 donde convenga.
+- **Driver SPI custom para W5500**: honra los pines `SEMA_ETH_SPI_*` (configurables) en lugar de los pines fijos del host; corrige que `ConfigManager` tomara los pines del bus Arduino/LoRa en vez del bus Ethernet.
+- **Mesh ESP-NOW (Fase 2a)**: `MeshManager` maestro/esclavo (ANNOUNCE/SENSOR_DATA/COMMAND/ACK/HEARTBEAT) con flag `SEMA_USE_MESH_ESPNOW` + ruta web `/api/v1/mesh`. Transporte de la malla de nodos (Fase 3), sin depender de IP.
+
 ## [1.111.0] - 2026-11-15
 
 ### Added

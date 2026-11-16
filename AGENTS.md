@@ -13,7 +13,7 @@
 modulares: el hardware define las capacidades y una **web local configura todo**
 (sensores, buses, pines, alarmas, publicadores, calibración) sin recompilar.
 
-Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.111.0**
+Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.112.0**
 (`include/core/Version.hpp`), `hw_version = rev0`, `config_schema_version = 1`,
 `protocol_version = 1`.
 
@@ -129,11 +129,13 @@ Identidades para OTA/manifest (`include/hw/HwProfile.hpp`): `esp32-wroom-4mb`,
 `esp32-s3-8mb`, `esp32-c6-8mb`, `esp32-wroom32u-16mb`, `esp32-wroom32u-32mb`,
 `esp32-p4-32mb`.
 
-> ⚠️ **Decisión pendiente (Ethernet WROOM32U)**: la PCB WROOM-32U real usa W5500
-> en VSPI (18/19/23, CS=GPIO5) compartiendo bus con SD (CS=GPIO4) y LoRa, pero el
-> perfil de firmware aún define `SEMA_NATIVE_ETH 1` (LAN8720A RMII) con SPI en
-> 14/12/15. Falta consolidar W5500 al bus SPI compartido (driver Arduino Ethernet)
-> o añadir un segundo bus SPI. Ver `docs/PCB-V1-CORRECCIONES.md` §8.
+> 🔧 **Selección de PHY por flag (desde v1.112.0)**: `-D SEMA_ETH_PHY_LAN8720A=1`
+> fuerza la PHY nativa (RMII) y `-D SEMA_ETH_PHY_W5500=1` fuerza W5500 por SPI con
+> pines configurables (`SEMA_ETH_SPI_*`); el flag gana sobre el default de board.
+> ⚠️ **Pendiente (Ethernet WROOM32U)**: la PCB WROOM-32U real usa W5500 en VSPI
+> (18/19/23, CS=GPIO5) compartiendo bus con SD (CS=GPIO4) y LoRa; el perfil PCB
+> (`SEMA_PINS_FROM_FILE=1`) aún define LAN8720A nativa. Falta ajustar ese perfil al
+> flag W5500. Ver `docs/PCB-V1-CORRECCIONES.md` §8.
 
 ### 4.2 Dos variantes del firmware
 
