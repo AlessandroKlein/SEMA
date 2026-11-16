@@ -6,6 +6,22 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.114.0] - 2026-11-16
+
+### Changed
+
+- **Dashboard limpio**: se elimina el tablero editable (Gridstack) y se rediseña una página que muestra solo los sensores conectados (nombre, valor + unidad, estado) y todas las predicciones por magnitud y horizonte (−40 KB flash).
+
+### Fixed
+
+- **Guardado de configuración**: la config JSON superaba el límite de 4 KB de una entrada NVS (`nvs_set_str`), por lo que todos los formularios de "guardar" fallaban. Ahora se persiste en LittleFS (`/config.json`, D-0046).
+- **Hora corrida**: `nowEpoch()` devolvía la época local (offset incluido) pero los consumidores la tratan como UTC → la hora aparecía desplazada (−3 h en Buenos Aires). Ahora devuelve UTC.
+- **Página `/config/sensors` en blanco**: la página más grande del firmware hacía doble copia del body (~25 KB) antes de servirlo, agotando el heap. Ahora se reemplaza in-place (sin copia).
+
+### Dependencies
+
+- `ESP32-Base` v0.9.0 → v0.10.0.
+
 ## [1.113.0] - 2026-11-16
 
 ### Added

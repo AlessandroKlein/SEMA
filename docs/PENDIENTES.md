@@ -1,6 +1,6 @@
 # Pendientes — SEMA
 
-> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-15 | **Firmware:** v1.113.0
+> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-15 | **Firmware:** v1.114.0
 
 Resultado de la comprobación de `MEJORAS.md`, `FUTURO.md` y `CONTINUACION.md`
 contra el código. Los ítems **no realizados** quedan aquí para retomarlos en otra
@@ -75,7 +75,7 @@ Se corrigieron dos inconsistencias de documentación:
 |------|--------|---------|
 | Habilitar/deshabilitar elementos en runtime | ✅ hecho (v1.106.0) | Toggle runtime de elementos (sensores, buses, Ethernet, Modbus, CAN, LoRa, Zigbee) persistido en NVS, incluso en PCB. |
 | Edición de pines solo en modo AP | ✅ hecho (v1.106.0) | `pinsLocked()`: en STA/PCB los pines quedan solo-lectura; `/api/v1/system` expone `ap_mode`/`pins_from_file`. |
-| Repo base reutilizable | ✅ hecho (v1.107.0 → v0.7.0) | `AlessandroKlein/ESP32-Base` (tag `v0.9.0`, commit `a885cc1`); SEMA consume por `lib_deps` `#v0.9.0`; 65 módulos genéricos movidos; `src/core/SemaGlue.cpp` con 14 hooks. F1+F2+F3 completadas, code review aplicado. v0.2.0…v0.9.0 añaden: expansores I²C (Fase 0a), detección de chip, compat C6, rediseño web, expansores UART/SPI/mux/ADC (Fase 0b), servidor Modbus TCP (Fase 1a), servidor BACnet/IP (Fase 1b), mesh ESP-NOW (Fase 2a) y selector de PHY Ethernet (LAN8720A/W5500), flag SEMA_USE_WEB (Fase 2b) + migración ESP-IDF core 3.x. Plan: `docs/REPO-BASE-PLAN.md`. |
+| Repo base reutilizable | ✅ hecho (v1.107.0 → v0.7.0) | `AlessandroKlein/ESP32-Base` (tag `v0.10.0`, commit `a0f9efb`); SEMA consume por `lib_deps` `#v0.10.0`; 65 módulos genéricos movidos; `src/core/SemaGlue.cpp` con 14 hooks. F1+F2+F3 completadas, code review aplicado. v0.2.0…v0.10.0 añaden: expansores I²C (Fase 0a), detección de chip, compat C6, rediseño web, expansores UART/SPI/mux/ADC (Fase 0b), servidor Modbus TCP (Fase 1a), servidor BACnet/IP (Fase 1b), mesh ESP-NOW (Fase 2a) y selector de PHY Ethernet (LAN8720A/W5500), flag SEMA_USE_WEB (Fase 2b), dashboard limpio (sin Gridstack) + config en LittleFS (D-0046) + reloj UTC, y migración ESP-IDF core 3.x. Plan: `docs/REPO-BASE-PLAN.md`. |
 | Documentador dedicado de `Docs.git` | ✅ regla permanente | Docs.git sincronizado → v1.107.0 (commit `a454b92`). |
 | Compatibilidad dual PCB↔modular con flags | ✅ regla permanente | Registrada en AGENTS.md §4.2. |
 | Ethernet W5500 (consolidar bus SPI) | ⬜ pendiente | PCB WROOM-32U usa W5500 en VSPI 18/19/23 (CS=GPIO5) pero el firmware define `SEMA_NATIVE_ETH 1` (RMII). Decidir: Arduino Ethernet en bus compartido vs 2º bus SPI. Ver `docs/PCB-V1-CORRECCIONES.md` §8. |

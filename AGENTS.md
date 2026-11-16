@@ -13,7 +13,7 @@
 modulares: el hardware define las capacidades y una **web local configura todo**
 (sensores, buses, pines, alarmas, publicadores, calibración) sin recompilar.
 
-Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.113.0**
+Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.114.0**
 (`include/core/Version.hpp`), `hw_version = rev0`, `config_schema_version = 1`,
 `protocol_version = 1`.
 
@@ -90,7 +90,7 @@ no se dejan agentes ociosos.
 | Rol genérico | Qué toca en SEMA |
 |--------------|------------------|
 | Backend Architect | `src/core/**`, `include/core/**` (SemaCore, módulos, sensores, API REST `/api/v1/*`, publicadores, storage) |
-| Frontend Engineer | `src/core/web/HttpServer.cpp`, `src/core/web/GridstackAssets.h`, dashboard web servido desde PROGMEM |
+| Frontend Engineer | `src/core/web/HttpServer.cpp`, dashboard web servido desde PROGMEM (sin Gridstack desde v1.114.0) |
 | Code Reviewer | Revisa diffs de `.hpp`/`.cpp` antes de integrar; seguridad, memoria, adherencia a `docs/REGLAS-DE-TRABAJO.md` |
 | Researcher | Investiga librerías ESP32/PlatformIO, decisiones de arquitectura, bloqueos |
 | Tester | `pio run` (validación), `pio test`, smoke de la API, scripts de QA |
