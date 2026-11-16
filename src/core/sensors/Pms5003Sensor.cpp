@@ -5,6 +5,14 @@
 
 namespace sema {
 
+// PMS5003 usa un UART dedicado. Chips con sólo 2 UART (ESP32-C3/S2) no tienen
+// Serial2; usar Serial1. ESP32/S3/C6 (3 UART) usan Serial2.
+#if SOC_UART_NUM > 2
+#define SEMA_PMS_SERIAL Serial2
+#else
+#define SEMA_PMS_SERIAL Serial1
+#endif
+
 static Adafruit_PM25AQI aqi;
 static PM25_AQI_Data data;
 
@@ -16,9 +24,9 @@ const char* Pms5003Sensor::model() const { return "PMS5003"; }
 const char* Pms5003Sensor::interface() const { return "UART"; }
 
 bool Pms5003Sensor::begin() {
-  // PMS5003: UART 9600 8N1 (Serial2).
-  Serial2.begin(9600, SERIAL_8N1, rx_, tx_);
-  ok_ = aqi.begin_UART(&Serial2);
+  // PMS5003: UART 9600 8N1.
+  SEMA_PMS_SERIAL.begin(9600, SERIAL_8N1, rx_, tx_);
+  ok_ = aqi.begin_UART(&SEMA_PMS_SERIAL);
   return ok_;
 }
 

@@ -13,7 +13,7 @@
 modulares: el hardware define las capacidades y una **web local configura todo**
 (sensores, buses, pines, alarmas, publicadores, calibración) sin recompilar.
 
-Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.112.0**
+Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.113.0**
 (`include/core/Version.hpp`), `hw_version = rev0`, `config_schema_version = 1`,
 `protocol_version = 1`.
 
@@ -116,6 +116,8 @@ no se dejan agentes ociosos.
 | `esp32doit-devkit-v1` | ESP32-WROOM clásico | 4 MB | LAN8720A nativa (RMII) | configurables (`SEMA_PINS_FROM_FILE=0`) |
 | `esp32-s3-devkitc-1` | ESP32-S3 | 8 MB | W5500 por SPI (sin MAC nativa) | configurables (`=0`) |
 | `esp32-c6-devkitc-1` | ESP32-C6 (RISC-V) | 8 MB | — (sin MAC; Ethernet/LoRa/CAN/Zigbee deshabilitados) | configurables (`=0`) — objetivo Matter/Thread/esclavo |
+| `esp32-c3-devkitm-1` | ESP32-C3 (RISC-V) | 4 MB | — (esclavo: Ethernet off) | configurables (`=0`) — esclavo mesh ESP-NOW (web/Ethernet off) |
+| `esp32-s2-saola-1` | ESP32-S2 (Xtensa single-core) | 4 MB | — (esclavo: Ethernet off) | configurables (`=0`) — esclavo mesh ESP-NOW (web/Ethernet off) |
 | `esp32-wroom-32u` | ESP32-WROOM-32U | 16 MB | LAN8720A nativa (RMII) | **fijos** (`SEMA_PINS_FROM_FILE=1`, PCB) |
 | `esp32-wroom-32u-32mb` | ESP32-WROOM-32U | 32 MB | LAN8720A nativa (RMII) | **fijos** (`=1`, PCB) |
 | `esp32-p4` *(env deshabilitado)* | ESP32-P4 (RISC-V) | 32 MB | W5500 por SPI | **fijos** (`=1`) — sin board P4 ni en espressif32 8.0.0 (esperar PlatformIO más nuevo) |
@@ -126,7 +128,7 @@ cuatro (`partitions_4mb.csv`, `partitions_8mb.csv`, `partitions_16mb.csv`,
 `partitions_32mb.csv`).
 
 Identidades para OTA/manifest (`include/hw/HwProfile.hpp`): `esp32-wroom-4mb`,
-`esp32-s3-8mb`, `esp32-c6-8mb`, `esp32-wroom32u-16mb`, `esp32-wroom32u-32mb`,
+`esp32-s3-8mb`, `esp32-c6-8mb`, `esp32-c3-4mb`, `esp32-s2-4mb`, `esp32-wroom32u-16mb`, `esp32-wroom32u-32mb`,
 `esp32-p4-32mb`.
 
 > 🔧 **Selección de PHY por flag (desde v1.112.0)**: `-D SEMA_ETH_PHY_LAN8720A=1`

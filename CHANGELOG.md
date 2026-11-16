@@ -6,6 +6,21 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.113.0] - 2026-11-16
+
+### Added
+
+- **Firmware esclavo ligero (Fase 2b)**: flag `SEMA_USE_WEB` (default ON) que permite compilar fuera el servidor web + sus assets PROGMEM (−211 KB flash). Combinado con `SEMA_USE_ETHERNET=0` habilita un nodo que solo publica mediciones por ESP-NOW al maestro.
+- **Env de esclavos**: `esp32-c3-devkitm-1` y `esp32-s2-saola-1` (4 MB) con web/Ethernet deshabilitados y mesh ESP-NOW habilitado.
+
+### Changed
+
+- `ESP32-Base` v0.8.0 → v0.9.0 (flag `SEMA_USE_WEB`).
+
+### Fixed
+
+- La versión inyectada en `platformio.ini` (`SEMA_FW_VERSION`) había quedado en `1.111.0` al liberar v1.112.0 (banner de arranque y OTA mostraban la versión vieja); ahora se sincroniza con `Version.hpp` en `1.113.0`.
+
 ## [1.112.0] - 2026-11-16
 
 ### Added

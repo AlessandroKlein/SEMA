@@ -10,6 +10,9 @@
 //     -D BOARD_ESP32_WROOM     ESP32 clásico 4 MB (MAC Ethernet nativa, VSPI)
 //     -D BOARD_ESP32_WROOM32U  ESP32-WROOM-32U 16 MB (PCB futura)
 //     -D BOARD_ESP32_S3        ESP32-S3 8 MB (SPI FSPI, sin MAC nativa)
+//     -D BOARD_ESP32_C3        ESP32-C3 4 MB (RISC-V, esclavo mesh)
+//     -D BOARD_ESP32_S2        ESP32-S2 4 MB (Xtensa 1 núcleo, esclavo mesh)
+//     -D BOARD_ESP32_C6        ESP32-C6 8 MB (RISC-V, 802.15.4)
 //
 //   Features (0 = no compilar; reduce firmware):
 //     -D SEMA_USE_ETHERNET=0  -D SEMA_USE_LORA=0  -D SEMA_USE_MODBUS=0
@@ -25,8 +28,8 @@
 //     -D SEMA_PINS_FROM_FILE=0   → pines configurables en runtime (web).
 // =============================================================================
 
-#if !defined(BOARD_ESP32_WROOM) && !defined(BOARD_ESP32_S3) && !defined(BOARD_ESP32_WROOM32U) && !defined(BOARD_ESP32_P4) && !defined(BOARD_ESP32_C6)
-#error "Define BOARD_ESP32_WROOM, BOARD_ESP32_WROOM32U, BOARD_ESP32_S3, BOARD_ESP32_P4 o BOARD_ESP32_C6 en build_flags"
+#if !defined(BOARD_ESP32_WROOM) && !defined(BOARD_ESP32_S3) && !defined(BOARD_ESP32_WROOM32U) && !defined(BOARD_ESP32_P4) && !defined(BOARD_ESP32_C6) && !defined(BOARD_ESP32_C3) && !defined(BOARD_ESP32_S2)
+#error "Define BOARD_ESP32_WROOM, BOARD_ESP32_WROOM32U, BOARD_ESP32_S3, BOARD_ESP32_C3, BOARD_ESP32_S2, BOARD_ESP32_P4 o BOARD_ESP32_C6 en build_flags"
 #endif
 
 // --- Identidad de la board (para OTA / manifest) ---
@@ -52,6 +55,18 @@
 // que descarga web/Ethernet del principal, o coordinador 802.15.4.
 #define SEMA_BOARD_ID "esp32-c6-8mb"
 #define SEMA_FLASH_MB 8
+#define SEMA_BOARD_NATIVE_ETH 0
+#elif defined(BOARD_ESP32_C3)
+// ESP32-C3: RISC-V single-core, WiFi 4 + BLE 5. Sin MAC Ethernet nativa.
+// Objetivo: esclavo ligero de la malla (web/Ethernet deshabilitados por flag).
+#define SEMA_BOARD_ID "esp32-c3-4mb"
+#define SEMA_FLASH_MB 4
+#define SEMA_BOARD_NATIVE_ETH 0
+#elif defined(BOARD_ESP32_S2)
+// ESP32-S2: Xtensa single-core, WiFi 4 (sin BLE), USB-OTG. Sin MAC Ethernet
+// nativa. Objetivo: esclavo ligero de la malla (web/Ethernet deshabilitados).
+#define SEMA_BOARD_ID "esp32-s2-4mb"
+#define SEMA_FLASH_MB 4
 #define SEMA_BOARD_NATIVE_ETH 0
 #elif defined(BOARD_ESP32_P4)
 // ESP32-P4: RISC-V sin WiFi/BT ni MAC Ethernet nativa (usa W5500 por SPI).
