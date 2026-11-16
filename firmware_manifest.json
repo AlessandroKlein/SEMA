@@ -10,39 +10,39 @@
       "chip": "esp32",
       "flash_mb": 4,
       "firmware": "sema_1.114.0_esp32-wroom-4mb.bin",
-      "sha256": "11fb4bbb0dc47d6781878f764e3aa56550158edf3f7df6872f1f4040318ef367",
+      "sha256": "2eb706daee9c7702ad4dacf25f80d91b82f3885893328157be628f36f6fb8401",
       "filesystem": "sema_1.114.0_esp32-wroom-4mb_littlefs.bin",
-      "filesystem_sha256": "de8a08dd2ae926afdae4e8e47b1049c4b99c10840ca8017b154cfe742d306de6"
+      "filesystem_sha256": "614f7ffb8877f82b4d567021e4161383ca0b1cdfee23e62c8d736088b752bda2"
     },
     {
       "board": "esp32-s3-8mb",
       "chip": "esp32s3",
       "flash_mb": 8,
       "firmware": "sema_1.114.0_esp32-s3-8mb.bin",
-      "sha256": "e6fbef025d76248f1a0731d1f52b132ab848d54f6229f6b505a6925d112709e1",
+      "sha256": "2db5c764613558d956a30fda489be41371a9cc611b1996854c156a0670115ad6",
       "filesystem": "sema_1.114.0_esp32-s3-8mb_littlefs.bin",
-      "filesystem_sha256": "41786bc139bcef47fd10a1b411bc4c617248b84d96a8a9117a13e734ac7b8ae6"
+      "filesystem_sha256": "644082679174cf85052866f5cb74d488f9d189bff1c9c9af7ee9e0529d00f4c8"
     },
     {
       "board": "esp32-c6-8mb",
       "chip": "esp32c6",
       "flash_mb": 8,
       "firmware": "sema_1.114.0_esp32-c6-8mb.bin",
-      "sha256": "db065b1368dc406982051d56c7498f8ce631da66b3fe7d87357d58a647b543fd"
+      "sha256": "0313549b595f46f6c905d26df82c60d98c14865a89861e1495c28af61760812f"
     },
     {
       "board": "esp32-c3-4mb",
       "chip": "esp32c3",
       "flash_mb": 4,
       "firmware": "sema_1.114.0_esp32-c3-4mb.bin",
-      "sha256": "5b2358b4090d45f6c17db31b6b31b3c69e3e0b09244b5c0686ee295a72993e25"
+      "sha256": "c8d032848f720ee5a22bb64f7e21bbe9e6383afde4807c391935710dafc7186f"
     },
     {
       "board": "esp32-s2-4mb",
       "chip": "esp32s2",
       "flash_mb": 4,
       "firmware": "sema_1.114.0_esp32-s2-4mb.bin",
-      "sha256": "70213612ec9cd48a002f94d93282144bc5226afc9638a79bc8462d640d54bc19"
+      "sha256": "e230d6c584eb452ea90a2eb7aa7baa28542b857a6c0cdd3c4d2bc1be98c2f5d9"
     }
   ]
 }
