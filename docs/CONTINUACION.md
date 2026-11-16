@@ -7,24 +7,14 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 
 ---
 
-## 0. Estado actual (2026-11-15)
+## 0. Estado actual (2026-11-15) — PAUSADO por el usuario
 
+- **v1.111.0** — **Fase 1**: servidor Modbus TCP (sockets lwIP, transporte-agnóstico) + servidor BACnet/IP (UDP 47808, autocontenido) + transceivers RS-485 (MAX3485ED/SN65HVD75DR/TD501D485H/ADM2483BRWZ) y CAN (SN65HVD234DR/SN65HVD233DR). Vía ESP32-Base v0.6.0 (Modbus TCP) + v0.7.0 (BACnet). Flags `SEMA_USE_MODBUS_TCP` / `SEMA_USE_BACNET`. **Sin dependencia GPL** (la librería BACnet evaluada era client-only).
 - **v1.110.0** — expansores UART/SPI/mux/ADC (SC16IS752, SC18IS602B, TCA9548A, ADS1115) vía ESP32-Base v0.5.0.
-- **v1.109.0** — rediseño visual del dashboard web (paleta dark OLED, acento teal/cyan, monospace, glow). Vía ESP32-Base v0.4.0.
-- **v1.108.0** — migración a ESP-IDF core 3.x + ESP32-C6 + detección de chip + expansores:
-  - **Core 3.x** (espressif32 8.0.0, arduino-esp32 3.x): watchdog `esp_task_wdt_config_t`,
-    Ethernet W5500 `ETH_W5500_DEFAULT_CONFIG(spi_host, spi_devcfg)`, FreeRTOS `TaskHandle_t`.
-  - **ESP32-Base v0.3.1** (`d2c67be`): extracción (v0.1.0) + expansores I²C
-    MCP23S17/PCA9685/PCF8574 (v0.2.0) + detección de chip `chip.hpp`/`ChipInfo.hpp`
-    (v0.3.0) + compat C6 (v0.3.1).
-  - **ESP32-C6** (`esp32-c6-devkitc-1`, RISC-V, 8 MB) añadido y validado: objetivo
-    Matter/Thread/esclavo; Ethernet/LoRa/Modbus/CAN/Zigbee deshabilitados por flags.
-  - **6 envs compilan SUCCESS**: devkit 85.5%/18.8%, demo 85.7%/18.8%, s3 48.5%/18.3%,
-    c6 50.3%/16.9%, wroom-32u 49.8%/18.8%, wroom-32u-32mb 37.4%/18.8%.
-- **Roadmap domótica** (`docs/PENDIENTES.md` §2.5): Fase 0a ✅ (expansores GPIO/PWM);
-  0b ✅ UART/SPI/mux/ADC; Fases 1-4 (Modbus TCP+BACnet, mesh ESP-NOW, coordinador, radio) pendientes.
-- **Pendiente**: Ethernet W5500 (consolidar bus SPI),
-  envs S2/C3 para validar compilación, Docs.git sincronizar → v1.110.0 (subagente Documentador).
+- **v1.109.0** — rediseño visual del dashboard web (paleta dark OLED, acento teal/cyan, monospace). Vía ESP32-Base v0.4.0.
+- **v1.108.0** — migración ESP-IDF core 3.x + ESP32-C6 + detección de chip + expansores I²C.
+- **Roadmap domótica** (`docs/PENDIENTES.md` §2.5): Fase 0a ✅, 0b ✅, **Fase 1 ✅** (Modbus TCP + BACnet/IP + transceivers); Fase 2 (mesh ESP-NOW + master-slave), Fase 3 (coordinador árbol), Fase 4 (radio C6/H2 + BLE) pendientes.
+- **Pendiente al reanudar**: (1) confirmar resultado del subagente Documentador (Docs.git → v1.111.0); (2) Fase 2 = mesh ESP-NOW; (3) envs S2/C3; (4) Ethernet W5500 (consolidar bus SPI).
 
 ---
 
