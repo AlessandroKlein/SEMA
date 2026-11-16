@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.114.1] - 2026-11-16
+
+### Fixed
+
+- **Watchdog TWDT con timeout incorrecto**: si el core de Arduino ya había inicializado el task watchdog (5 s), `Watchdog::begin()` ignoraba el timeout configurado (10 s) y el firmware se reiniciaba por watchdog a los 5 s. Ahora se reconfigura el timeout (`esp_task_wdt_reconfigure`). Vía ESP32-Base v0.10.1.
+
 ## [1.114.0] - 2026-11-16
 
 ### Changed

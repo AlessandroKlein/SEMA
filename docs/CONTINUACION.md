@@ -1,6 +1,6 @@
 # Continuación — SEMA
 
-> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.114.0 | **Releases:** 96
+> **Tipo:** Guía de continuación | **Fecha:** 2026-11-15 | **Firmware:** v1.114.1 | **Releases:** 96
 
 Documento de **retorno**: resume el estado actual, lo pendiente y el flujo para
 retomar el trabajo después de corroborar. Leer de principio a fin antes de seguir.
@@ -9,7 +9,7 @@ retomar el trabajo después de corroborar. Leer de principio a fin antes de segu
 
 ## 0. Estado actual (2026-11-16)
 
-- **v1.114.0** — **correcciones**: dashboard limpio (sin Gridstack, solo sensores conectados + predicciones), guardado de config en LittleFS (`/config.json`, D-0046), reloj UTC (`nowEpoch`) y fix de memoria en `/config/sensors`. Vía ESP32-Base v0.10.0.
+- **v1.114.1** — **correcciones**: dashboard limpio (sin Gridstack, solo sensores conectados + predicciones), guardado de config en LittleFS (`/config.json`, D-0046), reloj UTC (`nowEpoch`) y fix de memoria en `/config/sensors`. Vía ESP32-Base v0.10.0.
 - **v1.113.0** — **Fase 2b**: firmware esclavo ligero — flag `SEMA_USE_WEB` (compila fuera el servidor web + assets PROGMEM, −211 KB flash) + envs `esp32-c3-devkitm-1` y `esp32-s2-saola-1` (web/Ethernet off, mesh ESP-NOW on). Vía ESP32-Base v0.9.0.
 - **v1.112.0** — **Fase 2a**: mesh ESP-NOW (`MeshManager` maestro/esclavo: ANNOUNCE/SENSOR_DATA/COMMAND/ACK/HEARTBEAT; flag `SEMA_USE_MESH_ESPNOW`) + **selector de PHY Ethernet por flag** (`SEMA_ETH_PHY_LAN8720A` / `SEMA_ETH_PHY_W5500`, gana sobre el default de board) con driver SPI custom para W5500 (honra `SEMA_ETH_SPI_*`). Vía ESP32-Base v0.8.0.
 - **v1.111.0** — **Fase 1**: Modbus TCP (sockets lwIP) + BACnet/IP (UDP 47808, autocontenido) + transceivers RS-485/CAN. Flags `SEMA_USE_MODBUS_TCP` / `SEMA_USE_BACNET`. Sin dependencia GPL (librería evaluada era client-only). Vía ESP32-Base v0.6.0 + v0.7.0.

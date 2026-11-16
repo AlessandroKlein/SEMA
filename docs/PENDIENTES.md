@@ -1,6 +1,6 @@
 # Pendientes — SEMA
 
-> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-15 | **Firmware:** v1.114.0
+> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-15 | **Firmware:** v1.114.1
 
 Resultado de la comprobación de `MEJORAS.md`, `FUTURO.md` y `CONTINUACION.md`
 contra el código. Los ítems **no realizados** quedan aquí para retomarlos en otra
