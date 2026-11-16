@@ -1,6 +1,6 @@
 # Pendientes — SEMA
 
-> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-15 | **Firmware:** v1.109.0
+> **Tipo:** Registro de pendientes | **Fecha:** 2026-11-15 | **Firmware:** v1.111.0
 
 Resultado de la comprobación de `MEJORAS.md`, `FUTURO.md` y `CONTINUACION.md`
 contra el código. Los ítems **no realizados** quedan aquí para retomarlos en otra
@@ -75,7 +75,7 @@ Se corrigieron dos inconsistencias de documentación:
 |------|--------|---------|
 | Habilitar/deshabilitar elementos en runtime | ✅ hecho (v1.106.0) | Toggle runtime de elementos (sensores, buses, Ethernet, Modbus, CAN, LoRa, Zigbee) persistido en NVS, incluso en PCB. |
 | Edición de pines solo en modo AP | ✅ hecho (v1.106.0) | `pinsLocked()`: en STA/PCB los pines quedan solo-lectura; `/api/v1/system` expone `ap_mode`/`pins_from_file`. |
-| Repo base reutilizable | ✅ hecho (v1.107.0 → v0.3.1) | `AlessandroKlein/ESP32-Base` (tag `v0.5.0`, commit `8027141`); SEMA consume por `lib_deps` `#v0.5.0`; 65 módulos genéricos movidos; `src/core/SemaGlue.cpp` con 14 hooks. F1+F2+F3 completadas, code review aplicado. v0.2.0/v0.3.0/v0.3.1/v0.4.0/v0.5.0 añaden: expansores I²C (Fase 0a: MCP23S17/PCA9685/PCF8574), detección de chip, compat C6, rediseño web, y expansores UART/SPI/mux/ADC (Fase 0b: SC16IS752/SC18IS602B/TCA9548A/ADS1115) + migración ESP-IDF core 3.x (espressif32 8.0.0). Plan: `docs/REPO-BASE-PLAN.md`. |
+| Repo base reutilizable | ✅ hecho (v1.107.0 → v0.7.0) | `AlessandroKlein/ESP32-Base` (tag `v0.7.0`, commit `de358a9`); SEMA consume por `lib_deps` `#v0.7.0`; 65 módulos genéricos movidos; `src/core/SemaGlue.cpp` con 14 hooks. F1+F2+F3 completadas, code review aplicado. v0.2.0…v0.7.0 añaden: expansores I²C (Fase 0a), detección de chip, compat C6, rediseño web, expansores UART/SPI/mux/ADC (Fase 0b), servidor Modbus TCP (Fase 1a) y servidor BACnet/IP (Fase 1b) + migración ESP-IDF core 3.x. Plan: `docs/REPO-BASE-PLAN.md`. |
 | Documentador dedicado de `Docs.git` | ✅ regla permanente | Docs.git sincronizado → v1.107.0 (commit `a454b92`). |
 | Compatibilidad dual PCB↔modular con flags | ✅ regla permanente | Registrada en AGENTS.md §4.2. |
 | Ethernet W5500 (consolidar bus SPI) | ⬜ pendiente | PCB WROOM-32U usa W5500 en VSPI 18/19/23 (CS=GPIO5) pero el firmware define `SEMA_NATIVE_ETH 1` (RMII). Decidir: Arduino Ethernet en bus compartido vs 2º bus SPI. Ver `docs/PCB-V1-CORRECCIONES.md` §8. |
@@ -91,7 +91,7 @@ mesh, coordinador, válvulas BLE/Zigbee).
 | Fase | Alcance | Estado |
 |------|---------|--------|
 | 0 | Expansores (MCP23S17, PCA9685, PCF8574/8575, TCA9548A, SC16IS752, MAX14830, SC18IS602B, ADS1115 genérico) + flags `SEMA_USE_*` | ✅ (0a GPIO/PWM; 0b UART/SPI/mux/ADC — MAX14830 diferido, sin librería en registry) |
-| 1 | Modbus TCP + BACnet/IP + verificar CAN | ⬜ |
+| 1 | Modbus TCP + BACnet/IP + verificar CAN + transceivers RS-485/CAN | ✅ (Modbus TCP v0.6.0 + BACnet/IP v0.7.0; transceivers RS-485/CAN; CAN por TWAI ya existía) |
 | 2 | Mesh ESP-NOW sin central + maestro-esclavo (C3/S2/S3; offload web/Ethernet) | ⬜ |
 | 3 | Coordinador + modelo árbol (Casa→Habitación→Dispositivo→Capacidad, "a qué escucha") | ⬜ |
 | 4 | Esclavos radio C6/H2 (Zigbee/Thread/Matter) + válvulas/concentradores BLE (esfuerzo ALTO, ESP-IDF) | ⬜ |
@@ -100,6 +100,14 @@ mesh, coordinador, válvulas BLE/Zigbee).
 **Deuda diferida:** renombrar flags `SEMA_USE_*` → `BASE_USE_*` (mecánico, toca todo).
 **Fase 0 desglosada:** 0a = flags + GPIO/PWM (MCP23S17, PCA9685, PCF8574/8575);
 0b = UART (SC16IS752, MAX14830, SC18IS602B) + mux TCA9548A + ADS1115 genérico.
+
+**Fase 1 desglosada (alcance confirmado por el usuario 2026-11-15):**
+- **Modbus TCP servidor** (holding registers + coils), flag `SEMA_USE_MODBUS_TCP`.
+- **BACnet/IP servidor** (objeto Device + analog/binary mapeados a sensores), flag `SEMA_USE_BACNET`. Stack `bacnet-stack` (GPL v2) vía port ESP32 `vitaly.ruhl/ESP32 BACnet Stack@^0.34.0` — **licencia GPL v2 ACEPTADA por el usuario (2026-11-15)**: el firmware que lo vincule queda bajo GPL v2.
+- **Transceivers RS-485** (Modbus RTU): MAX3485ED / SN65HVD75DR / TD501D485H / ADM2483BRWZ (a elegir).
+- **Transceivers CAN**: SN65HVD234DR / SN65HVD233DR.
+- **Principio de ortogonalidad**: Modbus RTU (RS-485) y CAN (no-TCP) se habilitan con flags independientes, sin depender de Ethernet/WiFi; el dispositivo actúa de **puente** entre protocolos.
+- **Ethernet común** sigue funcionando con BACnet/IP y Modbus TCP deshabilitados (son capas opcionales sobre la red).
 
 ### 2.6 Compatibilidad multi-SoC + detección de chip (2026-11-15)
 

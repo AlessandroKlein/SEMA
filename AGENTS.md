@@ -13,7 +13,7 @@
 modulares: el hardware define las capacidades y una **web local configura todo**
 (sensores, buses, pines, alarmas, publicadores, calibración) sin recompilar.
 
-Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.110.0**
+Principio: **simple por fuera, modular por dentro.** Firmware actual: **v1.111.0**
 (`include/core/Version.hpp`), `hw_version = rev0`, `config_schema_version = 1`,
 `protocol_version = 1`.
 

@@ -6,6 +6,23 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 Ver también [`docs/VERSIONADO.md`](docs/VERSIONADO.md).
 
+## [1.111.0] - 2026-11-15
+
+### Added
+
+- **Servidor Modbus TCP** (`SEMA_USE_MODBUS_TCP`): holding registers + coils mapeados a mediciones/GPIO, sobre sockets lwIP (transporte-agnóstico, funciona con Ethernet y WiFi).
+- **Servidor BACnet/IP** (`SEMA_USE_BACNET`): Who-Is→I-Am + ReadProperty→ComplexAck para objetos Device/AnalogInput/BinaryInput, sobre UDP lwIP (puerto 47808). Mínimo y autocontenido.
+- **Transceivers RS-485**: MAX3485ED / SN65HVD75DR / TD501D485H / ADM2483BRWZ (enum configurable).
+- **Transceivers CAN**: SN65HVD234DR / SN65HVD233DR (enum + pin RS standby opcional).
+
+### Changed
+
+- `ESP32-Base` v0.5.0 → v0.7.0 (Modbus TCP v0.6.0 + BACnet/IP v0.7.0).
+
+### Notas
+
+- La librería `vitaly.ruhl/ESP32 BACnet Stack` es **client-only** (sin servidor); se implementó un servidor BACnet/IP mínimo autocontenido, por lo que **no hay dependencia GPL**.
+
 ## [1.110.0] - 2026-11-15
 
 ### Added
